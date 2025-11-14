@@ -3,7 +3,13 @@ import { useEffect, useState } from "react";
 import MovieMinimalCard from "@/components/movie/movie-minimal";
 import Pagination from "@/components/pagination";
 
-export default function MovieListClient({ index = 1 }: { index?: number }) {
+interface MovieListClientProps {
+  index?: number;
+  category?: string;
+  topic?: string;
+}
+
+export default function MovieListClient({ index = 1, category, topic }: MovieListClientProps) {
   const [movies, setMovies] = useState<any[]>([]);
   const [pageInfo, setPageInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -12,11 +18,33 @@ export default function MovieListClient({ index = 1 }: { index?: number }) {
     let interval: NodeJS.Timeout | undefined;
     const fetchMovies = () => {
       setLoading(true);
-      fetch(`https://phimapi.com/danh-sach/phim-moi-cap-nhat?page=${index}`)
+      
+      // Build URL based on category/topic
+      let url: string;
+      if (category) {
+        url = `https://phimapi.com/v1/api/the-loai/${category}?page=${index}`;
+      } else if (topic) {
+        url = `https://phimapi.com/v1/api/danh-sach/${topic}?page=${index}`;
+      } else {
+        url = `https://phimapi.com/danh-sach/phim-moi-cap-nhat?page=${index}`;
+      }
+      
+      fetch(url)
         .then((res) => res.json())
         .then((data) => {
-          setMovies(data.items);
-          setPageInfo(data.pagination);
+          // Handle different response structures
+          if (category || topic) {
+            setMovies(data.data.items);
+            setPageInfo(data.data.params.pagination);
+          } else {
+            setMovies(data.items);
+            setPageInfo(data.pagination);
+          }
+          setLoading(false);
+        })
+        .catch(() => {
+          setMovies([]);
+          setPageInfo(null);
           setLoading(false);
         });
     };
@@ -25,7 +53,7 @@ export default function MovieListClient({ index = 1 }: { index?: number }) {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [index]);
+  }, [index, category, topic]);
 
   if (loading) {
     return (

@@ -38,21 +38,30 @@ export async function generateMetadata({ searchParams }: HomeProps) {
 }
 
 export default async function Home({ searchParams }: HomeProps) {
-  const { index } = await searchParams;
+  const { index, category, topic } = await searchParams;
   const api = new PhimApi();
   const topics = api.listTopics();
   const categories = await api.listCategories();
   // Sử dụng Client Component để render danh sách phim mới nhất
   const MovieListClient = (await import("@/components/movie/MovieListClient")).default;
+  
+  // Determine current value and whether it's a category
+  const currentValue = category || topic || "";
+  const isCategory = category ? true : topic ? false : undefined;
+  
   return (
     <main className="mx-auto max-w-screen-2xl px-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen">
       <Header
-        currentValue={""}
-        isCategory={undefined}
+        currentValue={currentValue}
+        isCategory={isCategory}
         topics={topics}
         categories={categories}
       />
-      <MovieListClient index={index || 1} />
+      <MovieListClient 
+        index={index || 1} 
+        category={category}
+        topic={topic}
+      />
       <Footer />
     </main>
   );
