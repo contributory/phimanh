@@ -18,6 +18,13 @@ pnpm dev
 bun dev
 ```
 
+
+[![Deploy with Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Starfall-org/phimanh)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fstarfall-org%2Fphimanh&project-name=phimanh&repository-name=phimanh)
+
+
+
+
 ## Lưu ý về Pull Request
 ### 1. Ghi rõ mô tả về những thay đổi bạn đã thực hiện.
 ### 2. Vui lòng giữ nguyên tiêu đề **"Phim Ảnh"** khi gửi Pull Request để duy trì sự nhất quán trong dự án.
