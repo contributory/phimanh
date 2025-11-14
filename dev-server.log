@@ -4,8 +4,16 @@
 
    ▲ Next.js 15.5.6 (Turbopack)
    - Local:        http://localhost:3000
-   - Network:      http://10.10.0.101:3000
+   - Network:      http://10.10.1.193:3000
 
  ✓ Starting...
- ✓ Ready in 1179ms
+Attention: Next.js now collects completely anonymous telemetry regarding usage.
+This information is used to shape Next.js' roadmap and prioritize features.
+You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+https://nextjs.org/telemetry
+
+ ✓ Ready in 1184ms
+ ○ Compiling / ...
+ ✓ Compiled / in 5.4s
+ GET / 200 in 6399ms
 [?25h

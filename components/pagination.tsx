@@ -31,10 +31,31 @@ export default function PaginationComponent() {
 
   React.useEffect(() => {
     const index = Number(searchParams.get("index")) || 1;
-    fetch(`https://phimapi.com/danh-sach/phim-moi-cap-nhat?page=${index}`)
+    const category = searchParams.get("category");
+    const topic = searchParams.get("topic");
+    
+    // Build URL based on category/topic
+    let url: string;
+    if (category) {
+      url = `https://phimapi.com/v1/api/the-loai/${category}?page=${index}`;
+    } else if (topic) {
+      url = `https://phimapi.com/v1/api/danh-sach/${topic}?page=${index}`;
+    } else {
+      url = `https://phimapi.com/danh-sach/phim-moi-cap-nhat?page=${index}`;
+    }
+    
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
-        setPageInfo(data.pagination);
+        // Handle different response structures
+        if (category || topic) {
+          setPageInfo(data.data.params.pagination);
+        } else {
+          setPageInfo(data.pagination);
+        }
+      })
+      .catch(() => {
+        setPageInfo(null);
       });
   }, [searchParams]);
 
