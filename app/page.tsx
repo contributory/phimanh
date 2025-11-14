@@ -45,7 +45,7 @@ export default async function Home({ searchParams }: HomeProps) {
   // Sử dụng Client Component để render danh sách phim mới nhất
   const MovieListClient = (await import("@/components/movie/MovieListClient")).default;
   return (
-    <main className="mx-auto max-w-screen-2xl px-4">
+    <main className="mx-auto max-w-screen-2xl px-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen">
       <Header
         currentValue={""}
         isCategory={undefined}
