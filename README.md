@@ -1,18 +1,23 @@
-**Web Movies Remaster**
+# Phimanh
 
-## Getting Started
+## Giới thiệu
 
-First, run the development server:
+Dự án này là một ứng dụng web được xây dựng bằng Next.js cho phép người dùng xem phim trực tuyến với giao diện thân thiện và dễ sử dụng.
+
+## Bắt đầu
+
+Để bắt đầu, hãy chạy server phát triển:
 
 ```bash
 npm run dev
-# or
+# hoặc
 yarn dev
-# or
+# hoặc
 pnpm dev
-# or
+# hoặc
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
+## Lưu ý về Pull Request
+### 1. Ghi rõ mô tả về những thay đổi bạn đã thực hiện.
+### 2. Vui lòng giữ nguyên tiêu đề **"Phim Ảnh"** khi gửi Pull Request để duy trì sự nhất quán trong dự án.

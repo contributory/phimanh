@@ -111,7 +111,7 @@ export default function Header({
             onClick={() => router.push("/")}
             className="text-xl font-bold cursor-pointer mr-4"
           >
-            Rạp Phim Chill
+            Phim Ảnh
           </h1>
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-4">
