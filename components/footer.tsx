@@ -8,10 +8,7 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="w-full flex flex-col items-center justify-center py-0">
           <p className="text-base text-gray-300 dark:text-gray-300 font-bold mb-0">
-            © {new Date().getFullYear()} Rạp Phim Chill. All rights reserved.
-          </p>
-          <p className="text-sm text-gray-400 dark:text-gray-400 font-semibold">
-            Thiết kế & phát triển bởi <span className="font-bold text-blue-400">Kim Đình Phương</span> cùng <span className="font-bold text-purple-400">StarFall Org</span>
+            © {new Date().getFullYear()} Phim Anh. All rights reserved.
           </p>
         </div>
       </div>
