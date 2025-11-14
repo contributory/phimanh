@@ -1,0 +1,11 @@
+
+> web-movies-reboot@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.6 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://10.10.0.101:3000
+
+ ✓ Starting...
+ ✓ Ready in 1179ms
+[?25h
