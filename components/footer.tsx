@@ -24,10 +24,7 @@ export default function Footer() {
             <Link href="/" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
               Trang chủ
             </Link>
-            <span className="text-gray-300 dark:text-gray-700">•</span>
-            <Link href="/search" className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-              Tìm kiếm
-            </Link>
+            <span className="text-gray-300 dark:text-gray-700">___</span>
           </div>
           <div className="pt-4 border-t border-gray-200 dark:border-gray-800 w-full max-w-md">
             <p className="text-center text-xs text-gray-500 dark:text-gray-500">
