@@ -43,7 +43,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <MovieMinimalCard key={movie.slug} movie={movie} />
         ))}
       </div>
-      <Pagination pageInfo={pageInfo} />
+      <Pagination />
       <Footer />
     </main>
   );

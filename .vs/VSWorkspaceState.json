@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\.next",
+    "\\.next\\static",
+    "\\.next\\static\\chunks",
+    "\\components",
+    "\\lib"
+  ],
+  "SelectedNode": "\\components\\header.tsx",
+  "PreviewInSolutionExplorer": false
+}
