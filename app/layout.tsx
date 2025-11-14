@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Phim Ảnh - Xem phim chất lượng cao miễn phí",
     description: "Kho phim chất lượng cao, cập nhật liên tục, xem miễn phí mọi lúc mọi nơi.",
-    url: "https://phimanh.mywire.org",
+    url: "https://phimanh.netlify.app",
     siteName: "Phim Ảnh",
     type: "website",
   },
