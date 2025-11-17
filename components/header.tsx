@@ -6,6 +6,7 @@ import { useRef } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import ThemeToggle from "@/components/theme-toggle";
 
 interface HeaderProps {
   currentValue?: string;
@@ -101,15 +102,15 @@ export default function Header({
   };
 
   return (
-    <nav className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900">
+    <nav className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/95 shadow-lg">
       {isLoading && (
-        <div className="absolute top-0 left-0 h-1 bg-blue-500 animate-[loading_1s_ease-in-out_infinite]"></div>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-shimmer"></div>
       )}
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center">
           <h1
             onClick={() => router.push("/")}
-            className="text-xl font-bold cursor-pointer mr-4"
+            className="text-2xl font-extrabold cursor-pointer mr-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
           >
             Phim Ảnh
           </h1>
@@ -148,6 +149,7 @@ export default function Header({
           </div>
         </div>
         <div className="flex items-center space-x-2">
+          <ThemeToggle />
           <Button
             variant="ghost"
             size="icon"
@@ -299,19 +301,6 @@ export default function Header({
         </div>
       )}
 
-      <style jsx>{`
-        @keyframes loading {
-          0% {
-            width: 0%;
-          }
-          50% {
-            width: 70%;
-          }
-          100% {
-            width: 100%;
-          }
-        }
-      `}</style>
     </nav>
   );
 }
