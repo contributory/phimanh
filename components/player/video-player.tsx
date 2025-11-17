@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import videojs from "video.js";
-import type Player from "video.js/dist/types/player";
-import "video.js/dist/video-js.css";
+import Hls from "hls.js";
 
 interface VideoPlayerProps {
   videoUrl: string;
@@ -19,101 +17,106 @@ const VideoPlayer = ({
   onError,
 }: VideoPlayerProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const playerRef = useRef<Player | null>(null);
+  const hlsRef = useRef<Hls | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Make sure Video.js player is only initialized once
-    if (!playerRef.current && videoRef.current) {
-      const player = videojs(
-        videoRef.current,
-        {
-          controls: true,
-          responsive: true,
-          fluid: true,
-          aspectRatio: "16:9",
-          autoplay,
-          preload: "auto",
-          playsinline: true,
-          html5: {
-            vhs: {
-              overrideNative: true,
-            },
-            nativeAudioTracks: false,
-            nativeVideoTracks: false,
-          },
-          controlBar: {
-            volumePanel: {
-              inline: false,
-            },
-            pictureInPictureToggle: true,
-            fullscreenToggle: true,
-          },
-        },
-        () => {
-          // Player is ready
-          setIsLoading(false);
-        }
-      );
+    const video = videoRef.current;
+    if (!video || !videoUrl) return;
 
-      // Error handling
-      player.on("error", () => {
-        const error = player.error();
-        const errorMessage =
-          error?.message || "An error occurred while loading the video";
-        setError(errorMessage);
+    setError(null);
+    setIsLoading(true);
+
+    console.log('Setting src:', videoUrl);
+
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hlsRef.current = hls;
+
+      hls.loadSource(videoUrl);
+      hls.attachMedia(video);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        console.log('HLS manifest parsed');
         setIsLoading(false);
-        onError?.(error);
-      });
-
-      // Loading states
-      player.on("loadstart", () => setIsLoading(true));
-      player.on("canplay", () => setIsLoading(false));
-      player.on("waiting", () => setIsLoading(true));
-      player.on("playing", () => setIsLoading(false));
-
-      playerRef.current = player;
-    }
-  }, [autoplay, onError]);
-
-  // Update source when videoUrl changes
-  useEffect(() => {
-    const player = playerRef.current;
-
-    if (player && videoUrl) {
-      setError(null);
-      setIsLoading(true);
-
-      player.src({
-        src: videoUrl,
-        type: "application/x-mpegURL",
-      });
-
-      if (autoplay && player) {
-        player.ready(() => {
-          player?.play()?.catch((err) => {
+        if (autoplay) {
+          video.play().catch((err) => {
             console.warn("Autoplay was prevented:", err);
           });
-        });
-      }
-    }
-  }, [videoUrl, autoplay]);
+        }
+      });
 
-  // Cleanup on unmount
-  useEffect(() => {
-    const player = playerRef.current;
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        console.log('HLS error:', data);
+        if (data.fatal) {
+          setError(data.details || "An error occurred while loading the video");
+          setIsLoading(false);
+          onError?.(data);
+        }
+      });
+
+      video.addEventListener('loadstart', () => { console.log('loadstart'); setIsLoading(true); });
+      video.addEventListener('canplay', () => { console.log('canplay'); setIsLoading(false); });
+      video.addEventListener('waiting', () => { console.log('waiting'); setIsLoading(true); });
+      video.addEventListener('playing', () => {
+        console.log('playing');
+        console.log('Video element readyState:', video.readyState);
+        console.log('Video currentTime:', video.currentTime);
+        console.log('Video videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight);
+        setIsLoading(false);
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Native HLS support
+      video.src = videoUrl;
+      video.addEventListener('loadedmetadata', () => {
+        setIsLoading(false);
+        if (autoplay) {
+          video.play().catch((err) => {
+            console.warn("Autoplay was prevented:", err);
+          });
+        }
+      });
+      video.addEventListener('loadstart', () => { console.log('loadstart'); setIsLoading(true); });
+      video.addEventListener('canplay', () => { console.log('canplay'); setIsLoading(false); });
+      video.addEventListener('waiting', () => { console.log('waiting'); setIsLoading(true); });
+      video.addEventListener('playing', () => {
+        console.log('playing');
+        console.log('Video element readyState:', video.readyState);
+        console.log('Video currentTime:', video.currentTime);
+        console.log('Video videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight);
+        setIsLoading(false);
+      });
+      video.addEventListener('error', (e) => {
+        console.log('Video error:', e);
+        setError("An error occurred while loading the video");
+        setIsLoading(false);
+        onError?.(e);
+      });
+    } else {
+      setError("HLS is not supported in this browser");
+      setIsLoading(false);
+    }
 
     return () => {
-      if (player && !player.isDisposed()) {
-        player.dispose();
-        playerRef.current = null;
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
       }
     };
-  }, []);
+  }, [videoUrl, autoplay, onError]);
 
   return (
-    <div className="relative w-full bg-black rounded-lg overflow-hidden shadow-2xl">
+    <div className="relative w-full bg-black rounded-lg shadow-2xl" style={{ minHeight: '200px' }}>
+      <video
+        ref={videoRef}
+        controls
+        poster={poster}
+        playsInline
+        className="w-full h-auto"
+        style={{ display: 'block' }}
+      />
+
       {/* Loading Indicator */}
       {isLoading && !error && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-10">
@@ -143,23 +146,11 @@ const VideoPlayer = ({
                 />
               </svg>
             </div>
-            <p className="text-white text-base font-semibold">
-              Lỗi phát video
-            </p>
+            <p className="text-white text-base font-semibold">Lỗi phát video</p>
             <p className="text-gray-300 text-sm max-w-md">{error}</p>
           </div>
         </div>
       )}
-
-      {/* Video Element */}
-      <div data-vjs-player>
-        <video
-          ref={videoRef}
-          className="video-js vjs-big-play-centered vjs-theme-city"
-          poster={poster}
-          playsInline
-        />
-      </div>
     </div>
   );
 };

@@ -29,12 +29,16 @@ export default function Episode({ serverData, onSelectEpisode }: EpisodeProps) {
 
   // Initialize with first available episode when serverData changes
   useEffect(() => {
-    if (serverData && serverData.length > 0 && serverData[0]?.server_data?.length > 0) {
+    if (
+      serverData &&
+      serverData.length > 0 &&
+      serverData[0]?.server_data?.length > 0
+    ) {
       const firstEpisode = serverData[0].server_data[0];
       if (firstEpisode?.link_m3u8) {
         // Create a stable reference to detect serverData changes
         const currentServerDataKey = `${serverData.length}-${firstEpisode.link_m3u8}`;
-        
+
         // Only initialize once per unique serverData
         if (lastServerDataRef.current !== currentServerDataKey) {
           setActiveServerIndex(0);
@@ -73,7 +77,7 @@ export default function Episode({ serverData, onSelectEpisode }: EpisodeProps) {
   const currentServer = serverData[activeServerIndex];
 
   return (
-    <div className="w-full space-y-4">
+    <div>
       {/* Server Selector - Show only if multiple servers */}
       {serverData.length > 1 && (
         <div className="w-full">
@@ -105,7 +109,7 @@ export default function Episode({ serverData, onSelectEpisode }: EpisodeProps) {
         <h4 className="text-white text-sm font-medium mb-2 px-2">
           Danh sách tập phim
         </h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 max-h-[400px] overflow-y-auto p-2 bg-gray-900/50 rounded-lg scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+        <div className="flex flex-wrap gap-2 max-h-[400px] overflow-y-scroll p-2 bg-gray-900/50 rounded-lg scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
           {currentServer?.server_data?.map((episode, index) => {
             const isActive = activeEpisodeLink === episode.link_m3u8;
             return (
@@ -123,11 +127,6 @@ export default function Episode({ serverData, onSelectEpisode }: EpisodeProps) {
                 aria-pressed={isActive}
               >
                 <span className="font-semibold text-sm">{episode.name}</span>
-                {episode.filename && (
-                  <span className="text-xs opacity-80 mt-1 line-clamp-1">
-                    {episode.filename}
-                  </span>
-                )}
               </Button>
             );
           })}

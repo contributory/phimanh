@@ -2,11 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 @layer base {
   :root {
-
     --background: 0 0% 100%;
 
     --foreground: 20 14.3% 4.1%;
@@ -55,10 +52,9 @@
 
     --chart-5: 27 87% 67%;
 
-    --radius: 0.5rem
+    --radius: 0.5rem;
   }
   .dark {
-
     --background: 20 14.3% 4.1%;
 
     --foreground: 60 9.1% 97.8%;
@@ -105,11 +101,9 @@
 
     --chart-4: 280 65% 60%;
 
-    --chart-5: 340 75% 55%
+    --chart-5: 340 75% 55%;
   }
 }
-
-
 
 @layer base {
   * {
@@ -151,7 +145,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px);
   }
   50% {
@@ -160,7 +155,8 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
   }
@@ -237,7 +233,7 @@
   .video-js .vjs-control-bar {
     font-size: 120%;
   }
-  
+
   .video-js .vjs-big-play-button {
     font-size: 2.5em;
   }
@@ -260,4 +256,11 @@
 .scrollbar-thin {
   scrollbar-width: thin;
   scrollbar-color: rgb(75, 85, 99) rgb(31, 41, 55);
+}
+
+.video-container {
+  transition: opacity 0.3s ease;
+}
+.video-container.exiting {
+  opacity: 0;
 }
