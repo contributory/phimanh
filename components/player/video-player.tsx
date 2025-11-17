@@ -28,7 +28,7 @@ const VideoPlayer = ({
     setError(null);
     setIsLoading(true);
 
-    console.log('Setting src:', videoUrl);
+    console.log("Setting src:", videoUrl);
 
     if (Hls.isSupported()) {
       const hls = new Hls();
@@ -38,7 +38,7 @@ const VideoPlayer = ({
       hls.attachMedia(video);
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        console.log('HLS manifest parsed');
+        console.log("HLS manifest parsed");
         setIsLoading(false);
         if (autoplay) {
           video.play().catch((err) => {
@@ -48,7 +48,7 @@ const VideoPlayer = ({
       });
 
       hls.on(Hls.Events.ERROR, (event, data) => {
-        console.log('HLS error:', data);
+        console.log("HLS error:", data);
         if (data.fatal) {
           setError(data.details || "An error occurred while loading the video");
           setIsLoading(false);
@@ -56,20 +56,34 @@ const VideoPlayer = ({
         }
       });
 
-      video.addEventListener('loadstart', () => { console.log('loadstart'); setIsLoading(true); });
-      video.addEventListener('canplay', () => { console.log('canplay'); setIsLoading(false); });
-      video.addEventListener('waiting', () => { console.log('waiting'); setIsLoading(true); });
-      video.addEventListener('playing', () => {
-        console.log('playing');
-        console.log('Video element readyState:', video.readyState);
-        console.log('Video currentTime:', video.currentTime);
-        console.log('Video videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight);
+      video.addEventListener("loadstart", () => {
+        console.log("loadstart");
+        setIsLoading(true);
+      });
+      video.addEventListener("canplay", () => {
+        console.log("canplay");
         setIsLoading(false);
       });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.addEventListener("waiting", () => {
+        console.log("waiting");
+        setIsLoading(true);
+      });
+      video.addEventListener("playing", () => {
+        console.log("playing");
+        console.log("Video element readyState:", video.readyState);
+        console.log("Video currentTime:", video.currentTime);
+        console.log(
+          "Video videoWidth:",
+          video.videoWidth,
+          "videoHeight:",
+          video.videoHeight
+        );
+        setIsLoading(false);
+      });
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       // Native HLS support
       video.src = videoUrl;
-      video.addEventListener('loadedmetadata', () => {
+      video.addEventListener("loadedmetadata", () => {
         setIsLoading(false);
         if (autoplay) {
           video.play().catch((err) => {
@@ -77,18 +91,32 @@ const VideoPlayer = ({
           });
         }
       });
-      video.addEventListener('loadstart', () => { console.log('loadstart'); setIsLoading(true); });
-      video.addEventListener('canplay', () => { console.log('canplay'); setIsLoading(false); });
-      video.addEventListener('waiting', () => { console.log('waiting'); setIsLoading(true); });
-      video.addEventListener('playing', () => {
-        console.log('playing');
-        console.log('Video element readyState:', video.readyState);
-        console.log('Video currentTime:', video.currentTime);
-        console.log('Video videoWidth:', video.videoWidth, 'videoHeight:', video.videoHeight);
+      video.addEventListener("loadstart", () => {
+        console.log("loadstart");
+        setIsLoading(true);
+      });
+      video.addEventListener("canplay", () => {
+        console.log("canplay");
         setIsLoading(false);
       });
-      video.addEventListener('error', (e) => {
-        console.log('Video error:', e);
+      video.addEventListener("waiting", () => {
+        console.log("waiting");
+        setIsLoading(true);
+      });
+      video.addEventListener("playing", () => {
+        console.log("playing");
+        console.log("Video element readyState:", video.readyState);
+        console.log("Video currentTime:", video.currentTime);
+        console.log(
+          "Video videoWidth:",
+          video.videoWidth,
+          "videoHeight:",
+          video.videoHeight
+        );
+        setIsLoading(false);
+      });
+      video.addEventListener("error", (e) => {
+        console.log("Video error:", e);
         setError("An error occurred while loading the video");
         setIsLoading(false);
         onError?.(e);
@@ -107,14 +135,14 @@ const VideoPlayer = ({
   }, [videoUrl, autoplay, onError]);
 
   return (
-    <div className="relative w-full bg-black rounded-lg shadow-2xl" style={{ minHeight: '200px' }}>
+    <div className="relative bg-black rounded-lg shadow-2xl">
       <video
         ref={videoRef}
         controls
         poster={poster}
         playsInline
-        className="w-full h-auto"
-        style={{ display: 'block' }}
+        className="w-80% h-auto"
+        style={{ display: "block" }}
       />
 
       {/* Loading Indicator */}

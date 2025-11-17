@@ -147,22 +147,21 @@ export default function Description({ movie, serverData }: any) {
                   Xem Trailer
                 </Button>
               )}
+              {showMovie && (
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="font-bold px-8 py-2 text-lg rounded-xl shadow-lg transition-all hover:bg-gray-700"
+                  onClick={() => setShowEpisodeSelector(true)}
+                >
+                  Mở Danh Sách Tập Phim
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
       </Card>
-      {showMovie && !showEpisodeSelector && (
-        <div className="right-0">
-          <Button
-            size="lg"
-            variant="secondary"
-            className="font-bold px-8 py-2 text-lg rounded-xl shadow-lg transition-all hover:bg-gray-700"
-            onClick={() => setShowEpisodeSelector(!showEpisodeSelector)}
-          >
-            Mở Danh Sách Tập Phim
-          </Button>
-        </div>
-      )}
+
       {/* Hero Video Section */}
       <div
         className={`w-full z-50 bg-gradient-to-b from-gray-900 to-gray-950 dark:from-black dark:to-gray-950 rounded-3xl shadow-2xl transition-all duration-500 ease-in-out ${
@@ -180,34 +179,34 @@ export default function Description({ movie, serverData }: any) {
                 poster={movie.thumb_url || movie.poster_url}
               />
             </div>
-            {/* Episode Selector Section */}
-            {showEpisodeSelector && (
-              <div className="fixed justify-center right-0 top-1/2 transform -translate-y-1/2 space-y-4 bg-gray-900/50 backdrop-blur-lg">
-                {/* Episode Selector */}
-                <div className="max-w-4xl mx-auto">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-white text-lg font-semibold mb-3 px-2">
-                      Chọn tập phim
-                    </h3>
-                    <button
-                      className="text-white text-lg font-semibold mb-3 px-2 rounded-full border-2 border-white hover:bg-white hover:text-gray-900 transition-colors duration-300"
-                      onClick={() => setShowEpisodeSelector(false)}
-                    >
-                      Đóng
-                    </button>
-                  </div>
-                  <Episode
-                    serverData={serverData}
-                    onSelectEpisode={(link: string) =>
-                      setCurrentEpisodeUrl(link)
-                    }
-                  />
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
+
+      {/* Episode Selector Section - Moved outside video container */}
+      {showMovie && showEpisodeSelector && (
+        <div className="fixed inset-0 z-[100] bg-gray-600/30 backdrop-blur-lg flex items-center justify-center">
+          <div className="max-w-4xl w-full h-80% overflow-y-auto mx-4">
+            <div className="relative flex items-center justify-between mb-4">
+              <h3 className="text-white text-xl font-bold">
+                Danh sách tập phim
+              </h3>
+              <button
+                className="text-white text-lg px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors duration-300"
+                onClick={() => setShowEpisodeSelector(false)}
+              >
+                Đóng
+              </button>
+            </div>
+            <Episode
+              serverData={serverData}
+              onSelectEpisode={(link: string) => {
+                setCurrentEpisodeUrl(link);
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Trailer Modal */}
       <Dialog open={showTrailer} onOpenChange={setShowTrailer}>
