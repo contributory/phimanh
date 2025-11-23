@@ -34,8 +34,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <main className="mx-auto max-w-screen-2xl px-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen">
       <Header
-        currentValue={undefined}
-        isCategory={undefined}
         topics={topics}
         categories={categories}
       />
