@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef, useMemo, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -53,10 +53,10 @@ const YEAR_OPTIONS = Array.from({ length: currentYear - 1970 + 1 }, (_, i) => ({
   label: String(currentYear - i),
 }));
 
-export default function FilterPanel({
+const FilterPanel = ({
   categories = [],
   countries = [],
-}: FilterPanelProps) {
+}: FilterPanelProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -74,12 +74,20 @@ export default function FilterPanel({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const YEAR_OPTIONS = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: currentYear - 1970 + 1 }, (_, i) => ({
+      value: String(currentYear - i),
+      label: String(currentYear - i),
+    }));
+  }, []);
+
   const handleFilterChange = (key: string, value: string) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
   const applyFilters = async () => {
-    setIsLoading(true);
+    setIsOpen(false);
     const params = new URLSearchParams();
     params.set("typeList", filters.typeList);
     params.set("sortField", filters.sortField);
@@ -89,17 +97,13 @@ export default function FilterPanel({
     if (filters.country) params.set("country", filters.country);
     if (filters.year) params.set("year", filters.year);
     params.set("limit", filters.limit);
-    
+
     await router.push(`/?${params.toString()}`);
-    setIsLoading(false);
-    setIsOpen(false);
   };
 
   const resetFilters = async () => {
-    setIsLoading(true);
-    await router.push("/");
-    setIsLoading(false);
     setIsOpen(false);
+    await router.push("/");
   };
 
   const hasActiveFilters = 
@@ -135,14 +139,21 @@ export default function FilterPanel({
             d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
           />
         </svg>
-        <span className="hidden md:inline md:ml-2">
-          Bộ Lọc Nâng Cao {hasActiveFilters && <span className="ml-1 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">Đang dùng</span>}
-        </span>
       </Button>
 
-      {isOpen && (
-        <div className="fixed left-4 right-4 top-20 z-50 max-h-[calc(100vh-120px)] overflow-y-auto p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 space-y-4 md:absolute md:left-0 md:right-auto md:top-full md:w-96 md:mt-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={`fixed left-4 right-4 top-20 z-50 max-h-[calc(100vh-120px)] overflow-y-auto p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 space-y-4 md:absolute md:left-0 md:right-auto md:top-full md:w-96 md:mt-2 ${isOpen ? 'block' : 'hidden'}`}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Bộ Lọc Nâng Cao</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsOpen(false)}
+            className="h-6 w-6 p-0"
+          >
+            ×
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Type List */}
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
@@ -316,8 +327,9 @@ export default function FilterPanel({
               {isLoading ? "Đang Tải..." : "Áp Dụng"}
             </Button>
           </div>
-        </div>
-      )}
+      </div>
     </div>
   );
-}
+};
+
+export default memo(FilterPanel);

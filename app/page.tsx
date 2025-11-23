@@ -2,7 +2,9 @@ import PhimApi from "@/libs/phimapi.com";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import TopicSection from "@/components/topic-section";
+import RecentlyWatched from "@/components/recently-watched";
 import MovieListClient from "@/components/movie/MovieListClient";
+import NewUpdatesSection from "@/components/new-updates-section";
 
 type HomeProps = {
   searchParams: Promise<{
@@ -63,9 +65,10 @@ export default async function Home({ searchParams }: HomeProps) {
   const topics = api.listTopics();
   const categories = await api.listCategories();
   const countries = await api.listCountries();
+  const newUpdates = await api.newAdding(1);
 
   // Check if filters or topic/category are being used
-  const hasFilters = Boolean(typeList || category || topic);
+  const hasFilters = Boolean(typeList || category || topic || params.country || params.year);
 
   // Fetch items for each topic if no filters are applied
   let topicsWithMovies = [];
@@ -94,6 +97,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <Header
         categories={categories}
         countries={countries}
+        topics={topics}
       />
       {hasFilters ? (
         <MovieListClient
@@ -103,6 +107,8 @@ export default async function Home({ searchParams }: HomeProps) {
         />
       ) : (
         <div className="py-8">
+          <NewUpdatesSection movies={newUpdates[0].slice(0,6)} />
+          <RecentlyWatched />
           {topicsWithMovies
             .filter((topicData: any) => topicData.movies && topicData.movies.length > 0)
             .map((topicData: any) => (

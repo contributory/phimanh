@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 interface EpisodeData {
@@ -19,32 +20,52 @@ interface ServerData {
 
 interface EpisodeProps {
   serverData: ServerData[];
-  onSelectEpisode: (link: string) => void;
+  onSelectEpisode: (
+    link: string,
+    serverIndex: number,
+    episodeIndex: number
+  ) => void;
+  thumb_url: string;
 }
 
-export default function Episode({ serverData, onSelectEpisode }: EpisodeProps) {
+export default function Episode({
+  serverData,
+  onSelectEpisode,
+  thumb_url,
+}: EpisodeProps) {
   const [activeServerIndex, setActiveServerIndex] = useState(0);
   const [activeEpisodeLink, setActiveEpisodeLink] = useState<string>("");
   const lastServerDataRef = useRef<string>("");
 
-  // Initialize with first available episode when serverData changes
+  // Initialize with first available episode when serverData changes, prioritizing "Thuyết Minh" server
   useEffect(() => {
     if (
       serverData &&
-      serverData.length > 0 &&
-      serverData[0]?.server_data?.length > 0
+      serverData.length > 0
     ) {
-      const firstEpisode = serverData[0].server_data[0];
-      if (firstEpisode?.link_m3u8) {
-        // Create a stable reference to detect serverData changes
-        const currentServerDataKey = `${serverData.length}-${firstEpisode.link_m3u8}`;
+      // Find server with "Thuyết Minh" in name
+      let defaultServerIndex = 0;
+      for (let i = 0; i < serverData.length; i++) {
+        if (serverData[i].server_name.toLowerCase().includes("thuyết minh")) {
+          defaultServerIndex = i;
+          break;
+        }
+      }
 
-        // Only initialize once per unique serverData
-        if (lastServerDataRef.current !== currentServerDataKey) {
-          setActiveServerIndex(0);
-          setActiveEpisodeLink(firstEpisode.link_m3u8);
-          onSelectEpisode(firstEpisode.link_m3u8);
-          lastServerDataRef.current = currentServerDataKey;
+      const defaultServer = serverData[defaultServerIndex];
+      if (defaultServer?.server_data?.length > 0) {
+        const firstEpisode = defaultServer.server_data[0];
+        if (firstEpisode?.link_m3u8) {
+          // Create a stable reference to detect serverData changes
+          const currentServerDataKey = `${serverData.length}-${firstEpisode.link_m3u8}`;
+
+          // Only initialize once per unique serverData
+          if (lastServerDataRef.current !== currentServerDataKey) {
+            setActiveServerIndex(defaultServerIndex);
+            setActiveEpisodeLink(firstEpisode.link_m3u8);
+            onSelectEpisode(firstEpisode.link_m3u8, defaultServerIndex, 0);
+            lastServerDataRef.current = currentServerDataKey;
+          }
         }
       }
     }
@@ -56,13 +77,17 @@ export default function Episode({ serverData, onSelectEpisode }: EpisodeProps) {
     const firstEpisode = serverData[index]?.server_data?.[0];
     if (firstEpisode?.link_m3u8) {
       setActiveEpisodeLink(firstEpisode.link_m3u8);
-      onSelectEpisode(firstEpisode.link_m3u8);
+      onSelectEpisode(firstEpisode.link_m3u8, index, 0);
     }
   };
 
-  const handleEpisodeChange = (link: string) => {
+  const handleEpisodeChange = (
+    link: string,
+    serverIndex: number,
+    episodeIndex: number
+  ) => {
     setActiveEpisodeLink(link);
-    onSelectEpisode(link);
+    onSelectEpisode(link, serverIndex, episodeIndex);
   };
 
   // Handle edge case: no server data
@@ -80,56 +105,58 @@ export default function Episode({ serverData, onSelectEpisode }: EpisodeProps) {
     <div>
       {/* Server Selector - Show only if multiple servers */}
       {serverData.length > 1 && (
-        <div className="w-full">
+        <div className="w-full mb-4">
           <h4 className="text-white text-sm font-medium mb-2 px-2">Server</h4>
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-            {serverData.map((server, index) => (
-              <Button
-                key={index}
-                onClick={() => handleServerChange(index)}
-                variant={activeServerIndex === index ? "default" : "outline"}
-                className={cn(
-                  "flex-shrink-0 min-w-[120px] transition-all",
-                  activeServerIndex === index
-                    ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
-                    : "bg-gray-800 hover:bg-gray-700 text-gray-200 border-gray-600"
-                )}
-                aria-label={`Chọn server ${server.server_name}`}
-                aria-pressed={activeServerIndex === index}
-              >
-                {server.server_name}
-              </Button>
-            ))}
-          </div>
+          <Select value={activeServerIndex.toString()} onValueChange={(value) => handleServerChange(parseInt(value))}>
+            <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white">
+              <SelectValue placeholder="Chọn server" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-600 text-white">
+              {serverData.map((server, index) => (
+                <SelectItem key={index} value={index.toString()} className="text-white">
+                  {server.server_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
 
-      {/* Episode Grid */}
+      {/* Episode List - Horizontal layout with thumbnail on left */}
       <div className="w-full">
         <h4 className="text-white text-sm font-medium mb-2 px-2">
-          Danh sách tập phim
+          Danh sách tập phim ({currentServer?.server_data?.length || 0} tập)
         </h4>
-        <div className="flex flex-wrap gap-2 max-h-[400px] overflow-y-scroll p-2 bg-gray-900/50 rounded-lg scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
-          {currentServer?.server_data?.map((episode, index) => {
+        <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 bg-gray-900/50 rounded-lg p-2">
+          {currentServer?.server_data?.length > 0 ? currentServer.server_data.map((episode, index) => {
             const isActive = activeEpisodeLink === episode.link_m3u8;
             return (
-              <Button
-                key={index}
-                onClick={() => handleEpisodeChange(episode.link_m3u8)}
-                variant={isActive ? "default" : "outline"}
+              <div
+                key={`${activeServerIndex}-${index}`}
+                onClick={() => handleEpisodeChange(episode.link_m3u8, activeServerIndex, index)}
                 className={cn(
-                  "h-auto py-3 px-4 flex flex-col items-start justify-center transition-all",
+                  "flex items-center p-2 rounded-lg cursor-pointer transition-all border mb-1",
                   isActive
-                    ? "bg-blue-600 hover:bg-blue-700 text-white border-blue-600 ring-2 ring-blue-400 ring-offset-2 ring-offset-gray-900"
-                    : "bg-gray-800 hover:bg-gray-700 text-gray-200 border-gray-600 hover:border-blue-500"
+                    ? "bg-green-700 text-white border-green-600 ring-1 ring-green-500"
+                    : "bg-gray-800 text-gray-200 border-gray-600 hover:border-gray-500 hover:bg-gray-700"
                 )}
                 aria-label={`Tập ${episode.name}`}
-                aria-pressed={isActive}
               >
-                <span className="font-semibold text-sm">{episode.name}</span>
-              </Button>
+                <img
+                  src={thumb_url}
+                  alt={episode.name}
+                  loading="lazy"
+                  className="w-10 h-10 object-cover rounded mr-3 flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm truncate">{episode.name}</div>
+                  <div className="text-xs text-gray-400 truncate">{episode.filename}</div>
+                </div>
+              </div>
             );
-          })}
+          }) : (
+            <div className="text-white text-center py-4">Không có tập phim nào trong server này</div>
+          )}
         </div>
       </div>
     </div>

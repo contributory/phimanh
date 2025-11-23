@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import GTM from "@/components/ui/GTM";
 import PageTransition from "@/components/ui/page-transition";
+import { LoadingProvider } from "@/components/ui/loading-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -64,9 +65,13 @@ export default function RootLayout({
           ></iframe>
         </noscript>
         {/* End Google Tag Manager (noscript) */}
-        <PageTransition>
-          {children}
-        </PageTransition>
+        <LoadingProvider>
+          <PageTransition>
+            {children}
+          </PageTransition>
+        </LoadingProvider>
+        {/* Global Sidebar */}
+        <div id="sidebar-root"></div>
       </body>
     </html>
   );

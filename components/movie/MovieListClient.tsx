@@ -26,7 +26,7 @@ export default function MovieListClient({
       setLoading(true);
 
       // Check if advanced filters are being used
-      const hasAdvancedFilters = searchParams.get("typeList") || searchParams.get("sortField") || searchParams.get("category");
+      const hasAdvancedFilters = searchParams.get("typeList") || searchParams.get("sortField") || searchParams.get("category") || searchParams.get("country") || searchParams.get("year");
 
       if (hasAdvancedFilters) {
         // Use advanced filter API
@@ -126,31 +126,20 @@ export default function MovieListClient({
     <>
       <div className="py-8">
         <div
-          className="grid gap-6 auto-rows-[280px]"
+          className="grid gap-2 sm:gap-4 md:gap-6 auto-rows-[225px] sm:auto-rows-[250px] md:auto-rows-[300px]"
           style={{
-            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
           }}
         >
-          {movies.map((movie: any, index: number) => {
-            const patterns = [
-              "row-span-1",
-              "row-span-1",
-              "row-span-2",
-              "row-span-1",
-              "row-span-1",
-              "row-span-1",
-            ];
-            const pattern = patterns[index % patterns.length];
-            return (
-              <div
-                key={movie.slug}
-                className={`${pattern} animate-float`}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <MovieMinimalCard movie={movie} />
-              </div>
-            );
-          })}
+          {movies.map((movie: any, index: number) => (
+            <div
+              key={movie.slug}
+              className="animate-float"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <MovieMinimalCard movie={movie} />
+            </div>
+          ))}
         </div>
       </div>
       <Pagination />

@@ -3,6 +3,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useLoading } from "./loading-context";
+
+declare global {
+  interface Window {
+    __globalLoading?: boolean;
+  }
+}
 
 interface PageTransitionProps {
   children: React.ReactNode;
@@ -21,6 +28,7 @@ export default function PageTransition({
 }: PageTransitionProps) {
   const pathname = usePathname();
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const { isLoading } = useLoading();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -37,24 +45,36 @@ export default function PageTransition({
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.__globalLoading = false;
+    }
+  }, [pathname]);
+
   if (prefersReducedMotion) {
-    return <div key={pathname}>{children}</div>;
+    return (
+      <div key={pathname}>
+        {children}
+      </div>
+    );
   }
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        initial={initial}
-        animate={animate}
-        exit={exit}
-        transition={{
-          duration,
-          ease: "easeInOut",
-        }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={pathname}
+          initial={initial}
+          animate={animate}
+          exit={exit}
+          transition={{
+            duration,
+            ease: "easeInOut",
+          }}
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
+    </>
   );
 }

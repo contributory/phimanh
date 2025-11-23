@@ -2,15 +2,22 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useLoading } from "@/components/ui/loading-context";
 
 export default function BackButton() {
   const router = useRouter();
+  const { showLoading, hideLoading } = useLoading();
 
   const handleBack = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push("/");
+    showLoading();
+    try {
+      if (typeof window !== "undefined" && window.history.length > 1) {
+        router.back();
+      } else {
+        router.push("/");
+      }
+    } finally {
+      hideLoading();
     }
   };
 

@@ -64,13 +64,13 @@ export default class PhimApi {
   }
 
   async getList(
-    isCategory: boolean | null,
-    slug: string,
+    isCategory: boolean | null | undefined,
+    slug: string | null | undefined,
     index: number = 1
   ): Promise<any> {
-    if (isCategory === true) {
+    if (isCategory === true && slug) {
       return this.byCategory(slug, index);
-    } else if (isCategory === false) {
+    } else if (isCategory === false && slug) {
       return this.byTopic(slug, index);
     } else {
       return this.newAdding(index);

@@ -144,15 +144,6 @@
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
 
 @keyframes pulse-glow {
   0%,
@@ -171,9 +162,6 @@
   animation: shimmer 2s linear infinite;
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
 
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Episode from "./episode";
 import VideoPlayer from "../player/video-player";
 import BackButton from "@/components/back-button";
@@ -11,47 +11,129 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 export default function Description({ movie, serverData }: any) {
   const [showTrailer, setShowTrailer] = useState(false);
-  const [showMovie, setShowMovie] = useState(false);
   const [currentEpisodeUrl, setCurrentEpisodeUrl] = useState("");
-  const [showEpisodeSelector, setShowEpisodeSelector] = useState(false);
+  const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState<{
+    server: number;
+    episode: number;
+  } | null>(null);
 
-  // Trong components/movie/description.tsx
-  const handleToggleMovie = () => {
-    if (showMovie) {
-      setTimeout(() => setShowMovie(false), 300);
-    } else {
-      setShowMovie(true);
+  // Save movie to recently watched
+  useEffect(() => {
+    const Cookies = require('js-cookie');
+    const recentlyWatched = JSON.parse(Cookies.get('recentlyWatched') || '[]');
+    const movieEntry = {
+      slug: movie.slug,
+      name: movie.name,
+      poster_url: movie.poster_url,
+      year: movie.year,
+      quality: movie.quality,
+      timestamp: Date.now(),
+    };
+    // Remove if already exists
+    const filtered = recentlyWatched.filter((m: any) => m.slug !== movie.slug);
+    filtered.unshift(movieEntry); // Add to front
+    // Keep only last 10
+    const updated = filtered.slice(0, 10);
+    Cookies.set('recentlyWatched', JSON.stringify(updated), { expires: 30 }); // Expires in 30 days
+  }, [movie.slug]);
+
+  // Auto-load last played episode or first episode on component mount
+  useEffect(() => {
+    const savedEpisode = localStorage.getItem(`lastEpisode_${movie.slug}`);
+    const savedIndex = localStorage.getItem(`lastEpisodeIndex_${movie.slug}`);
+    if (savedEpisode && savedIndex) {
+      setCurrentEpisodeUrl(savedEpisode);
+      setCurrentEpisodeIndex(JSON.parse(savedIndex));
+    } else if (
+      serverData &&
+      serverData.length > 0 &&
+      serverData[0]?.server_data?.length > 0
+    ) {
+      const firstEpisode = serverData[0].server_data[0];
+      if (firstEpisode?.link_m3u8) {
+        setCurrentEpisodeUrl(firstEpisode.link_m3u8);
+        setCurrentEpisodeIndex({ server: 0, episode: 0 });
+      }
     }
-  };
+  }, [serverData, movie.slug]);
+
+  // Save current episode to localStorage when it changes
+  useEffect(() => {
+    if (currentEpisodeUrl && currentEpisodeIndex) {
+      localStorage.setItem(`lastEpisode_${movie.slug}`, currentEpisodeUrl);
+      localStorage.setItem(
+        `lastEpisodeIndex_${movie.slug}`,
+        JSON.stringify(currentEpisodeIndex)
+      );
+    }
+  }, [currentEpisodeUrl, currentEpisodeIndex, movie.slug]);
 
   return (
-    <div className="w-full space-y-6">
-      <BackButton />
-      {/* Movie Information Card */}
-      <Card
-        className={`shadow-2xl rounded-3xl bg-white dark:bg-gray-950 border-none transition-all duration-500 ease-in-out ${
-          showMovie ? "transform scale-75 -translate-y-12 opacity-60" : ""
-        }`}
-      >
-        <CardContent className="flex flex-col md:flex-row gap-8 p-6">
-          {/* Poster & Overlay */}
-          <div className="relative flex-shrink-0 flex justify-center items-center w-full md:w-1/3">
-            <img
-              src={movie.poster_url}
-              alt={movie.name}
-              className="w-full max-w-xs h-[420px] object-cover rounded-2xl shadow-xl border-4 border-white dark:border-gray-900"
-            />
-            <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent rounded-b-2xl">
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2 drop-shadow-xl">
-                {movie.name}
-              </h1>
-              <div className="flex flex-wrap gap-2 text-xs md:text-sm">
+    <div className="w-full max-w-6xl mx-auto space-y-8">
+      {/* Video Player Section */}
+      <div className="w-full">
+        <div className="relative">
+          <VideoPlayer
+            videoUrl={currentEpisodeUrl}
+            autoplay={true}
+            poster={movie.thumb_url || movie.poster_url}
+            onEnded={() => {
+              if (!serverData || !currentEpisodeIndex) return;
+
+              const { server, episode } = currentEpisodeIndex;
+              const currentServer = serverData[server];
+              if (!currentServer) return;
+
+              let nextEpisodeIndex = episode + 1;
+              let nextServerIndex = server;
+
+              // If next episode doesn't exist in current server, go to next server
+              if (nextEpisodeIndex >= currentServer.server_data.length) {
+                nextServerIndex = server + 1;
+                nextEpisodeIndex = 0;
+                if (nextServerIndex >= serverData.length) return; // No more episodes
+              }
+
+              const nextServer = serverData[nextServerIndex];
+              if (
+                !nextServer ||
+                nextEpisodeIndex >= nextServer.server_data.length
+              )
+                return;
+
+              const nextEpisode = nextServer.server_data[nextEpisodeIndex];
+              if (nextEpisode?.link_m3u8) {
+                setCurrentEpisodeUrl(nextEpisode.link_m3u8);
+                setCurrentEpisodeIndex({
+                  server: nextServerIndex,
+                  episode: nextEpisodeIndex,
+                });
+              }
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Movie Information Section */}
+      <Card className="shadow-2xl rounded-3xl bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50">
+        <div className="p-6 items-center">
+          <details className="cursor-pointer">
+            <summary className="list-none">
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white mb-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline">
+                {movie.name}{" "}
                 <Badge
                   variant="default"
-                  className="bg-blue-600 text-white shadow"
+                  className="bg-blue-600 text-white shadow text-xs"
                 >
                   {movie.quality}
                 </Badge>
+              </h1>
+            </summary>
+            <div className="mt-4 space-y-4">
+              <h2 className="text-lg md:text-xl font-bold text-blue-700 dark:text-blue-400">
+                {movie.origin_name}
+              </h2>
+              <div className="flex flex-wrap gap-2 text-xs md:text-sm">
                 <Badge
                   variant="default"
                   className="bg-green-600 text-white shadow"
@@ -71,144 +153,98 @@ export default function Description({ movie, serverData }: any) {
                   {movie.year}
                 </Badge>
               </div>
-            </div>
-          </div>
 
-          {/* Info & Actions */}
-          <div className="flex-1 flex flex-col justify-between">
-            {/* Original Title */}
-            <h2 className="text-xl md:text-2xl font-bold text-blue-700 dark:text-blue-400 mt-6">
-              {movie.origin_name}
-            </h2>
+              {/* Movie Details Dropdown */}
+              <details className="mt-4 cursor-pointer">
+                <summary className="font-semibold text-gray-900 dark:text-white text-base mb-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  Chi tiết phim
+                </summary>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        Đạo diễn:
+                      </p>
+                      <p className="mt-1">{movie.director.join(", ")}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        Diễn viên:
+                      </p>
+                      <p className="mt-1">{movie.actor.join(", ")}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        Thể loại:
+                      </p>
+                      <p className="mt-1">
+                        {movie.category
+                          .map((cat: { name: string }) => cat.name)
+                          .join(", ")}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">
+                        Quốc gia:
+                      </p>
+                      <p className="mt-1">
+                        {movie.country
+                          .map((c: { name: string }) => c.name)
+                          .join(", ")}
+                      </p>
+                    </div>
+                  </div>
 
-            {/* Movie Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-base text-gray-700 dark:text-gray-300 mt-4">
-              <div>
-                <p className="font-semibold text-gray-900 dark:text-white">
-                  Đạo diễn:
-                </p>
-                <p className="mt-1">{movie.director.join(", ")}</p>
+                  {/* Content Section */}
+                  <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-5 shadow-lg">
+                    <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">
+                      Nội dung phim
+                    </h3>
+                    <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
+                      {movie.content}
+                    </p>
+                  </div>
+                </div>
+              </details>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-4 py-2 justify-center md:justify-start">
+                {movie.trailer_url && (
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="font-bold px-8 py-2 text-lg rounded-xl shadow-lg transition-all hover:bg-gray-700"
+                    onClick={() => setShowTrailer(true)}
+                  >
+                    Xem Trailer
+                  </Button>
+                )}
               </div>
-              <div>
-                <p className="font-semibold text-gray-900 dark:text-white">
-                  Diễn viên:
-                </p>
-                <p className="mt-1">{movie.actor.join(", ")}</p>
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900 dark:text-white">
-                  Thể loại:
-                </p>
-                <p className="mt-1">
-                  {movie.category
-                    .map((cat: { name: string }) => cat.name)
-                    .join(", ")}
-                </p>
-              </div>
-              <div>
-                <p className="font-semibold text-gray-900 dark:text-white">
-                  Quốc gia:
-                </p>
-                <p className="mt-1">
-                  {movie.country
-                    .map((c: { name: string }) => c.name)
-                    .join(", ")}
-                </p>
-              </div>
             </div>
-
-            {/* Content Section - Hidden when video is open */}
-            {!showMovie && (
-              <div className="mt-6 bg-gray-100 dark:bg-gray-800 rounded-xl p-5 shadow-lg">
-                <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">
-                  Nội dung phim
-                </h3>
-                <p className="text-gray-800 dark:text-gray-200 leading-relaxed">
-                  {movie.content}
-                </p>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-4 py-2 justify-center md:justify-start">
-              <Button
-                size="lg"
-                variant="default"
-                className="font-bold px-8 py-2 text-lg rounded-xl shadow-lg transition-all hover:bg-red-700 bg-yellow-600"
-                onClick={() => handleToggleMovie()}
-              >
-                {showMovie ? "Đóng" : "Xem Phim"}
-              </Button>
-              {movie.trailer_url && (
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="font-bold px-8 py-2 text-lg rounded-xl shadow-lg transition-all hover:bg-gray-700"
-                  onClick={() => setShowTrailer(true)}
-                >
-                  Xem Trailer
-                </Button>
-              )}
-              {showMovie && (
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="font-bold px-8 py-2 text-lg rounded-xl shadow-lg transition-all hover:bg-gray-700"
-                  onClick={() => setShowEpisodeSelector(true)}
-                >
-                  Mở Danh Sách Tập Phim
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Hero Video Section */}
-      <div
-        className={`w-full z-50 bg-gradient-to-b from-gray-900 to-gray-950 dark:from-black dark:to-gray-950 rounded-3xl shadow-2xl transition-all duration-500 ease-in-out ${
-          showMovie
-            ? "opacity-100 max-h-screen animate-in slide-in-from-bottom-4"
-            : "opacity-0 max-h-0 overflow-hidden"
-        }`}
-      >
-        {showMovie && (
-          <div className="relative">
-            <div className="relative w-80% h-80%">
-              <VideoPlayer
-                videoUrl={currentEpisodeUrl}
-                autoplay={true}
-                poster={movie.thumb_url || movie.poster_url}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Episode Selector Section - Moved outside video container */}
-      {showMovie && showEpisodeSelector && (
-        <div className="fixed inset-0 z-[100] bg-gray-600/30 backdrop-blur-lg flex items-center justify-center">
-          <div className="max-w-4xl w-full h-80% overflow-y-auto mx-4">
-            <div className="relative flex items-center justify-between mb-4">
-              <h3 className="text-white text-xl font-bold">
-                Danh sách tập phim
-              </h3>
-              <button
-                className="text-white text-lg px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors duration-300"
-                onClick={() => setShowEpisodeSelector(false)}
-              >
-                Đóng
-              </button>
-            </div>
-            <Episode
-              serverData={serverData}
-              onSelectEpisode={(link: string) => {
-                setCurrentEpisodeUrl(link);
-              }}
-            />
-          </div>
+          </details>
         </div>
-      )}
+
+        {/* Episode Selector Section - Always Visible */}
+        <div className="p-6 lg:w-1/2 lg:mx-auto">
+          <Episode
+            serverData={serverData}
+            onSelectEpisode={(
+              link: string,
+              serverIndex?: number,
+              episodeIndex?: number
+            ) => {
+              setCurrentEpisodeUrl(link);
+              if (serverIndex !== undefined && episodeIndex !== undefined) {
+                setCurrentEpisodeIndex({
+                  server: serverIndex,
+                  episode: episodeIndex,
+                });
+              }
+            }}
+            thumb_url={movie.thumb_url}
+          />
+        </div>
+      </Card>
 
       {/* Trailer Modal */}
       <Dialog open={showTrailer} onOpenChange={setShowTrailer}>

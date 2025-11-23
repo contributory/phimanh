@@ -20,7 +20,6 @@ export default function TopicSection({ topic, movies }: TopicSectionProps) {
           href={`/?topic=${topic.slug}`}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 dark:text-blue-400 dark:border-blue-400 font-semibold transition-colors"
         >
-          Xem Tất Cả
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -39,16 +38,11 @@ export default function TopicSection({ topic, movies }: TopicSectionProps) {
       </div>
 
       {movies.length > 0 ? (
-        <div
-          className="grid gap-6 auto-rows-[280px]"
-          style={{
-            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-          }}
-        >
+        <div className="flex overflow-x-auto gap-4 pb-4 md:grid md:gap-6 md:auto-rows-[280px] md:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] md:overflow-visible">
           {movies.map((movie: any, index: number) => (
             <div
               key={movie.slug}
-              className="animate-float"
+              className="flex-shrink-0 w-44 md:w-auto"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <MovieMinimalCard movie={movie} />

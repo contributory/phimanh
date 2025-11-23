@@ -27,13 +27,27 @@ export default async function WatchPage({ searchParams }: any) {
   ]);
 
   return (
-    <main className="mx-auto max-w-screen-2xl px-4">
-      <Header
-        categories={categories}
-        countries={countries}
-      />
-      <Description movie={movie} serverData={server} />
-      <Footer />
-    </main>
+    <div className="dark">
+      <main className="min-h-screen relative">
+        <div
+          className="fixed inset-0 z-0"
+          style={{
+            backgroundImage: `url(${movie.poster_url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+
+        <div className="relative z-10 mx-auto max-w-screen-2xl px-4">
+          <Header
+            categories={categories}
+            countries={countries}
+          />
+          <Description movie={movie} serverData={server} slug={slug} thumb_url={movie.thumb_url} />
+          <Footer />
+        </div>
+      </main>
+    </div>
   );
 }
