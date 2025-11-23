@@ -18,7 +18,7 @@ interface FilterPanelProps {
 }
 
 const TYPE_LIST_OPTIONS = [
-  { value: "", label: "Tất Cả" },
+  { value: "all", label: "Tất Cả" },
   { value: "phim-bo", label: "Phim Bộ" },
   { value: "phim-le", label: "Phim Lẻ" },
   { value: "tv-shows", label: "TV Shows" },
@@ -40,7 +40,7 @@ const SORT_TYPE_OPTIONS = [
 ];
 
 const SORT_LANG_OPTIONS = [
-  { value: "", label: "Tất Cả" },
+  { value: "all", label: "Tất Cả" },
   { value: "vietsub", label: "Vietsub" },
   { value: "thuyet-minh", label: "Thuyết Minh" },
   { value: "long-tieng", label: "Lồng Tiếng" },

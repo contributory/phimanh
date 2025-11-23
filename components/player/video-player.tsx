@@ -67,6 +67,10 @@ const VideoPlayer = ({
       });
 
       hls.on(HLS.Events.ERROR, (event, data) => {
+        if (!data || Object.keys(data).length === 0) {
+          console.warn("HLS Error event triggered with no data");
+          return;
+        }
         console.error("HLS Error:", event, data);
         if (data?.fatal) {
           switch (data.type) {
