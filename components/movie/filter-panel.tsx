@@ -18,6 +18,7 @@ interface FilterPanelProps {
 }
 
 const TYPE_LIST_OPTIONS = [
+  { value: "", label: "Tất Cả" },
   { value: "phim-bo", label: "Phim Bộ" },
   { value: "phim-le", label: "Phim Lẻ" },
   { value: "tv-shows", label: "TV Shows" },
@@ -34,19 +35,20 @@ const SORT_FIELD_OPTIONS = [
 ];
 
 const SORT_TYPE_OPTIONS = [
-  { value: "desc", label: "Gi��m dần" },
+  { value: "desc", label: "Giảm dần" },
   { value: "asc", label: "Tăng dần" },
 ];
 
 const SORT_LANG_OPTIONS = [
+  { value: "", label: "Tất Cả" },
   { value: "vietsub", label: "Vietsub" },
   { value: "thuyet-minh", label: "Thuyết Minh" },
   { value: "long-tieng", label: "Lồng Tiếng" },
 ];
 
 const LIMIT_OPTIONS = [
-  { value: "20", label: "20" },
   { value: "10", label: "10" },
+  { value: "20", label: "20" },
   { value: "30", label: "30" },
   { value: "40", label: "40" },
   { value: "50", label: "50" },
@@ -64,14 +66,14 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
   const searchParams = useSearchParams();
 
   const [filters, setFilters] = useState({
-    typeList: searchParams.get("typeList") || "phim-bo",
+    typeList: searchParams.get("typeList") || "",
     sortField: searchParams.get("sortField") || "modified.time",
-    sortType: searchParams.get("sortType") || "desc",
-    sortLang: searchParams.get("sortLang") || "vietsub",
+    sortType: searchParams.get("sortType") || "",
+    sortLang: searchParams.get("sortLang") || "",
     category: searchParams.get("category") || "",
     country: searchParams.get("country") || "",
     year: searchParams.get("year") || "",
-    limit: searchParams.get("limit") || "10",
+    limit: searchParams.get("limit") || "20",
   });
 
   const [isOpen, setIsOpen] = useState(false);
