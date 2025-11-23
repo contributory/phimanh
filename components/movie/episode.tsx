@@ -20,65 +20,32 @@ interface ServerData {
 
 interface EpisodeProps {
   serverData: ServerData[];
+  currentServerIndex: number;
+  currentEpisodeIndex: number;
   onSelectEpisode: (
     link: string,
     serverIndex: number,
     episodeIndex: number
   ) => void;
+  onServerChange: (serverIndex: number) => void;
   thumb_url: string;
 }
 
 export default function Episode({
   serverData,
+  currentServerIndex,
+  currentEpisodeIndex,
   onSelectEpisode,
+  onServerChange,
   thumb_url,
 }: EpisodeProps) {
-  const [activeServerIndex, setActiveServerIndex] = useState(0);
-  const [activeEpisodeLink, setActiveEpisodeLink] = useState<string>("");
-  const lastServerDataRef = useRef<string>("");
-
-  // Initialize with first available episode when serverData changes, prioritizing "Thuyết Minh" server
-  useEffect(() => {
-    if (
-      serverData &&
-      serverData.length > 0
-    ) {
-      // Find server with "Thuyết Minh" in name
-      let defaultServerIndex = 0;
-      for (let i = 0; i < serverData.length; i++) {
-        if (serverData[i].server_name.toLowerCase().includes("thuyết minh")) {
-          defaultServerIndex = i;
-          break;
-        }
-      }
-
-      const defaultServer = serverData[defaultServerIndex];
-      if (defaultServer?.server_data?.length > 0) {
-        const firstEpisode = defaultServer.server_data[0];
-        if (firstEpisode?.link_m3u8) {
-          // Create a stable reference to detect serverData changes
-          const currentServerDataKey = `${serverData.length}-${firstEpisode.link_m3u8}`;
-
-          // Only initialize once per unique serverData
-          if (lastServerDataRef.current !== currentServerDataKey) {
-            setActiveServerIndex(defaultServerIndex);
-            setActiveEpisodeLink(firstEpisode.link_m3u8);
-            onSelectEpisode(firstEpisode.link_m3u8, defaultServerIndex, 0);
-            lastServerDataRef.current = currentServerDataKey;
-          }
-        }
-      }
-    }
-  }, [serverData, onSelectEpisode]);
-
   const handleServerChange = (index: number) => {
-    setActiveServerIndex(index);
     // Auto-select first episode of the new server
     const firstEpisode = serverData[index]?.server_data?.[0];
     if (firstEpisode?.link_m3u8) {
-      setActiveEpisodeLink(firstEpisode.link_m3u8);
       onSelectEpisode(firstEpisode.link_m3u8, index, 0);
     }
+    onServerChange(index);
   };
 
   const handleEpisodeChange = (
@@ -86,7 +53,6 @@ export default function Episode({
     serverIndex: number,
     episodeIndex: number
   ) => {
-    setActiveEpisodeLink(link);
     onSelectEpisode(link, serverIndex, episodeIndex);
   };
 
@@ -99,7 +65,7 @@ export default function Episode({
     );
   }
 
-  const currentServer = serverData[activeServerIndex];
+  const currentServer = serverData[currentServerIndex];
 
   return (
     <div>
@@ -107,7 +73,7 @@ export default function Episode({
       {serverData.length > 1 && (
         <div className="w-full mb-4">
           <h4 className="text-white text-sm font-medium mb-2 px-2">Server</h4>
-          <Select value={activeServerIndex.toString()} onValueChange={(value) => handleServerChange(parseInt(value))}>
+          <Select value={currentServerIndex.toString()} onValueChange={(value) => handleServerChange(parseInt(value))}>
             <SelectTrigger className="w-full bg-gray-800 border-gray-600 text-white">
               <SelectValue placeholder="Chọn server" />
             </SelectTrigger>
@@ -129,11 +95,11 @@ export default function Episode({
         </h4>
         <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800 bg-gray-900/50 rounded-lg p-2">
           {currentServer?.server_data?.length > 0 ? currentServer.server_data.map((episode, index) => {
-            const isActive = activeEpisodeLink === episode.link_m3u8;
+            const isActive = index === currentEpisodeIndex;
             return (
               <div
-                key={`${activeServerIndex}-${index}`}
-                onClick={() => handleEpisodeChange(episode.link_m3u8, activeServerIndex, index)}
+                key={`${currentServerIndex}-${index}`}
+                onClick={() => handleEpisodeChange(episode.link_m3u8, currentServerIndex, index)}
                 className={cn(
                   "flex items-center p-2 rounded-lg cursor-pointer transition-all border mb-1",
                   isActive

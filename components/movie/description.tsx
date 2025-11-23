@@ -17,6 +17,25 @@ export default function Description({ movie, serverData }: any) {
     episode: number;
   } | null>(null);
 
+  const handleServerChange = (serverIndex: number) => {
+    setCurrentEpisodeIndex({ server: serverIndex, episode: 0 });
+    if (serverData && serverData[serverIndex]?.server_data?.length > 0) {
+      const firstEpisode = serverData[serverIndex].server_data[0];
+      if (firstEpisode?.link_m3u8) {
+        setCurrentEpisodeUrl(firstEpisode.link_m3u8);
+      }
+    }
+  };
+
+  const handleSelectEpisode = (
+    link: string,
+    serverIndex: number,
+    episodeIndex: number
+  ) => {
+    setCurrentEpisodeUrl(link);
+    setCurrentEpisodeIndex({ server: serverIndex, episode: episodeIndex });
+  };
+
   // Save movie to recently watched
   useEffect(() => {
     const Cookies = require('js-cookie');
@@ -37,22 +56,30 @@ export default function Description({ movie, serverData }: any) {
     Cookies.set('recentlyWatched', JSON.stringify(updated), { expires: 30 }); // Expires in 30 days
   }, [movie.slug]);
 
-  // Auto-load last played episode or first episode on component mount
+  // Auto-load last played episode or first episode on component mount, prioritizing "Thuyết Minh" server
   useEffect(() => {
     const savedEpisode = localStorage.getItem(`lastEpisode_${movie.slug}`);
     const savedIndex = localStorage.getItem(`lastEpisodeIndex_${movie.slug}`);
     if (savedEpisode && savedIndex) {
       setCurrentEpisodeUrl(savedEpisode);
       setCurrentEpisodeIndex(JSON.parse(savedIndex));
-    } else if (
-      serverData &&
-      serverData.length > 0 &&
-      serverData[0]?.server_data?.length > 0
-    ) {
-      const firstEpisode = serverData[0].server_data[0];
-      if (firstEpisode?.link_m3u8) {
-        setCurrentEpisodeUrl(firstEpisode.link_m3u8);
-        setCurrentEpisodeIndex({ server: 0, episode: 0 });
+    } else if (serverData && serverData.length > 0) {
+      // Find server with "Thuyết Minh" in name
+      let defaultServerIndex = 0;
+      for (let i = 0; i < serverData.length; i++) {
+        if (serverData[i].server_name.toLowerCase().includes("thuyết minh")) {
+          defaultServerIndex = i;
+          break;
+        }
+      }
+
+      const defaultServer = serverData[defaultServerIndex];
+      if (defaultServer?.server_data?.length > 0) {
+        const firstEpisode = defaultServer.server_data[0];
+        if (firstEpisode?.link_m3u8) {
+          setCurrentEpisodeUrl(firstEpisode.link_m3u8);
+          setCurrentEpisodeIndex({ server: defaultServerIndex, episode: 0 });
+        }
       }
     }
   }, [serverData, movie.slug]);
@@ -228,19 +255,10 @@ export default function Description({ movie, serverData }: any) {
         <div className="p-6 lg:w-1/2 lg:mx-auto">
           <Episode
             serverData={serverData}
-            onSelectEpisode={(
-              link: string,
-              serverIndex?: number,
-              episodeIndex?: number
-            ) => {
-              setCurrentEpisodeUrl(link);
-              if (serverIndex !== undefined && episodeIndex !== undefined) {
-                setCurrentEpisodeIndex({
-                  server: serverIndex,
-                  episode: episodeIndex,
-                });
-              }
-            }}
+            currentServerIndex={currentEpisodeIndex?.server || 0}
+            currentEpisodeIndex={currentEpisodeIndex?.episode || 0}
+            onSelectEpisode={handleSelectEpisode}
+            onServerChange={handleServerChange}
             thumb_url={movie.thumb_url}
           />
         </div>
