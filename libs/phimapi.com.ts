@@ -78,7 +78,7 @@ export default class PhimApi {
   }
 
   async newAdding(index: number = 1): Promise<any> {
-    const url = `${this.apiUrl}/danh-sach/phim-moi-cap-nhat?page=${index}`;
+    const url = `${this.apiUrl}/danh-sach/phim-moi-cap-nhat-v2?page=${index}&limit=20`;
     const response = await fetch(url, {
       headers: {
         Referer: "https://phimanh.netlify.app",
@@ -91,7 +91,7 @@ export default class PhimApi {
   }
 
   async search(query: string, index: number = 1): Promise<any> {
-    const url = `${this.apiUrl}/v1/api/tim-kiem?keyword=${query}&limit=10&page=${index}`;
+    const url = `${this.apiUrl}/v1/api/tim-kiem?keyword=${query}&limit=20&page=${index}`;
     const response = await fetch(url, {
       headers: {
         Referer: "https://phimanh.netlify.app",
@@ -104,7 +104,7 @@ export default class PhimApi {
   }
 
   async byCategory(slug: string, index: number = 1): Promise<any> {
-    const url = `${this.apiUrl}/v1/api/the-loai/${slug}?page=${index}`;
+    const url = `${this.apiUrl}/v1/api/the-loai/${slug}?page=${index}&limit=20`;
     const response = await fetch(url, {
       headers: {
         Referer: "https://phimanh.netlify.app",
@@ -117,7 +117,7 @@ export default class PhimApi {
   }
 
   async byTopic(slug: string, index: number = 1): Promise<any> {
-    const url = `${this.apiUrl}/v1/api/danh-sach/${slug}?page=${index}`;
+    const url = `${this.apiUrl}/v1/api/danh-sach/${slug}?page=${index}&limit=20`;
     const response = await fetch(url, {
       headers: {
         Referer: "https://phimanh.netlify.app",
@@ -130,7 +130,7 @@ export default class PhimApi {
   }
 
   async getTopicItems(slug: string, limit: number = 6): Promise<any[]> {
-    const url = `${this.apiUrl}/v1/api/danh-sach/${slug}?page=1`;
+    const url = `${this.apiUrl}/v1/api/danh-sach/${slug}?page=1&limit=${limit}`;
     const response = await fetch(url, {
       headers: {
         Referer: "https://phimanh.netlify.app",
