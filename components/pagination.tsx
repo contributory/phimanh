@@ -33,22 +33,44 @@ export default function PaginationComponent() {
     const index = Number(searchParams.get("index")) || 1;
     const category = searchParams.get("category");
     const topic = searchParams.get("topic");
-    
-    // Build URL based on category/topic
+    const typeList = searchParams.get("typeList");
+    const sortField = searchParams.get("sortField");
+    const sortType = searchParams.get("sortType");
+    const sortLang = searchParams.get("sortLang");
+    const country = searchParams.get("country");
+    const year = searchParams.get("year");
+    const limit = searchParams.get("limit");
+
+    // Check if advanced filters are being used
+    const hasAdvancedFilters = typeList || sortField || (category && typeList);
+
     let url: string;
-    if (category) {
+    if (hasAdvancedFilters) {
+      // Use advanced filter API
+      const type = typeList || "phim-bo";
+      const field = sortField || "modified.time";
+      const type_sort = sortType || "desc";
+      const lang = sortLang || "vietsub";
+      const lim = limit || "10";
+
+      url = `https://phimapi.com/v1/api/danh-sach/${type}?page=${index}&sort_field=${field}&sort_type=${type_sort}&limit=${lim}`;
+      if (lang) url += `&sort_lang=${lang}`;
+      if (category) url += `&category=${category}`;
+      if (country) url += `&country=${country}`;
+      if (year) url += `&year=${year}`;
+    } else if (category) {
       url = `https://phimapi.com/v1/api/the-loai/${category}?page=${index}`;
     } else if (topic) {
       url = `https://phimapi.com/v1/api/danh-sach/${topic}?page=${index}`;
     } else {
       url = `https://phimapi.com/danh-sach/phim-moi-cap-nhat?page=${index}`;
     }
-    
+
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
         // Handle different response structures
-        if (category || topic) {
+        if (hasAdvancedFilters || category || topic) {
           setPageInfo(data.data.params.pagination);
         } else {
           setPageInfo(data.pagination);

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Episode from "./episode";
 import VideoPlayer from "../player/video-player";
+import BackButton from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ export default function Description({ movie, serverData }: any) {
 
   return (
     <div className="w-full space-y-6">
+      <BackButton />
       {/* Movie Information Card */}
       <Card
         className={`shadow-2xl rounded-3xl bg-white dark:bg-gray-950 border-none transition-all duration-500 ease-in-out ${

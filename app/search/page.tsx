@@ -55,7 +55,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               className="animate-float"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <MovieMinimalCard movie={movie} setLoading={(l) => l} />
+              <MovieMinimalCard movie={movie} />
             </div>
           ))}
         </div>

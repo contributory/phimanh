@@ -5,26 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface MovieMinimalProps {
   movie: any;
-  setLoading: (loading: boolean) => void;
 }
 
-export default function MovieMinimalCard({
-  movie,
-  setLoading,
-}: MovieMinimalProps) {
+export default function MovieMinimalCard({ movie }: MovieMinimalProps) {
   return (
-    <Link
-      onClick={() => setLoading(true)}
-      href={`/watch?slug=${movie.slug}`}
-      className="block h-full"
-    >
+    <Link href={`/watch?slug=${movie.slug}`} className="block h-full">
       <Card className="group relative h-full overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border-2 border-transparent hover:border-blue-500/50">
         <div className="relative aspect-[2/3] w-full overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
           <img
-            src={movie.poster_url}
-            onError={(e) =>
-              (e.currentTarget.src = `https://phimimg.com/${movie.poster_url}`)
+            src={
+              movie.poster_url.startsWith("http")
+                ? movie.poster_url
+                : `https://phimimg.com/${movie.poster_url}`
             }
             alt={movie.name}
             loading="lazy"

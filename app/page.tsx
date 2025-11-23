@@ -1,24 +1,39 @@
 import PhimApi from "@/libs/phimapi.com";
-import MovieMinimalCard from "@/components/movie/movie-minimal";
 import Header from "@/components/header";
-import Pagination from "@/components/pagination";
 import Footer from "@/components/footer";
+import TopicSection from "@/components/topic-section";
+import MovieListClient from "@/components/movie/MovieListClient";
 
 type HomeProps = {
   searchParams: Promise<{
-    index: number | 1;
-    category: string | undefined;
-    topic: string | undefined;
+    index?: string | number;
+    category?: string;
+    topic?: string;
+    typeList?: string;
+    sortField?: string;
+    sortType?: string;
+    sortLang?: string;
+    country?: string;
+    year?: string;
+    limit?: string;
   }>;
 };
 export async function generateMetadata({ searchParams }: HomeProps) {
-  const { index, category, topic } = await searchParams;
+  const params = await searchParams;
+  const index = Number(params.index) || 1;
+  const category = params.category;
+  const topic = params.topic;
+  const typeList = params.typeList;
+
   const api = new PhimApi();
   const topics = api.listTopics();
   const categories = await api.listCategories();
   let postTitle;
 
-  if (category) {
+  if (typeList) {
+    // Advanced filter applied
+    postTitle = { name: "Kết quả Lọc" };
+  } else if (category) {
     postTitle = categories.find((c: any) => c.slug === category);
   } else if (topic) {
     postTitle = topics.find((t: any) => t.slug === topic);
@@ -38,30 +53,67 @@ export async function generateMetadata({ searchParams }: HomeProps) {
 }
 
 export default async function Home({ searchParams }: HomeProps) {
-  const { index, category, topic } = await searchParams;
+  const params = await searchParams;
+  const index = Number(params.index) || 1;
+  const category = params.category;
+  const topic = params.topic;
+  const typeList = params.typeList;
+
   const api = new PhimApi();
   const topics = api.listTopics();
   const categories = await api.listCategories();
-  // Sử dụng Client Component để render danh sách phim mới nhất
-  const MovieListClient = (await import("@/components/movie/MovieListClient")).default;
-  
-  // Determine current value and whether it's a category
-  const currentValue = category || topic || "";
-  const isCategory = category ? true : topic ? false : undefined;
-  
+  const countries = await api.listCountries();
+
+  // Check if filters or topic/category are being used
+  const hasFilters = Boolean(typeList || category || topic);
+
+  // Fetch items for each topic if no filters are applied
+  let topicsWithMovies = [];
+  if (!hasFilters) {
+    topicsWithMovies = await Promise.all(
+      topics.map(async (topicItem: any) => {
+        try {
+          const movies = await api.getTopicItems(topicItem.slug, 6);
+          return {
+            ...topicItem,
+            movies: movies || [],
+          };
+        } catch (error) {
+          console.error(`Failed to fetch items for topic ${topicItem.slug}:`, error);
+          return {
+            ...topicItem,
+            movies: [],
+          };
+        }
+      })
+    );
+  }
+
   return (
     <main className="mx-auto max-w-screen-2xl px-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen">
       <Header
-        currentValue={currentValue}
-        isCategory={isCategory}
-        topics={topics}
         categories={categories}
+        countries={countries}
       />
-      <MovieListClient 
-        index={index || 1} 
-        category={category}
-        topic={topic}
-      />
+      {hasFilters ? (
+        <MovieListClient
+          index={index}
+          category={category}
+          topic={topic}
+        />
+      ) : (
+        <div className="py-8">
+          {topicsWithMovies
+            .filter((topicData: any) => topicData.movies && topicData.movies.length > 0)
+            .map((topicData: any) => (
+              <TopicSection
+                key={topicData.slug}
+                topic={topicData}
+                movies={topicData.movies}
+              />
+            ))}
+        </div>
+      )}
       <Footer />
     </main>
   );

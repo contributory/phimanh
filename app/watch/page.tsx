@@ -20,16 +20,17 @@ export async function generateMetadata({ searchParams }: any) {
 export default async function WatchPage({ searchParams }: any) {
   const { slug } = await searchParams;
   const api = new PhimApi();
-  const topics = api.listTopics();
-  const categories = await api.listCategories();
-  const { movie, server } = await api.get(slug);
+  const [categories, { movie, server }, countries] = await Promise.all([
+    api.listCategories(),
+    api.get(slug),
+    api.listCountries(),
+  ]);
+
   return (
     <main className="mx-auto max-w-screen-2xl px-4">
       <Header
-        topics={topics}
         categories={categories}
-        currentValue={undefined}
-        isCategory={undefined}
+        countries={countries}
       />
       <Description movie={movie} serverData={server} />
       <Footer />
