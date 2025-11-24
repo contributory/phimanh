@@ -5,17 +5,17 @@ import Link from "next/link";
 import MovieMinimalCard from "@/components/movie/movie-minimal";
 
 interface RecentlyWatchedProps {
-  // No props needed, will fetch from cookies
+  limit?: number;
 }
 
-export default function RecentlyWatched({}: RecentlyWatchedProps) {
+export default function RecentlyWatched({ limit }: RecentlyWatchedProps) {
   const [movies, setMovies] = useState<any[]>([]);
 
   useEffect(() => {
     const Cookies = require('js-cookie');
     const recentlyWatched = JSON.parse(Cookies.get('recentlyWatched') || '[]');
-    setMovies(recentlyWatched);
-  }, []);
+    setMovies(limit ? recentlyWatched.slice(0, limit) : recentlyWatched);
+  }, [limit]);
 
   if (movies.length === 0) return null;
 

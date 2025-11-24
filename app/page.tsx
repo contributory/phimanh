@@ -107,8 +107,8 @@ export default async function Home({ searchParams }: HomeProps) {
         />
       ) : (
         <div className="py-8">
-          <NewUpdatesSection movies={newUpdates[0].slice(0,6)} />
-          <RecentlyWatched />
+          <NewUpdatesSection movies={newUpdates[0].slice(0, 6)} />
+          <RecentlyWatched limit={6} />
           {topicsWithMovies
             .filter((topicData: any) => topicData.movies && topicData.movies.length > 0)
             .map((topicData: any) => (
