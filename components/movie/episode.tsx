@@ -29,6 +29,8 @@ interface EpisodeProps {
   ) => void;
   onServerChange: (serverIndex: number) => void;
   thumb_url: string;
+  playerMode: 'm3u8' | 'embed';
+  onPlayerModeChange: (mode: 'm3u8' | 'embed') => void;
 }
 
 export default function Episode({
@@ -38,12 +40,18 @@ export default function Episode({
   onSelectEpisode,
   onServerChange,
   thumb_url,
+  playerMode,
+  onPlayerModeChange,
 }: EpisodeProps) {
   const handleServerChange = (index: number) => {
     // Auto-select first episode of the new server
     const firstEpisode = serverData[index]?.server_data?.[0];
-    if (firstEpisode?.link_m3u8) {
-      onSelectEpisode(firstEpisode.link_m3u8, index, 0);
+    if (firstEpisode) {
+      if (playerMode === 'm3u8' && firstEpisode.link_m3u8) {
+        onSelectEpisode(firstEpisode.link_m3u8, index, 0);
+      } else if (playerMode === 'embed' && firstEpisode.link_embed) {
+        onSelectEpisode(firstEpisode.link_embed, index, 0);
+      }
     }
     onServerChange(index);
   };
@@ -69,6 +77,35 @@ export default function Episode({
 
   return (
     <div>
+      {/* Player Mode Switch */}
+      <div className="w-full mb-4 flex items-center justify-between bg-gray-800 p-2 rounded-lg">
+        <span className="text-white text-sm font-medium">Chế độ phát:</span>
+        <div className="flex gap-2">
+          <Button
+            variant={playerMode === 'm3u8' ? "default" : "outline"}
+            size="sm"
+            onClick={() => onPlayerModeChange('m3u8')}
+            className={cn(
+              "text-xs",
+              playerMode === 'm3u8' ? "bg-blue-600 hover:bg-blue-700" : "bg-transparent text-gray-300 border-gray-600 hover:bg-gray-700"
+            )}
+          >
+            Mặc định
+          </Button>
+          <Button
+            variant={playerMode === 'embed' ? "default" : "outline"}
+            size="sm"
+            onClick={() => onPlayerModeChange('embed')}
+            className={cn(
+              "text-xs",
+              playerMode === 'embed' ? "bg-blue-600 hover:bg-blue-700" : "bg-transparent text-gray-300 border-gray-600 hover:bg-gray-700"
+            )}
+          >
+            Dự phòng
+          </Button>
+        </div>
+      </div>
+
       {/* Server Selector - Show only if multiple servers */}
       {serverData.length > 1 && (
         <div className="w-full mb-4">
@@ -99,7 +136,11 @@ export default function Episode({
             return (
               <div
                 key={`${currentServerIndex}-${index}`}
-                onClick={() => handleEpisodeChange(episode.link_m3u8, currentServerIndex, index)}
+                onClick={() => handleEpisodeChange(
+                  playerMode === 'm3u8' ? episode.link_m3u8 : episode.link_embed,
+                  currentServerIndex,
+                  index
+                )}
                 className={cn(
                   "flex items-center p-2 rounded-lg cursor-pointer transition-all border mb-1",
                   isActive

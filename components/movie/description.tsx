@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Episode from "./episode";
 import VideoPlayer from "../player/video-player";
+import EmbedPlayer from "../player/embed-player";
 import BackButton from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,13 +17,16 @@ export default function Description({ movie, serverData }: any) {
     server: number;
     episode: number;
   } | null>(null);
+  const [playerMode, setPlayerMode] = useState<'m3u8' | 'embed'>('m3u8');
 
   const handleServerChange = (serverIndex: number) => {
     setCurrentEpisodeIndex({ server: serverIndex, episode: 0 });
     if (serverData && serverData[serverIndex]?.server_data?.length > 0) {
       const firstEpisode = serverData[serverIndex].server_data[0];
-      if (firstEpisode?.link_m3u8) {
+      if (playerMode === 'm3u8' && firstEpisode?.link_m3u8) {
         setCurrentEpisodeUrl(firstEpisode.link_m3u8);
+      } else if (playerMode === 'embed' && firstEpisode?.link_embed) {
+        setCurrentEpisodeUrl(firstEpisode.link_embed);
       }
     }
   };
@@ -76,8 +80,11 @@ export default function Description({ movie, serverData }: any) {
       const defaultServer = serverData[defaultServerIndex];
       if (defaultServer?.server_data?.length > 0) {
         const firstEpisode = defaultServer.server_data[0];
-        if (firstEpisode?.link_m3u8) {
+        if (playerMode === 'm3u8' && firstEpisode?.link_m3u8) {
           setCurrentEpisodeUrl(firstEpisode.link_m3u8);
+          setCurrentEpisodeIndex({ server: defaultServerIndex, episode: 0 });
+        } else if (playerMode === 'embed' && firstEpisode?.link_embed) {
+          setCurrentEpisodeUrl(firstEpisode.link_embed);
           setCurrentEpisodeIndex({ server: defaultServerIndex, episode: 0 });
         }
       }
@@ -100,44 +107,50 @@ export default function Description({ movie, serverData }: any) {
       {/* Video Player Section */}
       <div className="w-full">
         <div className="relative">
-          <VideoPlayer
-            videoUrl={currentEpisodeUrl}
-            autoplay={true}
-            poster={movie.thumb_url || movie.poster_url}
-            onEnded={() => {
-              if (!serverData || !currentEpisodeIndex) return;
+          {playerMode === 'm3u8' ? (
+            <VideoPlayer
+              videoUrl={currentEpisodeUrl}
+              autoplay={true}
+              poster={movie.thumb_url || movie.poster_url}
+              onEnded={() => {
+                if (!serverData || !currentEpisodeIndex) return;
 
-              const { server, episode } = currentEpisodeIndex;
-              const currentServer = serverData[server];
-              if (!currentServer) return;
+                const { server, episode } = currentEpisodeIndex;
+                const currentServer = serverData[server];
+                if (!currentServer) return;
 
-              let nextEpisodeIndex = episode + 1;
-              let nextServerIndex = server;
+                let nextEpisodeIndex = episode + 1;
+                let nextServerIndex = server;
 
-              // If next episode doesn't exist in current server, go to next server
-              if (nextEpisodeIndex >= currentServer.server_data.length) {
-                nextServerIndex = server + 1;
-                nextEpisodeIndex = 0;
-                if (nextServerIndex >= serverData.length) return; // No more episodes
-              }
+                // If next episode doesn't exist in current server, go to next server
+                if (nextEpisodeIndex >= currentServer.server_data.length) {
+                  nextServerIndex = server + 1;
+                  nextEpisodeIndex = 0;
+                  if (nextServerIndex >= serverData.length) return; // No more episodes
+                }
 
-              const nextServer = serverData[nextServerIndex];
-              if (
-                !nextServer ||
-                nextEpisodeIndex >= nextServer.server_data.length
-              )
-                return;
+                const nextServer = serverData[nextServerIndex];
+                if (
+                  !nextServer ||
+                  nextEpisodeIndex >= nextServer.server_data.length
+                )
+                  return;
 
-              const nextEpisode = nextServer.server_data[nextEpisodeIndex];
-              if (nextEpisode?.link_m3u8) {
-                setCurrentEpisodeUrl(nextEpisode.link_m3u8);
-                setCurrentEpisodeIndex({
-                  server: nextServerIndex,
-                  episode: nextEpisodeIndex,
-                });
-              }
-            }}
-          />
+                const nextEpisode = nextServer.server_data[nextEpisodeIndex];
+                if (nextEpisode?.link_m3u8) {
+                  setCurrentEpisodeUrl(nextEpisode.link_m3u8);
+                  setCurrentEpisodeIndex({
+                    server: nextServerIndex,
+                    episode: nextEpisodeIndex,
+                  });
+                }
+              }}
+            />
+          ) : (
+            <EmbedPlayer
+              videoUrl={currentEpisodeUrl}
+            />
+          )}
         </div>
       </div>
 
@@ -260,6 +273,21 @@ export default function Description({ movie, serverData }: any) {
             onSelectEpisode={handleSelectEpisode}
             onServerChange={handleServerChange}
             thumb_url={movie.thumb_url}
+            playerMode={playerMode}
+            onPlayerModeChange={(mode) => {
+              setPlayerMode(mode);
+              // Update current url based on new mode
+              if (currentEpisodeIndex && serverData) {
+                const currentEpisode = serverData[currentEpisodeIndex.server]?.server_data[currentEpisodeIndex.episode];
+                if (currentEpisode) {
+                  if (mode === 'm3u8' && currentEpisode.link_m3u8) {
+                    setCurrentEpisodeUrl(currentEpisode.link_m3u8);
+                  } else if (mode === 'embed' && currentEpisode.link_embed) {
+                    setCurrentEpisodeUrl(currentEpisode.link_embed);
+                  }
+                }
+              }
+            }}
           />
         </div>
       </Card>
@@ -272,9 +300,8 @@ export default function Description({ movie, serverData }: any) {
           </DialogTitle>
           <div className="aspect-video">
             <iframe
-              src={`https://www.youtube.com/embed/${
-                movie.trailer_url.split("v=")[1]
-              }`}
+              src={`https://www.youtube.com/embed/${movie.trailer_url.split("v=")[1]
+                }`}
               className="w-full h-full rounded-xl border-2 border-gray-700"
               allowFullScreen
               title="Movie Trailer"
