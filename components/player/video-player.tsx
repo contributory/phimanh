@@ -425,7 +425,11 @@ const VideoPlayer = ({
         }
 
         // Toggle based on state at time of click
-        setShowControls(!currentControlsState);
+        if (!currentControlsState) {
+          showControlsHandler();
+        } else {
+          setShowControls(false);
+        }
         clickTimeoutRef.current = null;
       }, 300);
     }
@@ -440,7 +444,11 @@ const VideoPlayer = ({
         "relative bg-black group overflow-hidden select-none",
         isFullscreen ? "w-screen h-screen fixed inset-0 z-50" : "w-full aspect-video"
       )}
-      onMouseMove={showControlsHandler}
+      onMouseMove={(e) => {
+        if (e.movementX !== 0 || e.movementY !== 0) {
+          showControlsHandler();
+        }
+      }}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
       {/* Video Element */}
