@@ -275,10 +275,12 @@ const VideoPlayer = ({
         case 'ArrowRight':
         case 'KeyL':
           skip(10);
+          setSkipAnimation({ side: 'right', id: Date.now() });
           break;
         case 'ArrowLeft':
         case 'KeyJ':
           skip(-10);
+          setSkipAnimation({ side: 'left', id: Date.now() });
           break;
         case 'ArrowUp':
           handleVolumeChange([Math.min(volume + 0.1, 1)]);
@@ -293,7 +295,7 @@ const VideoPlayer = ({
           toggleMute();
           break;
       }
-      showControlsHandler();
+      // showControlsHandler(); // Removed to prevent controls from showing on key press
     };
 
     window.addEventListener('keydown', handleKeyDown);
