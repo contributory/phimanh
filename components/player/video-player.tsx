@@ -239,9 +239,9 @@ const VideoPlayer = ({
         setIsFullscreen(false);
 
         // Unlock orientation when exiting fullscreen via browser controls
-        if (screen.orientation && screen.orientation.unlock) {
+        if (screen.orientation && (screen.orientation as any).unlock) {
           try {
-            screen.orientation.unlock();
+            (screen.orientation as any).unlock();
           } catch (err) {
             console.log('Screen orientation unlock failed:', err);
           }
@@ -320,9 +320,9 @@ const VideoPlayer = ({
         setIsFullscreen(true);
 
         // Lock orientation to landscape on mobile
-        if (screen.orientation && screen.orientation.lock) {
+        if (screen.orientation && (screen.orientation as any).lock) {
           try {
-            await screen.orientation.lock('landscape');
+            await (screen.orientation as any).lock('landscape');
           } catch (err) {
             console.log('Screen orientation lock failed:', err);
           }
@@ -332,9 +332,9 @@ const VideoPlayer = ({
         setIsFullscreen(false);
 
         // Unlock orientation
-        if (screen.orientation && screen.orientation.unlock) {
+        if (screen.orientation && (screen.orientation as any).unlock) {
           try {
-            screen.orientation.unlock();
+            (screen.orientation as any).unlock();
           } catch (err) {
             console.log('Screen orientation unlock failed:', err);
           }
