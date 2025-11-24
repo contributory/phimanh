@@ -367,21 +367,23 @@ const VideoPlayer = ({
         toggleFullscreen();
       }
     } else {
-      // Single click - wait to see if it becomes a double click
+      // Single click - capture current state to decide action
+      const currentControlsState = showControls;
+      
       clickTimeoutRef.current = setTimeout(() => {
-        if (side === 'center') {
-          togglePlay();
-        } else {
-          // For side clicks, we also toggle play if it wasn't a double click
-          // This mimics YouTube mobile behavior where tapping sides once toggles controls/play
-          togglePlay();
+        // Clear any auto-hide timeout
+        if (controlsTimeoutRef.current) {
+          clearTimeout(controlsTimeoutRef.current);
+          controlsTimeoutRef.current = null;
         }
+        
+        // Toggle based on state at time of click
+        setShowControls(!currentControlsState);
         clickTimeoutRef.current = null;
       }, 300);
     }
 
     lastClickTimeRef.current = now;
-    showControlsHandler();
   };
 
   return (
