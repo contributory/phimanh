@@ -232,6 +232,31 @@ const VideoPlayer = ({
     }
   }, [isPlaying, showControlsHandler]);
 
+  // Fullscreen change event listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setIsFullscreen(false);
+
+        // Unlock orientation when exiting fullscreen via browser controls
+        if (screen.orientation && screen.orientation.unlock) {
+          try {
+            screen.orientation.unlock();
+          } catch (err) {
+            console.log('Screen orientation unlock failed:', err);
+          }
+        }
+      } else {
+        setIsFullscreen(true);
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -289,12 +314,34 @@ const VideoPlayer = ({
   const toggleFullscreen = async () => {
     if (!containerRef.current) return;
 
-    if (!document.fullscreenElement) {
-      await containerRef.current.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      await document.exitFullscreen();
-      setIsFullscreen(false);
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+
+        // Lock orientation to landscape on mobile
+        if (screen.orientation && screen.orientation.lock) {
+          try {
+            await screen.orientation.lock('landscape');
+          } catch (err) {
+            console.log('Screen orientation lock failed:', err);
+          }
+        }
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+
+        // Unlock orientation
+        if (screen.orientation && screen.orientation.unlock) {
+          try {
+            screen.orientation.unlock();
+          } catch (err) {
+            console.log('Screen orientation unlock failed:', err);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Fullscreen toggle failed:', err);
     }
   };
 
@@ -369,14 +416,14 @@ const VideoPlayer = ({
     } else {
       // Single click - capture current state to decide action
       const currentControlsState = showControls;
-      
+
       clickTimeoutRef.current = setTimeout(() => {
         // Clear any auto-hide timeout
         if (controlsTimeoutRef.current) {
           clearTimeout(controlsTimeoutRef.current);
           controlsTimeoutRef.current = null;
         }
-        
+
         // Toggle based on state at time of click
         setShowControls(!currentControlsState);
         clickTimeoutRef.current = null;
@@ -391,7 +438,7 @@ const VideoPlayer = ({
       ref={containerRef}
       className={cn(
         "relative bg-black group overflow-hidden select-none",
-        isFullscreen ? "w-screen h-screen fixed inset-0 z-50 rounded-none" : "w-full rounded-xl shadow-2xl aspect-video"
+        isFullscreen ? "w-screen h-screen fixed inset-0 z-50" : "w-full aspect-video"
       )}
       onMouseMove={showControlsHandler}
       onMouseLeave={() => isPlaying && setShowControls(false)}

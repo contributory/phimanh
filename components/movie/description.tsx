@@ -103,10 +103,11 @@ export default function Description({ movie, serverData }: any) {
   }, [currentEpisodeUrl, currentEpisodeIndex, movie.slug]);
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-8">
+    <div className="w-full max-w-6xl mx-auto space-y-6 pt-4">
       {/* Video Player Section */}
-      <div className="w-full">
-        <div className="relative">
+      <Card className="shadow-2xl rounded-3xl overflow-hidden bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50">
+        <CardContent className="p-0">
+          {/* Movie Information Section */}
           {playerMode === 'm3u8' ? (
             <VideoPlayer
               videoUrl={currentEpisodeUrl}
@@ -151,11 +152,10 @@ export default function Description({ movie, serverData }: any) {
               videoUrl={currentEpisodeUrl}
             />
           )}
-        </div>
-      </div>
+        </CardContent>
 
-      {/* Movie Information Section */}
-      <Card className="shadow-2xl rounded-3xl bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50">
+
+
         <div className="p-6 items-center">
           <details className="cursor-pointer">
             <summary className="list-none">
@@ -309,6 +309,6 @@ export default function Description({ movie, serverData }: any) {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </div >
   );
 }
