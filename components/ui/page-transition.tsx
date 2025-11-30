@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLoading } from "./loading-context";
+import ClientOnly from "./client-only";
 
 declare global {
   interface Window {
@@ -28,9 +29,13 @@ export default function PageTransition({
 }: PageTransitionProps) {
   const pathname = usePathname();
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const { isLoading } = useLoading();
 
   useEffect(() => {
+    setIsMounted(true);
+    
+    // Only run on client side
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReducedMotion(mediaQuery.matches);
 
@@ -46,21 +51,23 @@ export default function PageTransition({
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isMounted && typeof window !== 'undefined') {
       window.__globalLoading = false;
     }
-  }, [pathname]);
+  }, [pathname, isMounted]);
 
-  if (prefersReducedMotion) {
+  // Server-side và initial client render: render without animation
+  if (!isMounted || prefersReducedMotion) {
     return (
-      <div key={pathname}>
+      <div key={pathname} suppressHydrationWarning>
         {children}
       </div>
     );
   }
 
+  // Client-side với animation
   return (
-    <>
+    <ClientOnly fallback={<div key={pathname}>{children}</div>}>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={pathname}
@@ -71,10 +78,11 @@ export default function PageTransition({
             duration,
             ease: "easeInOut",
           }}
+          suppressHydrationWarning
         >
           {children}
         </motion.div>
       </AnimatePresence>
-    </>
+    </ClientOnly>
   );
 }
