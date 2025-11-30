@@ -3,8 +3,9 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import TopicSection from "@/components/topic-section";
 import RecentlyWatched from "@/components/recently-watched";
-import MovieListClient from "@/components/movie/MovieListClient";
+import MovieListClient from "@/components/movie/movie-list-client";
 import NewUpdatesSection from "@/components/new-updates-section";
+import { ScrollToTopFAB } from "@/components/ui/material-fab";
 
 type HomeProps = {
   searchParams: Promise<{
@@ -93,7 +94,7 @@ export default async function Home({ searchParams }: HomeProps) {
   }
 
   return (
-    <main className="mx-auto max-w-screen-2xl px-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen">
+    <main className="mx-auto max-w-screen-2xl px-4 material-surface gradient-surface min-h-screen">
       <Header
         categories={categories}
         countries={countries}
@@ -106,7 +107,7 @@ export default async function Home({ searchParams }: HomeProps) {
           topic={topic}
         />
       ) : (
-        <div className="py-8">
+        <div className="py-8 space-y-8">
           <NewUpdatesSection movies={newUpdates[0].slice(0, 6)} />
           <RecentlyWatched limit={6} />
           {topicsWithMovies
@@ -121,6 +122,9 @@ export default async function Home({ searchParams }: HomeProps) {
         </div>
       )}
       <Footer />
+      
+      {/* Material FAB for better UX */}
+      <ScrollToTopFAB />
     </main>
   );
 }

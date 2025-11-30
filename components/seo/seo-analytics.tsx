@@ -86,6 +86,13 @@ export function WebVitalsTracking() {
   );
 }
 
+// Type declarations for global functions
+declare global {
+  interface Window {
+    gtag: (...args: any[]) => void;
+  }
+}
+
 // Movie viewing analytics
 export function trackMovieView(movieName: string, movieSlug: string) {
   if (typeof window !== 'undefined' && window.gtag) {

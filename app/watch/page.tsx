@@ -22,8 +22,8 @@ export async function generateMetadata({ searchParams }: any) {
       'phim HD',
       'phim chất lượng cao',
       'xem phim miễn phí',
-      ...movie.category?.map(cat => `phim ${cat.name}`) || [],
-      ...movie.country?.map(country => `phim ${country.name}`) || []
+      ...movie.category?.map((cat: any) => `phim ${cat.name}`) || [],
+      ...movie.country?.map((country: any) => `phim ${country.name}`) || []
     ].join(', '),
     openGraph: {
       title: `${movie.name} - Xem phim HD chất lượng cao`,

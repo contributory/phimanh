@@ -14,7 +14,7 @@ export default function EnhancedGTMTracking() {
     const addEnhancedTracking = () => {
       if (typeof window !== 'undefined' && window.dataLayer) {
         // Core Web Vitals tracking for SEO
-        import('https://unpkg.com/web-vitals@3/dist/web-vitals.js').then(({ onCLS, onFID, onFCP, onLCP, onTTFB }) => {
+        import('web-vitals').then(({ onCLS, onINP, onFCP, onLCP, onTTFB }) => {
           function sendToGTM(metric: any) {
             if (window.dataLayer) {
               window.dataLayer.push({
@@ -29,7 +29,7 @@ export default function EnhancedGTMTracking() {
           }
           
           onCLS(sendToGTM);
-          onFID(sendToGTM);
+          onINP(sendToGTM);
           onFCP(sendToGTM);
           onLCP(sendToGTM);
           onTTFB(sendToGTM);
