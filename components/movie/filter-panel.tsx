@@ -2,15 +2,27 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef, useMemo, memo } from "react";
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Box,
+  Typography,
+  Paper,
+  IconButton,
+  Fade,
+  Chip,
+  SelectChangeEvent,
+  Stack,
+} from "@mui/material";
+import {
+  FilterList as FilterIcon,
+  Close as CloseIcon,
+  RestartAlt as ResetIcon,
+  Check as CheckIcon,
+} from "@mui/icons-material";
 
 interface FilterPanelProps {
   categories?: { slug: string; name: string }[];
@@ -55,12 +67,6 @@ const LIMIT_OPTIONS = [
   { value: "64", label: "64" },
 ];
 
-const currentYear = new Date().getFullYear();
-const YEAR_OPTIONS = Array.from({ length: currentYear - 1970 + 1 }, (_, i) => ({
-  value: String(currentYear - i),
-  label: String(currentYear - i),
-}));
-
 const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -89,6 +95,10 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSelectChange = (key: string) => (event: SelectChangeEvent<string>) => {
+    handleFilterChange(key, event.target.value);
   };
 
   const applyFilters = async () => {
@@ -122,252 +132,308 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
     filters.limit !== "10";
 
   return (
-    <div>
+    <Box sx={{ position: "relative" }}>
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        variant="outline"
-        size="icon"
-        className={`md:w-auto md:px-3 ${
-          hasActiveFilters ? "border-blue-500 bg-blue-50 dark:bg-blue-950" : ""
-        }`}
-        title="Bộ Lọc Nâng Cao"
+        variant={hasActiveFilters ? "contained" : "outlined"}
+        color={hasActiveFilters ? "primary" : "inherit"}
+        startIcon={<FilterIcon />}
+        sx={{
+          minWidth: "40px",
+          px: { xs: 1, md: 2 },
+          borderRadius: 2,
+          textTransform: "none",
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+        }}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-4 h-4"
+        <Box
+          component="span"
+          sx={{
+            display: { xs: "none", md: "inline" },
+            mr: hasActiveFilters ? 0.5 : 0
+          }}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-          />
-        </svg>
+          Lọc
+        </Box>
+        {hasActiveFilters && (
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 18,
+              height: 18,
+              borderRadius: "50%",
+              backgroundColor: "secondary.main",
+              color: "secondary.contrastText",
+              fontSize: "10px",
+              fontWeight: "bold",
+              ml: { xs: 0, md: 0.5 },
+            }}
+          >
+            !
+          </Box>
+        )}
       </Button>
 
-      <div
-        className={`fixed left-4 right-4 top-20 z-50 max-h-[calc(100vh-120px)] overflow-y-auto p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 space-y-4 md:absolute md:left-0 md:right-auto md:top-full md:w-96 md:mt-2 ${
-          isOpen ? "block" : "hidden"
-        }`}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Bộ Lọc Nâng Cao
-          </h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsOpen(false)}
-            className="h-6 w-6 p-0"
+      <Fade in={isOpen}>
+        <Paper
+          elevation={8}
+          sx={{
+            position: { xs: "fixed", md: "absolute" },
+            left: { xs: 16, md: "auto" },
+            right: { xs: 16, md: 16 },
+            top: { xs: 80, md: "100%" },
+            width: { xs: "auto", md: 400 },
+            maxWidth: { xs: "calc(100vw - 32px)", md: 400 },
+            maxHeight: { xs: "calc(100vh - 120px)", md: "80vh" },
+            overflow: "auto",
+            zIndex: 1300,
+            mt: { md: 1 },
+            p: 3,
+            borderRadius: 3,
+            backdropFilter: "blur(10px)",
+            background: (theme) =>
+              theme.palette.mode === "dark"
+                ? "rgba(18, 18, 18, 0.95)"
+                : "rgba(255, 255, 255, 0.95)",
+            border: (theme) =>
+              `1px solid ${
+                theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.12)"
+                  : "rgba(0, 0, 0, 0.12)"
+              }`,
+            transform: { md: "translateX(-100%)" },
+          }}
+        >
+          {/* Header */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+            }}
           >
-            ×
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Type List */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-              Loại Phim
-            </label>
-            <Select
-              value={filters.typeList}
-              onValueChange={(value) => handleFilterChange("typeList", value)}
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                background: "linear-gradient(45deg, #2196F3, #9C27B0)",
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
+              Bộ Lọc Nâng Cao
+            </Typography>
+            <IconButton
+              onClick={() => setIsOpen(false)}
+              size="small"
+              sx={{ 
+                bgcolor: "action.hover",
+                "&:hover": { bgcolor: "action.selected" }
+              }}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </Box>
+
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+              gap: 3,
+            }}
+          >
+            {/* Type List */}
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Loại Phim</InputLabel>
+              <Select
+                value={filters.typeList}
+                onChange={handleSelectChange("typeList")}
+                label="Loại Phim"
+              >
                 {TYPE_LIST_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
+                  <MenuItem key={opt.value} value={opt.value}>
                     {opt.label}
-                  </SelectItem>
+                  </MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
 
-          {/* Sort Field */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-              Sắp Xếp Theo
-            </label>
-            <Select
-              value={filters.sortField}
-              onValueChange={(value) => handleFilterChange("sortField", value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
+            {/* Sort Field */}
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Sắp Xếp Theo</InputLabel>
+              <Select
+                value={filters.sortField}
+                onChange={handleSelectChange("sortField")}
+                label="Sắp Xếp Theo"
+              >
                 {SORT_FIELD_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
+                  <MenuItem key={opt.value} value={opt.value}>
                     {opt.label}
-                  </SelectItem>
+                  </MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
 
-          {/* Sort Type */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-              Kiểu Sắp Xếp
-            </label>
-            <Select
-              value={filters.sortType}
-              onValueChange={(value) => handleFilterChange("sortType", value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
+            {/* Sort Type */}
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Kiểu Sắp Xếp</InputLabel>
+              <Select
+                value={filters.sortType}
+                onChange={handleSelectChange("sortType")}
+                label="Kiểu Sắp Xếp"
+              >
                 {SORT_TYPE_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
+                  <MenuItem key={opt.value} value={opt.value}>
                     {opt.label}
-                  </SelectItem>
+                  </MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
 
-          {/* Sort Language */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-              Ngôn Ngữ
-            </label>
-            <Select
-              value={filters.sortLang}
-              onValueChange={(value) => handleFilterChange("sortLang", value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
+            {/* Sort Language */}
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Ngôn Ngữ</InputLabel>
+              <Select
+                value={filters.sortLang}
+                onChange={handleSelectChange("sortLang")}
+                label="Ngôn Ngữ"
+              >
                 {SORT_LANG_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
+                  <MenuItem key={opt.value} value={opt.value}>
                     {opt.label}
-                  </SelectItem>
+                  </MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
 
-          {/* Category */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-              Thể Loại
-            </label>
-            <Select
-              value={filters.category || "all"}
-              onValueChange={(value) =>
-                handleFilterChange("category", value === "all" ? "" : value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Tất cả" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
+            {/* Category */}
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Thể Loại</InputLabel>
+              <Select
+                value={filters.category || "all"}
+                onChange={(e) =>
+                  handleFilterChange("category", e.target.value === "all" ? "" : e.target.value)
+                }
+                label="Thể Loại"
+              >
+                <MenuItem value="all">Tất cả</MenuItem>
                 {categories.map((cat) => (
-                  <SelectItem key={cat.slug} value={cat.slug}>
+                  <MenuItem key={cat.slug} value={cat.slug}>
                     {cat.name}
-                  </SelectItem>
+                  </MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
 
-          {/* Country */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-              Quốc Gia
-            </label>
-            <Select
-              value={filters.country || "all"}
-              onValueChange={(value) =>
-                handleFilterChange("country", value === "all" ? "" : value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Tất cả" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
+            {/* Country */}
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Quốc Gia</InputLabel>
+              <Select
+                value={filters.country || "all"}
+                onChange={(e) =>
+                  handleFilterChange("country", e.target.value === "all" ? "" : e.target.value)
+                }
+                label="Quốc Gia"
+              >
+                <MenuItem value="all">Tất cả</MenuItem>
                 {countries.map((country) => (
-                  <SelectItem key={country.slug} value={country.slug}>
+                  <MenuItem key={country.slug} value={country.slug}>
                     {country.name}
-                  </SelectItem>
+                  </MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
 
-          {/* Year */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-              Năm Phát Hành
-            </label>
-            <Select
-              value={filters.year || "all"}
-              onValueChange={(value) =>
-                handleFilterChange("year", value === "all" ? "" : value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Tất cả" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả</SelectItem>
+            {/* Year */}
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Năm Phát Hành</InputLabel>
+              <Select
+                value={filters.year || "all"}
+                onChange={(e) =>
+                  handleFilterChange("year", e.target.value === "all" ? "" : e.target.value)
+                }
+                label="Năm Phát Hành"
+              >
+                <MenuItem value="all">Tất cả</MenuItem>
                 {YEAR_OPTIONS.map((year) => (
-                  <SelectItem key={year.value} value={year.value}>
+                  <MenuItem key={year.value} value={year.value}>
                     {year.label}
-                  </SelectItem>
+                  </MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </Select>
+            </FormControl>
 
-          {/* Limit */}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-              Số Lượng
-            </label>
-            <Select
-              value={filters.limit}
-              onValueChange={(value) => handleFilterChange("limit", value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
+            {/* Limit */}
+            <FormControl fullWidth variant="outlined">
+              <InputLabel>Số Lượng</InputLabel>
+              <Select
+                value={filters.limit}
+                onChange={handleSelectChange("limit")}
+                label="Số Lượng"
+              >
                 {LIMIT_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
+                  <MenuItem key={opt.value} value={opt.value}>
                     {opt.label}
-                  </SelectItem>
+                  </MenuItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+              </Select>
+            </FormControl>
+          </Box>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2 justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
-          <Button variant="outline" onClick={resetFilters} disabled={isLoading}>
-            Đặt Lại
-          </Button>
-          <Button
-            onClick={applyFilters}
-            disabled={isLoading}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          {/* Action Buttons */}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              justifyContent: "flex-end",
+              pt: 3,
+              mt: 3,
+              borderTop: (theme) =>
+                `1px solid ${
+                  theme.palette.mode === "dark"
+                    ? "rgba(255, 255, 255, 0.12)"
+                    : "rgba(0, 0, 0, 0.12)"
+                }`,
+            }}
           >
-            {isLoading ? "Đang Tải..." : "Áp Dụng"}
-          </Button>
-        </div>
-      </div>
-    </div>
+            <Button
+              variant="outlined"
+              onClick={resetFilters}
+              disabled={isLoading}
+              startIcon={<ResetIcon />}
+              sx={{ textTransform: "none", borderRadius: 2 }}
+            >
+              Đặt Lại
+            </Button>
+            <Button
+              variant="contained"
+              onClick={applyFilters}
+              disabled={isLoading}
+              startIcon={<CheckIcon />}
+              sx={{
+                textTransform: "none",
+                borderRadius: 2,
+                background: "linear-gradient(45deg, #2196F3, #9C27B0)",
+                "&:hover": {
+                  background: "linear-gradient(45deg, #1976D2, #7B1FA2)",
+                },
+                "&:disabled": {
+                  background: "rgba(0, 0, 0, 0.12)",
+                },
+              }}
+            >
+              {isLoading ? "Đang Tải..." : "Áp Dụng"}
+            </Button>
+          </Box>
+        </Paper>
+      </Fade>
+    </Box>
   );
 };
 

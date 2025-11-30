@@ -28,8 +28,6 @@ const nextConfig: NextConfig = {
   // Bundle optimization
   experimental: {
     optimizePackageImports: ['@mui/material', '@mui/icons-material', 'lucide-react'],
-    // Improve hydration consistency
-    missingSuspenseWithCSRBailout: false,
   },
   
   // Turbopack configuration (disabled rules due to compatibility issues)

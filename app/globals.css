@@ -11,9 +11,9 @@
     --card-foreground: 20 14.3% 4.1%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 14.3% 4.1%;
-    --primary: 213 94% 68%; /* blue-500 */
+    --primary: 0 84% 45%; /* red-600 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 262 83% 58%; /* violet-500 */
+    --secondary: 0 0% 15%; /* near black */
     --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 98%;
     --muted-foreground: 215 16% 47%;
@@ -23,7 +23,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 213 94% 68%;
+    --ring: 0 84% 45%;
     --radius: 0.75rem;
 
     /* Material Design elevation shadows */
@@ -53,8 +53,8 @@
     --card-foreground: 210 40% 98%;
     --popover: 222 84% 5%;
     --popover-foreground: 210 40% 98%;
-    --primary: 213 94% 68%; /* blue-500 */
-    --primary-foreground: 222 84% 5%;
+    --primary: 0 84% 50%; /* red-500 for dark theme */
+    --primary-foreground: 0 0% 100%;
     --secondary: 217 33% 17%; /* slate-800 */
     --secondary-foreground: 210 40% 98%;
     --muted: 217 33% 17%;
@@ -65,7 +65,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 213 94% 68%;
+    --ring: 0 84% 50%;
 
     /* Dark theme shadows */
     --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.2);
@@ -153,11 +153,11 @@
   0%,
   100% {
     opacity: 1;
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
   }
   50% {
     opacity: 0.8;
-    box-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+    box-shadow: 0 0 30px rgba(220, 38, 38, 0.8);
   }
 }
 
@@ -190,7 +190,7 @@
 .video-js:hover .vjs-big-play-button,
 .video-js .vjs-big-play-button:focus,
 .video-js .vjs-big-play-button:active {
-  background-color: rgba(59, 130, 246, 0.9);
+  background-color: rgba(220, 38, 38, 0.9);
   border-color: #fff;
 }
 
@@ -205,7 +205,7 @@
 
 .video-js .vjs-play-progress,
 .video-js .vjs-volume-level {
-  background-color: rgb(59, 130, 246);
+  background-color: rgb(220, 38, 38);
 }
 
 .video-js .vjs-load-progress {

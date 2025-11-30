@@ -2,14 +2,17 @@
 
 import EnhancedButton from "@/components/ui/enhanced-button";
 import EnhancedInput from "@/components/ui/enhanced-input";
-import { MaterialRipple, MaterialModal } from "@/components/ui/material-animations";
+import {
+  MaterialRipple,
+  MaterialModal,
+} from "@/components/ui/material-animations";
 import { useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import ThemeToggle from "@/components/theme-toggle";
 import FilterPanel from "@/components/movie/filter-panel";
 import Sidebar from "@/components/sidebar";
-import Link from 'next/link';
+import Link from "next/link";
 import { useLoading } from "@/components/ui/loading-context";
 import { Search, Menu, X } from "lucide-react";
 
@@ -49,7 +52,9 @@ export default function Header({
     if (searchQuery.trim()) {
       showLoading();
       try {
-        await router.push(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+        await router.push(
+          `/search?query=${encodeURIComponent(searchQuery.trim())}`
+        );
       } finally {
         hideLoading();
         setShowSearch(false);
@@ -69,7 +74,11 @@ export default function Header({
         return;
       }
       try {
-        const res = await fetch(`https://phimapi.com/v1/api/tim-kiem?keyword=${encodeURIComponent(searchQuery.trim())}&limit=6`);
+        const res = await fetch(
+          `https://phimapi.com/v1/api/tim-kiem?keyword=${encodeURIComponent(
+            searchQuery.trim()
+          )}&limit=6`
+        );
         const data = await res.json();
         setSuggestions(data.data.items || []);
         setShowSuggestions(true);
@@ -119,7 +128,7 @@ export default function Header({
                   hideLoading();
                 }
               }}
-              className="text-2xl font-extrabold cursor-pointer mr-6 gradient-primary bg-clip-text text-transparent hover:scale-105 material-transition"
+              className="text-2xl font-extrabold cursor-pointer mr-6 text-primary hover:scale-105 material-transition"
             >
               Phim Ảnh
             </h1>
@@ -178,13 +187,10 @@ export default function Header({
           </div>
           {/* Desktop Filter */}
           <div className="hidden md:flex">
-            <FilterPanel
-              categories={categories}
-              countries={countries}
-            />
+            <FilterPanel categories={categories} countries={countries} />
           </div>
-       </div>
-       <div className="flex items-center space-x-2">
+        </div>
+        <div className="flex items-center space-x-2">
           <EnhancedButton
             variant="text"
             size="small"
@@ -200,10 +206,7 @@ export default function Header({
           />
           {/* Mobile Filter Button */}
           <div className="md:hidden">
-            <FilterPanel
-              categories={categories}
-              countries={countries}
-            />
+            <FilterPanel categories={categories} countries={countries} />
           </div>
         </div>
       </div>
@@ -238,9 +241,7 @@ export default function Header({
               type="submit"
               variant="contained"
               icon={<Search />}
-            >
-              Tìm
-            </EnhancedButton>
+            ></EnhancedButton>
             <EnhancedButton
               type="button"
               variant="outlined"
@@ -280,9 +281,12 @@ export default function Header({
                       className="w-12 h-16 object-cover rounded-lg material-elevation-1"
                     />
                     <div className="flex-1">
-                      <div className="font-semibold text-base line-clamp-1">{item.name}</div>
+                      <div className="font-semibold text-base line-clamp-1">
+                        {item.name}
+                      </div>
                       <div className="text-sm text-muted-foreground">
-                        {item.year} • {item.category?.map((cat: any) => cat.name).join(", ")}
+                        {item.year} •{" "}
+                        {item.category?.map((cat: any) => cat.name).join(", ")}
                       </div>
                     </div>
                   </div>
@@ -301,7 +305,6 @@ export default function Header({
         countries={countries}
         topics={topics}
       />
-
     </nav>
   );
 }

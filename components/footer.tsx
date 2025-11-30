@@ -113,9 +113,6 @@ export default function Footer() {
                 <p className="text-xs text-muted-foreground/70">
                   © {new Date().getFullYear()} Phim Ảnh. All rights reserved.
                 </p>
-                <p className="text-xs text-muted-foreground/50 mt-1">
-                  Made with ❤️ using Material Design
-                </p>
               </div>
             </div>
           </CardContent>

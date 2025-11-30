@@ -74,23 +74,35 @@ export default async function Home({ searchParams }: HomeProps) {
   // Fetch items for each topic if no filters are applied
   let topicsWithMovies = [];
   if (!hasFilters) {
-    topicsWithMovies = await Promise.all(
-      topics.map(async (topicItem: any) => {
-        try {
-          const movies = await api.getTopicItems(topicItem.slug, 6);
-          return {
-            ...topicItem,
-            movies: movies || [],
-          };
-        } catch (error) {
-          console.error(`Failed to fetch items for topic ${topicItem.slug}:`, error);
-          return {
-            ...topicItem,
-            movies: [],
-          };
-        }
-      })
-    );
+    try {
+      topicsWithMovies = await Promise.all(
+        topics.map(async (topicItem: any) => {
+          try {
+            const movies = await api.getTopicItems(topicItem.slug, 6);
+            console.log(`Fetched ${movies?.length || 0} movies for topic ${topicItem.name}`);
+            return {
+              ...topicItem,
+              movies: movies || [],
+            };
+          } catch (error) {
+            console.error(`Failed to fetch items for topic ${topicItem.slug}:`, error);
+            // Return topic anyway to show empty state
+            return {
+              ...topicItem,
+              movies: [],
+            };
+          }
+        })
+      );
+      console.log(`Total topics with movies: ${topicsWithMovies.length}`);
+    } catch (error) {
+      console.error('Failed to fetch all topics:', error);
+      // Ensure we always show topics even if data fetch fails
+      topicsWithMovies = topics.map((topicItem: any) => ({
+        ...topicItem,
+        movies: [],
+      }));
+    }
   }
 
   return (
@@ -110,15 +122,13 @@ export default async function Home({ searchParams }: HomeProps) {
         <div className="py-8 space-y-8">
           <NewUpdatesSection movies={newUpdates[0].slice(0, 6)} />
           <RecentlyWatched limit={6} />
-          {topicsWithMovies
-            .filter((topicData: any) => topicData.movies && topicData.movies.length > 0)
-            .map((topicData: any) => (
-              <TopicSection
-                key={topicData.slug}
-                topic={topicData}
-                movies={topicData.movies}
-              />
-            ))}
+          {topicsWithMovies.map((topicData: any) => (
+            <TopicSection
+              key={topicData.slug}
+              topic={topicData}
+              movies={topicData.movies || []}
+            />
+          ))}
         </div>
       )}
       <Footer />
