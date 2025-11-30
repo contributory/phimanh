@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 interface LoadingContextType {
   isLoading: boolean;
@@ -12,19 +12,24 @@ const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 
 export function LoadingProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const showLoading = () => {
     setIsLoading(true);
-    // Set global loading flag as well for backward compatibility
-    if (typeof window !== 'undefined') {
+    // Only set global loading flag on client side after mount
+    if (isMounted && typeof window !== 'undefined') {
       window.__globalLoading = true;
     }
   };
 
   const hideLoading = () => {
     setIsLoading(false);
-    // Set global loading flag as well for backward compatibility
-    if (typeof window !== 'undefined') {
+    // Only set global loading flag on client side after mount
+    if (isMounted && typeof window !== 'undefined') {
       window.__globalLoading = false;
     }
   };

@@ -1,7 +1,7 @@
 import PhimApi from "@/libs/phimapi.com";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import MovieListClient from "@/components/movie/MovieListClient";
+import MovieListClient from "@/components/movie/movie-list-client";
 
 type NewUpdatesProps = {
   searchParams: Promise<{

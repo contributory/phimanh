@@ -1,64 +1,60 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useMaterialTheme } from "@/components/providers/material-theme-provider";
+import { MaterialRipple } from "@/components/ui/material-animations";
+import EnhancedButton from "@/components/ui/enhanced-button";
+import { Sun, Moon } from "lucide-react";
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const { isDark, toggleTheme } = useMaterialTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    const initialTheme = savedTheme || systemTheme;
-    setTheme(initialTheme);
-    document.documentElement.classList.toggle("dark", initialTheme === "dark");
+    setMounted(true);
   }, []);
 
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
-  };
+  if (!mounted) {
+    return (
+      <EnhancedButton
+        variant="text"
+        size="small"
+        disabled
+        className="w-10 h-10 rounded-full"
+      >
+        <Sun className="w-5 h-5" />
+      </EnhancedButton>
+    );
+  }
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggleTheme}
-      className="relative overflow-hidden group"
-    >
-      {theme === "light" ? (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-6 h-6 transition-transform group-hover:rotate-180 duration-500"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
-          />
-        </svg>
-      ) : (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-6 h-6 transition-transform group-hover:rotate-180 duration-500"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-          />
-        </svg>
-      )}
-    </Button>
+    <MaterialRipple>
+      <EnhancedButton
+        variant="text"
+        size="small"
+        onClick={toggleTheme}
+        className="w-10 h-10 rounded-full relative overflow-hidden group hover:bg-primary/10"
+        icon={
+          <div className="relative w-6 h-6">
+            {/* Light mode icon */}
+            <Sun
+              className={`absolute inset-0 w-5 h-5 transition-all duration-500 ${
+                isDark
+                  ? 'rotate-90 scale-0 opacity-0'
+                  : 'rotate-0 scale-100 opacity-100'
+              } group-hover:rotate-12`}
+            />
+            {/* Dark mode icon */}
+            <Moon
+              className={`absolute inset-0 w-5 h-5 transition-all duration-500 ${
+                isDark
+                  ? 'rotate-0 scale-100 opacity-100'
+                  : '-rotate-90 scale-0 opacity-0'
+              } group-hover:-rotate-12`}
+            />
+          </div>
+        }
+      />
+    </MaterialRipple>
   );
 }

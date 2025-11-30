@@ -3,8 +3,9 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import TopicSection from "@/components/topic-section";
 import RecentlyWatched from "@/components/recently-watched";
-import MovieListClient from "@/components/movie/MovieListClient";
+import MovieListClient from "@/components/movie/movie-list-client";
 import NewUpdatesSection from "@/components/new-updates-section";
+import { ScrollToTopFAB } from "@/components/ui/material-fab";
 
 type HomeProps = {
   searchParams: Promise<{
@@ -73,27 +74,39 @@ export default async function Home({ searchParams }: HomeProps) {
   // Fetch items for each topic if no filters are applied
   let topicsWithMovies = [];
   if (!hasFilters) {
-    topicsWithMovies = await Promise.all(
-      topics.map(async (topicItem: any) => {
-        try {
-          const movies = await api.getTopicItems(topicItem.slug, 6);
-          return {
-            ...topicItem,
-            movies: movies || [],
-          };
-        } catch (error) {
-          console.error(`Failed to fetch items for topic ${topicItem.slug}:`, error);
-          return {
-            ...topicItem,
-            movies: [],
-          };
-        }
-      })
-    );
+    try {
+      topicsWithMovies = await Promise.all(
+        topics.map(async (topicItem: any) => {
+          try {
+            const movies = await api.getTopicItems(topicItem.slug, 6);
+            console.log(`Fetched ${movies?.length || 0} movies for topic ${topicItem.name}`);
+            return {
+              ...topicItem,
+              movies: movies || [],
+            };
+          } catch (error) {
+            console.error(`Failed to fetch items for topic ${topicItem.slug}:`, error);
+            // Return topic anyway to show empty state
+            return {
+              ...topicItem,
+              movies: [],
+            };
+          }
+        })
+      );
+      console.log(`Total topics with movies: ${topicsWithMovies.length}`);
+    } catch (error) {
+      console.error('Failed to fetch all topics:', error);
+      // Ensure we always show topics even if data fetch fails
+      topicsWithMovies = topics.map((topicItem: any) => ({
+        ...topicItem,
+        movies: [],
+      }));
+    }
   }
 
   return (
-    <main className="mx-auto max-w-screen-2xl px-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen">
+    <main className="mx-auto max-w-screen-2xl px-4 material-surface gradient-surface min-h-screen">
       <Header
         categories={categories}
         countries={countries}
@@ -106,21 +119,22 @@ export default async function Home({ searchParams }: HomeProps) {
           topic={topic}
         />
       ) : (
-        <div className="py-8">
+        <div className="py-8 space-y-8">
           <NewUpdatesSection movies={newUpdates[0].slice(0, 6)} />
           <RecentlyWatched limit={6} />
-          {topicsWithMovies
-            .filter((topicData: any) => topicData.movies && topicData.movies.length > 0)
-            .map((topicData: any) => (
-              <TopicSection
-                key={topicData.slug}
-                topic={topicData}
-                movies={topicData.movies}
-              />
-            ))}
+          {topicsWithMovies.map((topicData: any) => (
+            <TopicSection
+              key={topicData.slug}
+              topic={topicData}
+              movies={topicData.movies || []}
+            />
+          ))}
         </div>
       )}
       <Footer />
+      
+      {/* Material FAB for better UX */}
+      <ScrollToTopFAB />
     </main>
   );
 }
