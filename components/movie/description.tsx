@@ -7,7 +7,7 @@ import EmbedPlayer from "../player/embed-player";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Play, Calendar, Clock, Globe, Film, ChevronRight, ChevronDown } from "lucide-react";
+import { Play, Calendar, Clock, Globe, Film, ChevronRight, ChevronDown, Star, Users, Clapperboard, Tag, Sparkles, Heart } from "lucide-react";
 import Link from "next/link";
 
 interface DescriptionProps {
@@ -129,258 +129,310 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
   }, [currentEpisodeUrl, currentEpisodeIndex, movie.slug]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6 pt-4">
-      {/* Main Content: Player + Episode List Side by Side */}
-      <div className="flex flex-col lg:flex-row gap-4">
+    <div className="w-full max-w-7xl mx-auto space-y-6 pt-4 pb-8">
+      {/* Main Content: Player + Episode List */}
+      <div className="flex flex-col lg:flex-row gap-5">
         {/* Video Player - 2/3 width on desktop */}
         <div className="w-full lg:w-2/3">
-          <Card className="shadow-2xl rounded-2xl overflow-hidden bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50">
-            <CardContent className="p-0">
-              {/* Player */}
-              <div className="aspect-video">
-                {playerMode === 'm3u8' ? (
-                  <VideoPlayer
-                    videoUrl={currentEpisodeUrl}
-                    autoplay={true}
-                    poster={movie.thumb_url || movie.poster_url}
-                    onEnded={() => {
-                      if (!serverData || !currentEpisodeIndex) return;
+          <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/50 bg-gradient-to-b from-slate-900 to-black">
+            {/* Decorative glow effects */}
+            <div className="absolute -top-20 -left-20 w-40 h-40 bg-indigo-500/30 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-purple-500/30 rounded-full blur-3xl pointer-events-none" />
 
-                      const { server, episode } = currentEpisodeIndex;
-                      const currentServer = serverData[server];
-                      if (!currentServer) return;
+            {/* Player */}
+            <div className="aspect-video relative">
+              {playerMode === 'm3u8' ? (
+                <VideoPlayer
+                  videoUrl={currentEpisodeUrl}
+                  autoplay={true}
+                  poster={movie.thumb_url || movie.poster_url}
+                  onEnded={() => {
+                    if (!serverData || !currentEpisodeIndex) return;
 
-                      let nextEpisodeIndex = episode + 1;
-                      let nextServerIndex = server;
+                    const { server, episode } = currentEpisodeIndex;
+                    const currentServer = serverData[server];
+                    if (!currentServer) return;
 
-                      if (nextEpisodeIndex >= currentServer.server_data.length) {
-                        nextServerIndex = server + 1;
-                        nextEpisodeIndex = 0;
-                        if (nextServerIndex >= serverData.length) return;
-                      }
+                    let nextEpisodeIndex = episode + 1;
+                    let nextServerIndex = server;
 
-                      const nextServer = serverData[nextServerIndex];
-                      if (!nextServer || nextEpisodeIndex >= nextServer.server_data.length) return;
+                    if (nextEpisodeIndex >= currentServer.server_data.length) {
+                      nextServerIndex = server + 1;
+                      nextEpisodeIndex = 0;
+                      if (nextServerIndex >= serverData.length) return;
+                    }
 
-                      const nextEpisode = nextServer.server_data[nextEpisodeIndex];
-                      if (nextEpisode?.link_m3u8) {
-                        setCurrentEpisodeUrl(nextEpisode.link_m3u8);
-                        setCurrentEpisodeIndex({
-                          server: nextServerIndex,
-                          episode: nextEpisodeIndex,
-                        });
-                      }
-                    }}
-                  />
-                ) : (
-                  <EmbedPlayer videoUrl={currentEpisodeUrl} />
-                )}
-              </div>
+                    const nextServer = serverData[nextServerIndex];
+                    if (!nextServer || nextEpisodeIndex >= nextServer.server_data.length) return;
 
-              {/* Movie Info Bar */}
-              <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
-                      {movie.name}
-                    </h1>
-                    <div className="flex items-center gap-2 mt-1 text-sm text-gray-600 dark:text-gray-400 flex-wrap">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        {movie.year}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {movie.time}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Globe className="w-3.5 h-3.5" />
-                        {movie.country?.map((c: any) => c.name).join(", ")}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge className="bg-blue-600 text-white">{movie.quality}</Badge>
-                    <Badge className="bg-green-600 text-white">{movie.lang}</Badge>
-                    {movie.trailer_url && (
-                      <button
-                        onClick={() => setShowTrailer(true)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                      >
-                        <Play className="w-4 h-4" />
-                        Trailer
-                      </button>
-                    )}
+                    const nextEpisode = nextServer.server_data[nextEpisodeIndex];
+                    if (nextEpisode?.link_m3u8) {
+                      setCurrentEpisodeUrl(nextEpisode.link_m3u8);
+                      setCurrentEpisodeIndex({
+                        server: nextServerIndex,
+                        episode: nextEpisodeIndex,
+                      });
+                    }
+                  }}
+                />
+              ) : (
+                <EmbedPlayer videoUrl={currentEpisodeUrl} />
+              )}
+            </div>
+
+            {/* Movie Info Bar */}
+            <div className="p-5 sm:p-6 bg-gradient-to-b from-slate-900/95 to-slate-950/95 backdrop-blur-xl border-t border-white/5">
+              {/* Title Section */}
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight tracking-tight">
+                    {movie.name}
+                  </h1>
+                  {movie.origin_name && (
+                    <p className="text-sm text-indigo-400 font-medium mt-1.5 italic">
+                      {movie.origin_name}
+                    </p>
+                  )}
+
+                  {/* Info Pills */}
+                  <div className="flex items-center gap-2 mt-4 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white/80 border border-white/10">
+                      <Calendar className="w-3.5 h-3.5 text-indigo-400" />
+                      {movie.year}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white/80 border border-white/10">
+                      <Clock className="w-3.5 h-3.5 text-emerald-400" />
+                      {movie.time}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 backdrop-blur-sm rounded-full text-sm text-white/80 border border-white/10">
+                      <Globe className="w-3.5 h-3.5 text-amber-400" />
+                      {movie.country?.map((c: any) => c.name).join(", ")}
+                    </span>
                   </div>
                 </div>
 
-                {/* Movie Details - Single Level Dropdown */}
-                <div className="mt-4">
-                  <button
-                    onClick={() => setShowDetails(!showDetails)}
-                    className="flex items-center gap-2 font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    <ChevronDown className={`w-4 h-4 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
-                    Chi tiết phim
-                  </button>
-                  
-                  {showDetails && (
-                    <div className="mt-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
-                      {/* Origin Name */}
-                      {movie.origin_name && (
-                        <p className="text-base font-medium text-blue-600 dark:text-blue-400">
-                          {movie.origin_name}
-                        </p>
-                      )}
+                {/* Actions */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white border-0 px-4 py-1.5 text-sm font-semibold shadow-lg shadow-indigo-500/30">
+                    {movie.quality}
+                  </Badge>
+                  <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 px-4 py-1.5 text-sm font-semibold shadow-lg shadow-emerald-500/30">
+                    {movie.lang}
+                  </Badge>
+                  {movie.trailer_url && (
+                    <button
+                      onClick={() => setShowTrailer(true)}
+                      className="inline-flex items-center gap-2 px-5 py-2 text-sm font-bold bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-xl transition-all duration-300 shadow-lg shadow-rose-500/30 hover:shadow-rose-500/50 hover:scale-105"
+                    >
+                      <Play className="w-4 h-4" />
+                      Trailer
+                    </button>
+                  )}
+                </div>
+              </div>
 
-                      {/* Info Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                        {movie.director?.length > 0 && (
-                          <div>
-                            <p className="font-semibold text-gray-900 dark:text-white">Đạo diễn:</p>
-                            <p className="mt-1 text-gray-600 dark:text-gray-400">{movie.director.join(", ")}</p>
-                          </div>
-                        )}
-                        {movie.actor?.length > 0 && (
-                          <div>
-                            <p className="font-semibold text-gray-900 dark:text-white">Diễn viên:</p>
-                            <p className="mt-1 text-gray-600 dark:text-gray-400">{movie.actor.join(", ")}</p>
-                          </div>
-                        )}
-                        {movie.category?.length > 0 && (
-                          <div>
-                            <p className="font-semibold text-gray-900 dark:text-white">Thể loại:</p>
-                            <p className="mt-1 text-gray-600 dark:text-gray-400">
-                              {movie.category.map((cat: any) => cat.name).join(", ")}
-                            </p>
-                          </div>
-                        )}
-                        {movie.country?.length > 0 && (
-                          <div>
-                            <p className="font-semibold text-gray-900 dark:text-white">Quốc gia:</p>
-                            <p className="mt-1 text-gray-600 dark:text-gray-400">
-                              {movie.country.map((c: any) => c.name).join(", ")}
-                            </p>
-                          </div>
-                        )}
+              {/* Details Toggle */}
+              <div className="mt-6">
+                <button
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="inline-flex items-center gap-2.5 text-sm font-semibold text-white/70 hover:text-white transition-colors group"
+                >
+                  <div className={`p-2 rounded-xl transition-all duration-300 ${showDetails ? 'bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg shadow-indigo-500/30' : 'bg-white/10 group-hover:bg-white/20'}`}>
+                    <ChevronDown className={`w-4 h-4 transition-all duration-300 ${showDetails ? 'rotate-180 text-white' : 'text-white/70'}`} />
+                  </div>
+                  Chi tiết phim
+                </button>
+
+                <div className={`mt-5 space-y-5 overflow-hidden transition-all duration-500 ease-out ${showDetails ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                  {/* Info Cards Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {movie.director?.length > 0 && (
+                      <div className="flex items-start gap-3 p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
+                        <div className="p-2.5 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-lg shadow-amber-500/20">
+                          <Clapperboard className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-white text-sm">Đạo diễn</p>
+                          <p className="mt-1 text-white/60 text-sm">{movie.director.join(", ")}</p>
+                        </div>
                       </div>
-
-                      {/* Plot Summary */}
-                      {movie.content && (
-                        <div className="bg-gray-100 dark:bg-gray-800 rounded-xl p-4">
-                          <h3 className="text-sm font-bold mb-2 text-gray-900 dark:text-white">Nội dung phim</h3>
-                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                            {movie.content}
+                    )}
+                    {movie.actor?.length > 0 && (
+                      <div className="flex items-start gap-3 p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
+                        <div className="p-2.5 bg-gradient-to-br from-rose-500 to-pink-500 rounded-xl shadow-lg shadow-rose-500/20">
+                          <Users className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-white text-sm">Diễn viên</p>
+                          <p className="mt-1 text-white/60 text-sm line-clamp-2">{movie.actor.join(", ")}</p>
+                        </div>
+                      </div>
+                    )}
+                    {movie.category?.length > 0 && (
+                      <div className="flex items-start gap-3 p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
+                        <div className="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl shadow-lg shadow-indigo-500/20">
+                          <Tag className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-white text-sm">Thể loại</p>
+                          <p className="mt-1 text-white/60 text-sm">
+                            {movie.category.map((cat: any) => cat.name).join(", ")}
                           </p>
                         </div>
-                      )}
+                      </div>
+                    )}
+                    {movie.country?.length > 0 && (
+                      <div className="flex items-start gap-3 p-4 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/5 hover:border-white/10 transition-colors">
+                        <div className="p-2.5 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl shadow-lg shadow-emerald-500/20">
+                          <Globe className="w-4 h-4 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-white text-sm">Quốc gia</p>
+                          <p className="mt-1 text-white/60 text-sm">
+                            {movie.country.map((c: any) => c.name).join(", ")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Plot Summary */}
+                  {movie.content && (
+                    <div className="p-5 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-sm rounded-2xl border border-white/5">
+                      <h3 className="text-sm font-bold mb-3 text-white flex items-center gap-2">
+                        <Film className="w-4 h-4 text-indigo-400" />
+                        Nội dung phim
+                      </h3>
+                      <p className="text-sm text-white/60 leading-relaxed">
+                        {movie.content}
+                      </p>
                     </div>
                   )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
         {/* Episode List - 1/3 width on desktop */}
         <div className="w-full lg:w-1/3">
-          <Card className="shadow-2xl rounded-2xl overflow-hidden bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50 h-full">
-            <CardContent className="p-0">
-              <Episode
-                serverData={serverData}
-                currentServerIndex={currentEpisodeIndex?.server || 0}
-                currentEpisodeIndex={currentEpisodeIndex?.episode || 0}
-                onSelectEpisode={handleSelectEpisode}
-                onServerChange={handleServerChange}
-                thumb_url={movie.thumb_url}
-                playerMode={playerMode}
-                onPlayerModeChange={(mode) => {
-                  setPlayerMode(mode);
-                  if (currentEpisodeIndex && serverData) {
-                    const currentEpisode = serverData[currentEpisodeIndex.server]?.server_data[currentEpisodeIndex.episode];
-                    if (currentEpisode) {
-                      if (mode === 'm3u8' && currentEpisode.link_m3u8) {
-                        setCurrentEpisodeUrl(currentEpisode.link_m3u8);
-                      } else if (mode === 'embed' && currentEpisode.link_embed) {
-                        setCurrentEpisodeUrl(currentEpisode.link_embed);
-                      }
+          <div className="rounded-2xl overflow-hidden shadow-2xl shadow-black/50 h-full">
+            <Episode
+              serverData={serverData}
+              currentServerIndex={currentEpisodeIndex?.server || 0}
+              currentEpisodeIndex={currentEpisodeIndex?.episode || 0}
+              onSelectEpisode={handleSelectEpisode}
+              onServerChange={handleServerChange}
+              thumb_url={movie.thumb_url}
+              playerMode={playerMode}
+              onPlayerModeChange={(mode) => {
+                setPlayerMode(mode);
+                if (currentEpisodeIndex && serverData) {
+                  const currentEpisode = serverData[currentEpisodeIndex.server]?.server_data[currentEpisodeIndex.episode];
+                  if (currentEpisode) {
+                    if (mode === 'm3u8' && currentEpisode.link_m3u8) {
+                      setCurrentEpisodeUrl(currentEpisode.link_m3u8);
+                    } else if (mode === 'embed' && currentEpisode.link_embed) {
+                      setCurrentEpisodeUrl(currentEpisode.link_embed);
                     }
                   }
-                }}
-                compact={true}
-              />
-            </CardContent>
-          </Card>
+                }
+              }}
+              compact={true}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Recommendations Section - Horizontal Scroll */}
+      {/* Recommendations Section */}
       {recommendations.length > 0 && (
-        <Card className="shadow-xl rounded-2xl overflow-hidden bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <Film className="w-5 h-5 text-blue-500" />
+        <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-black/30 bg-gradient-to-b from-slate-900/95 to-slate-950/95 backdrop-blur-xl border border-white/5">
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative p-5 sm:p-6">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-3">
+                <div className="p-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl shadow-lg shadow-indigo-500/30">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
                 Phim đề xuất
               </h2>
               {movie.category && movie.category[0] && (
                 <Link
                   href={`/category/${movie.category[0].slug}`}
-                  className="flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors group"
                 >
                   Xem thêm
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
               )}
             </div>
 
             {/* Horizontal Scroll Container */}
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent -mx-4 px-4 sm:-mx-6 sm:px-6">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent -mx-5 px-5 sm:-mx-6 sm:px-6">
               {recommendations.map((rec: any) => (
                 <Link
                   key={rec.slug}
                   href={`/watch?slug=${rec.slug}`}
-                  className="group flex-shrink-0 w-28 sm:w-32"
+                  className="group flex-shrink-0 w-36 sm:w-40"
                 >
-                  <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-800">
+                  <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-slate-800 shadow-xl group-hover:shadow-2xl group-hover:shadow-indigo-500/20 transition-all duration-500 ring-1 ring-white/10 group-hover:ring-indigo-500/50">
                     <img
                       src={rec.poster_url?.startsWith("http") ? rec.poster_url : `https://phimimg.com/${rec.poster_url}`}
                       alt={rec.name}
                       loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute bottom-0 left-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-white text-xs font-medium line-clamp-2">
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+
+                    {/* Title on hover */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <p className="text-white text-sm font-semibold line-clamp-2 drop-shadow-lg">
                         {rec.name}
                       </p>
                     </div>
-                    <div className="absolute top-1 right-1 px-1.5 py-0.5 bg-red-600 text-white text-[10px] font-bold rounded">
-                      {rec.quality || "HD"}
+
+                    {/* Quality badge */}
+                    <div className="absolute top-2 left-2">
+                      <Badge className="bg-gradient-to-r from-rose-500 to-pink-500 text-white text-[10px] font-bold border-0 shadow-lg px-2 py-0.5">
+                        {rec.quality || "HD"}
+                      </Badge>
+                    </div>
+
+                    {/* Play icon overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <div className="p-4 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full shadow-xl shadow-indigo-500/50 transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                        <Play className="w-6 h-6 text-white fill-white" />
+                      </div>
                     </div>
                   </div>
-                  <p className="mt-2 text-xs font-medium text-gray-800 dark:text-gray-200 line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  <p className="mt-3 text-sm font-medium text-white/80 line-clamp-1 group-hover:text-indigo-400 transition-colors">
                     {rec.name}
                   </p>
                 </Link>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {/* Trailer Modal */}
       <Dialog open={showTrailer} onOpenChange={setShowTrailer}>
-        <DialogContent className="sm:max-w-4xl bg-black/90 border-gray-800">
-          <DialogTitle className="text-white text-xl font-bold mb-2">
+        <DialogContent className="sm:max-w-4xl bg-black/95 backdrop-blur-xl border-white/10 rounded-2xl">
+          <DialogTitle className="text-white text-xl font-bold mb-4 flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-rose-500 to-pink-500 rounded-xl shadow-lg shadow-rose-500/30">
+              <Play className="w-5 h-5 text-white" />
+            </div>
             Trailer phim
           </DialogTitle>
-          <div className="aspect-video">
+          <div className="aspect-video rounded-xl overflow-hidden ring-1 ring-white/10">
             <iframe
               src={`https://www.youtube.com/embed/${movie.trailer_url?.split("v=")[1]}`}
-              className="w-full h-full rounded-xl border-2 border-gray-700"
+              className="w-full h-full"
               allowFullScreen
               title="Movie Trailer"
             />
