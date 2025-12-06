@@ -2,7 +2,8 @@ import { MetadataRoute } from "next";
 import PhimApi from "@/libs/phimapi.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://phimanh.netlify.app"; // Unified base URL
+  const baseUrl =
+    process.env.NEXT_PUBLIC_SITE_URL || "https://phimanh.netlify.app"; // Unified base URL
   const api = new PhimApi();
 
   try {
@@ -57,14 +58,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Movie routes - limit to recent movies for better performance
     const movieRoutes = newMovies.slice(0, 1000).map((movie: any) => ({
       url: `${baseUrl}/watch?slug=${movie.slug}`,
-      lastModified: movie.modified_time ? new Date(movie.modified_time) : new Date(),
+      lastModified: movie.modified_time
+        ? new Date(movie.modified_time)
+        : new Date(),
       changeFrequency: "monthly" as const,
       priority: 0.6,
     }));
 
     return [...routes, ...topicRoutes, ...categoryRoutes, ...movieRoutes];
   } catch (error) {
-    console.error('Error generating sitemap:', error);
+    console.error("Error generating sitemap:", error);
     // Return basic sitemap if API fails
     return [
       {
