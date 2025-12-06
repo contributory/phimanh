@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     "xem phim online", "phim hay 2024", "phimanhd"
   ],
   metadataBase: new URL("https://phimanh.netlify.app"),
-  
+
   // Enhanced Open Graph
   openGraph: {
     title: "Phim Ảnh - Kho phim HD chất lượng cao miễn phí",
@@ -39,14 +39,14 @@ export const metadata: Metadata = {
     locale: "vi_VN",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/og-image.svg",
         width: 1200,
         height: 630,
         alt: "Phim Ảnh - Xem phim HD chất lượng cao miễn phí",
       },
     ],
   },
-  
+
   // Enhanced Twitter Card
   twitter: {
     card: "summary_large_image",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     description: "Kho phim ảnh HD chất lượng cao với hơn 50,000+ bộ phim thuộc mọi thể loại.",
     images: ["/twitter-image.jpg"],
   },
-  
+
   // Additional metadata
   applicationName: "Phim Ảnh",
   referrer: "origin-when-cross-origin",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
   publisher: "Phim Ảnh",
   category: "Entertainment",
   classification: "Movie Streaming Website",
-  
+
   robots: {
     index: true,
     follow: true,
@@ -77,13 +77,13 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  
+
   // Verification
   verification: {
     google: "your-google-verification-code",
     yandex: "your-yandex-verification-code",
   },
-  
+
   // Additional SEO
   alternates: {
     canonical: "https://phimanh.netlify.app",
@@ -101,7 +101,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="canonical" href="https://phimanh.netlify.app" />
         <meta name="robots" content="index, follow" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <style
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
@@ -250,11 +250,11 @@ export default function RootLayout({
           ></iframe>
         </noscript>
         {/* End Google Tag Manager (noscript) */}
-        
+
         {/* Structured Data */}
         <WebsiteStructuredData url="https://phimanh.netlify.app" />
         <OrganizationStructuredData url="https://phimanh.netlify.app" />
-        
+
         <HydrationFix />
         <MaterialThemeProvider>
           <LoadingProvider>

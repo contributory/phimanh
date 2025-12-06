@@ -67,7 +67,7 @@ export default function MovieSection({
           </svg>
         </Link>
       </div>
-      
+
       {/* Card chứa movies */}
       <Card variant="glass" className="overflow-hidden">
         <CardContent className="p-6">
@@ -76,7 +76,7 @@ export default function MovieSection({
               movies.map((movie: any, index: number) => {
                 return (
                   <ScrollReveal
-                    key={movie.slug}
+                    key={`${movie.slug || 'movie'}-${index}`}
                     animation="grow"
                     threshold={0.1}
                   >

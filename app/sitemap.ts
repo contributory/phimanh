@@ -40,7 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Topic routes - important for SEO
     const topicRoutes = topics.map((topic: any) => ({
-      url: `${baseUrl}/?topic=${topic.slug}`,
+      url: `${baseUrl}/topic/${topic.slug}`,
       lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: 0.8,
@@ -48,7 +48,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Category routes - important for SEO
     const categoryRoutes = categories.map((category: any) => ({
-      url: `${baseUrl}/?category=${category.slug}`,
+      url: `${baseUrl}/category/${category.slug}`,
       lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: 0.8,

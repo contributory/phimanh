@@ -113,7 +113,7 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
     if (filters.year) params.set("year", filters.year);
     params.set("limit", filters.limit);
 
-    await router.push(`/?${params.toString()}`);
+    await router.push(`/filter?${params.toString()}`);
   };
 
   const resetFilters = async () => {
@@ -200,10 +200,9 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
                 ? "rgba(18, 18, 18, 0.95)"
                 : "rgba(255, 255, 255, 0.95)",
             border: (theme) =>
-              `1px solid ${
-                theme.palette.mode === "dark"
-                  ? "rgba(255, 255, 255, 0.12)"
-                  : "rgba(0, 0, 0, 0.12)"
+              `1px solid ${theme.palette.mode === "dark"
+                ? "rgba(255, 255, 255, 0.12)"
+                : "rgba(0, 0, 0, 0.12)"
               }`,
             transform: { md: "translateX(-100%)" },
           }}
@@ -232,7 +231,7 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
             <IconButton
               onClick={() => setIsOpen(false)}
               size="small"
-              sx={{ 
+              sx={{
                 bgcolor: "action.hover",
                 "&:hover": { bgcolor: "action.selected" }
               }}
@@ -395,10 +394,9 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
               pt: 3,
               mt: 3,
               borderTop: (theme) =>
-                `1px solid ${
-                  theme.palette.mode === "dark"
-                    ? "rgba(255, 255, 255, 0.12)"
-                    : "rgba(0, 0, 0, 0.12)"
+                `1px solid ${theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.12)"
+                  : "rgba(0, 0, 0, 0.12)"
                 }`,
             }}
           >

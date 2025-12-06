@@ -83,7 +83,7 @@ export function CategoryLinks({ categories, title = "Thể loại phim", showCou
         {categories.map((category) => (
           <Link
             key={category.slug}
-            href={`/?category=${category.slug}`}
+            href={`/category/${category.slug}`}
             className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors"
             title={`Xem phim ${category.name}`}
           >
@@ -113,12 +113,11 @@ export function TopicNavigation({ topics, currentTopic, title = "Chủ đề n�
         {topics.map((topic) => (
           <Link
             key={topic.slug}
-            href={`/?topic=${topic.slug}`}
-            className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-              currentTopic === topic.slug
+            href={`/topic/${topic.slug}`}
+            className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${currentTopic === topic.slug
                 ? 'bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-700'
                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
+              }`}
             title={`Xem phim ${topic.name}`}
           >
             <span className="font-medium">{topic.name}</span>
@@ -196,7 +195,7 @@ export function PopularCategories({ categories, title = "Thể loại phổ bi�
         {categories.slice(0, 9).map((category) => (
           <Link
             key={category.slug}
-            href={`/?category=${category.slug}`}
+            href={`/category/${category.slug}`}
             className="group p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-lg hover:shadow-md transition-all"
             title={`Khám phá phim ${category.name}`}
           >
@@ -237,7 +236,7 @@ export function FooterSEOLinks({ categories, topics }: FooterSEOLinksProps) {
             {categories.slice(0, 10).map((category) => (
               <Link
                 key={category.slug}
-                href={`/?category=${category.slug}`}
+                href={`/category/${category.slug}`}
                 className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 title={`Phim ${category.name}`}
               >
@@ -254,7 +253,7 @@ export function FooterSEOLinks({ categories, topics }: FooterSEOLinksProps) {
             {topics.slice(0, 10).map((topic) => (
               <Link
                 key={topic.slug}
-                href={`/?topic=${topic.slug}`}
+                href={`/topic/${topic.slug}`}
                 className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                 title={`Phim ${topic.name}`}
               >

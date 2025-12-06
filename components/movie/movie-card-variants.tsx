@@ -27,9 +27,9 @@ export function MovieCardLarge({ movie }: { movie: any }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300 z-10" />
           <img
             src={
-              movie.poster_url.startsWith("http")
+              movie.poster_url?.startsWith("http")
                 ? movie.poster_url
-                : `https://phimimg.com/${movie.poster_url}`
+                : movie.poster_url ? `https://phimimg.com/${movie.poster_url}` : '/placeholder-movie.png'
             }
             alt={movie.name}
             loading="lazy"
@@ -80,9 +80,9 @@ export function MovieCardWide({ movie }: { movie: any }) {
             <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/20 group-hover:to-black/40 transition-all duration-300 z-10" />
             <img
               src={
-                movie.poster_url.startsWith("http")
+                movie.poster_url?.startsWith("http")
                   ? movie.poster_url
-                  : `https://phimimg.com/${movie.poster_url}`
+                  : movie.poster_url ? `https://phimimg.com/${movie.poster_url}` : '/placeholder-movie.png'
               }
               alt={movie.name}
               loading="lazy"
@@ -132,9 +132,9 @@ export function MovieCardCompact({ movie }: { movie: any }) {
         <div className="relative aspect-[3/4] w-full overflow-hidden">
           <img
             src={
-              movie.poster_url.startsWith("http")
+              movie.poster_url?.startsWith("http")
                 ? movie.poster_url
-                : `https://phimimg.com/${movie.poster_url}`
+                : movie.poster_url ? `https://phimimg.com/${movie.poster_url}` : '/placeholder-movie.png'
             }
             alt={movie.name}
             loading="lazy"
@@ -174,9 +174,9 @@ export function MovieCardDefault({ movie }: { movie: any }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
           <img
             src={
-              movie.poster_url.startsWith("http")
+              movie.poster_url?.startsWith("http")
                 ? movie.poster_url
-                : `https://phimimg.com/${movie.poster_url}`
+                : movie.poster_url ? `https://phimimg.com/${movie.poster_url}` : '/placeholder-movie.png'
             }
             alt={movie.name}
             loading="lazy"

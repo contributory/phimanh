@@ -13,7 +13,7 @@ export default function TopicSection({ topic, movies }: TopicSectionProps) {
     <MovieSection
       title={topic.name}
       movies={movies}
-      viewAllLink={`/?topic=${topic.slug}`}
+      viewAllLink={`/topic/${topic.slug}`}
       buttonColor="green"
       emptyMessage="Chưa có phim nào"
     />
