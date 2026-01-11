@@ -17,6 +17,9 @@ export default function Loading() {
           <p className="text-gray-600 dark:text-gray-400">
             Vui lòng chờ trong giây lát
           </p>
+          <p className="text-sm text-gray-500 dark:text-gray-500 mt-4 max-w-md mx-auto">
+            Trang web dành cho mục đích học tập, chúng tôi không lưu trữ và cũng không chịu trách nhiệm cho nội dung bản quyền xuất hiện trên trang web
+          </p>
         </div>
       </div>
     </main>
