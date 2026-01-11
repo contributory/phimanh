@@ -17,10 +17,12 @@ export default function Loading() {
           <p className="text-gray-600 dark:text-gray-400">
             Vui lòng chờ trong giây lát
           </p>
-          <p className="text-sm text-gray-500 dark:text-gray-500 mt-4 max-w-md mx-auto">
-            Trang web dành cho mục đích học tập, chúng tôi không lưu trữ và cũng không chịu trách nhiệm cho nội dung bản quyền xuất hiện trên trang web
-          </p>
         </div>
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 p-4 text-center pointer-events-none">
+        <p className="text-xs text-gray-500 dark:text-gray-400 max-w-4xl mx-auto">
+          Trang web dành cho mục đích học tập, chúng tôi không lưu trữ và cũng không chịu trách nhiệm cho nội dung bản quyền xuất hiện trên trang web
+        </p>
       </div>
     </main>
   );

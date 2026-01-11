@@ -9,7 +9,7 @@ import { ScrollToTopFAB } from "@/components/ui/material-fab";
 export const metadata = {
   title: "Phim Ảnh - Xem phim chất lượng cao",
   description:
-    "Khám phá kho tàng phim ảnh chất lượng cao với hình ảnh và âm thanh hoàn hảo. Trải nghiệm những tác phẩm điện ảnh kinh điển với chất lượng tuyệt đỉnh.",
+    "Trang web dành cho mục đích học tập, chúng tôi không lưu trữ và cũng không chịu trách nhiệm cho nội dung bản quyền xuất hiện trên trang web.",
   keywords:
     "phim ảnh, phim chất lượng cao, phim, phim hd, phim kinh điển, phim viễn tưởng, phim kinh dị, phim bộ, anime",
 };
