@@ -11,6 +11,7 @@ import Sidebar from "@/components/sidebar";
 import Link from "next/link";
 import { useLoading } from "@/components/ui/loading-context";
 import { Search, Menu, X, ChevronDown } from "lucide-react";
+import { Suspense } from "react";
 
 interface HeaderProps {
   categories?: { slug: string; name: string }[];
@@ -204,13 +205,15 @@ export default function Header({
         </div>
       )}
 
-      <Sidebar
-        isOpen={showSidebar}
-        onClose={() => setShowSidebar(false)}
-        categories={categories}
-        countries={countries}
-        topics={topics}
-      />
+      <Suspense fallback={null}>
+        <Sidebar
+          isOpen={showSidebar}
+          onClose={() => setShowSidebar(false)}
+          categories={categories}
+          countries={countries}
+          topics={topics}
+        />
+      </Suspense>
     </nav>
   );
 }

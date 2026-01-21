@@ -3,6 +3,7 @@ import { MovieCardDefault } from "@/components/movie/movie-card-variants";
 import Pagination from "@/components/pagination";
 import { Card, CardContent } from "@/components/ui/enhanced-card";
 import { ScrollReveal } from "@/components/ui/material-animations";
+import { Suspense } from "react";
 
 interface MovieListClientProps {
   movies?: any[];
@@ -83,7 +84,9 @@ export default function MovieListClient({
         <div className="mt-8">
           <Card variant="glass">
             <CardContent className="p-4">
-              <Pagination pageInfo={pageInfo} />
+              <Suspense fallback={null}>
+                <Pagination pageInfo={pageInfo} />
+              </Suspense>
             </CardContent>
           </Card>
         </div>

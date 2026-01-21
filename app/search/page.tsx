@@ -4,6 +4,7 @@ import Header from "@/components/header";
 import Pagination from "@/components/pagination";
 import Footer from "@/components/footer";
 import { ScrollReveal } from "@/components/ui/material-animations";
+import { Suspense } from "react";
 
 type SearchPageProps = {
   searchParams: Promise<{
@@ -58,7 +59,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </ScrollReveal>
       </div>
       <div className="py-8 border-t border-zinc-800/50 mt-8">
-        <Pagination />
+        <Suspense fallback={null}>
+          <Pagination />
+        </Suspense>
       </div>
       <Footer />
     </main>

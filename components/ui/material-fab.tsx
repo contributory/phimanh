@@ -36,10 +36,10 @@ export default function MaterialFABGroup({
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-8 right-8 z-[1000] flex flex-col items-end gap-4">
       {/* Secondary FABs */}
       {isExpanded && (
-        <div className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Quick Search FAB */}
           <MaterialRipple>
             <button
@@ -47,9 +47,9 @@ export default function MaterialFABGroup({
                 onSearchClick?.();
                 setIsExpanded(false);
               }}
-              className="w-12 h-12 bg-secondary text-secondary-foreground rounded-full material-elevation-2 hover:material-elevation-3 material-transition flex items-center justify-center group"
+              className="w-14 h-14 bg-zinc-900/80 backdrop-blur-xl text-white rounded-2xl border border-white/10 shadow-2xl flex items-center justify-center group hover:border-blue-500/50 transition-all"
             >
-              <Search className="w-5 h-5 transition-transform group-hover:scale-110" />
+              <Search className="w-6 h-6 transition-transform group-hover:scale-110" />
             </button>
           </MaterialRipple>
 
@@ -57,13 +57,12 @@ export default function MaterialFABGroup({
           <MaterialRipple>
             <button
               onClick={() => {
-                // Navigate to favorites/recently watched
                 window.location.href = '/recently';
                 setIsExpanded(false);
               }}
-              className="w-12 h-12 bg-red-500 text-white rounded-full material-elevation-2 hover:material-elevation-3 material-transition flex items-center justify-center group"
+              className="w-14 h-14 bg-zinc-900/80 backdrop-blur-xl text-white rounded-2xl border border-white/10 shadow-2xl flex items-center justify-center group hover:border-red-500/50 transition-all"
             >
-              <Heart className="w-5 h-5 transition-transform group-hover:scale-110" />
+              <Heart className="w-6 h-6 transition-transform group-hover:scale-110" />
             </button>
           </MaterialRipple>
 
@@ -75,9 +74,9 @@ export default function MaterialFABGroup({
                   scrollToTop();
                   setIsExpanded(false);
                 }}
-                className="w-12 h-12 bg-green-500 text-white rounded-full material-elevation-2 hover:material-elevation-3 material-transition flex items-center justify-center group"
+                className="w-14 h-14 bg-zinc-900/80 backdrop-blur-xl text-white rounded-2xl border border-white/10 shadow-2xl flex items-center justify-center group hover:border-green-500/50 transition-all"
               >
-                <ArrowUp className="w-5 h-5 transition-transform group-hover:scale-110" />
+                <ArrowUp className="w-6 h-6 transition-transform group-hover:scale-110" />
               </button>
             </MaterialRipple>
           )}
@@ -88,18 +87,18 @@ export default function MaterialFABGroup({
       <MaterialRipple>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className={`w-14 h-14 bg-primary text-primary-foreground rounded-full material-elevation-3 hover:material-elevation-4 material-transition flex items-center justify-center group ${
+          className={`w-16 h-16 bg-red-600 text-white rounded-2xl border border-white/10 shadow-[0_8px_32px_rgba(239,68,68,0.3)] flex items-center justify-center group transition-all duration-500 ${
             isExpanded ? 'rotate-45' : ''
           }`}
         >
-          <Menu className="w-6 h-6 transition-all duration-300 group-hover:scale-110" />
+          <Menu className="w-8 h-8 transition-all duration-300 group-hover:scale-110" />
         </button>
       </MaterialRipple>
 
       {/* Backdrop */}
       {isExpanded && (
         <div
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10 animate-in fade-in duration-300"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm -z-10 animate-in fade-in duration-500"
           onClick={() => setIsExpanded(false)}
         />
       )}
@@ -107,16 +106,22 @@ export default function MaterialFABGroup({
   );
 }
 
-// Simple scroll to top FAB
+// Simple scroll to top FAB with progress indicator
 export function ScrollToTopFAB() {
   const [visible, setVisible] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
-      setVisible(window.scrollY > 300);
+      const scrollY = window.scrollY;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = (scrollY / height) * 100;
+      
+      setScrollProgress(progress);
+      setVisible(scrollY > 300);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -128,9 +133,45 @@ export function ScrollToTopFAB() {
   };
 
   return (
-    <MaterialFAB visible={visible} onClick={scrollToTop}>
-      <ArrowUp className="w-6 h-6" />
-    </MaterialFAB>
+    <div className="fixed bottom-8 right-8 z-[1000] pointer-events-none">
+      <div className={`relative transition-all duration-500 transform ${visible ? 'scale-100 opacity-100 translate-y-0' : 'scale-0 opacity-0 translate-y-10'}`}>
+        <button
+          onClick={scrollToTop}
+          className="relative w-16 h-16 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center group pointer-events-auto hover:border-red-500/50 transition-colors shadow-2xl"
+          aria-label="Back to top"
+        >
+          {/* Progress Circle Backdrop */}
+          <svg className="absolute inset-0 w-full h-full -rotate-90">
+            <circle
+              cx="32"
+              cy="32"
+              r="28"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="text-white/5"
+            />
+            {/* Active Progress Circle */}
+            <circle
+              cx="32"
+              cy="32"
+              r="28"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeDasharray={175.9}
+              strokeDashoffset={175.9 - (175.9 * scrollProgress) / 100}
+              strokeLinecap="round"
+              className="text-red-500 transition-all duration-200"
+            />
+          </svg>
+          
+          <ArrowUp className="w-6 h-6 text-white group-hover:-translate-y-1 transition-transform duration-300 relative z-10" />
+          
+          <div className="absolute inset-0 bg-red-500/0 group-hover:bg-red-500/5 rounded-2xl transition-colors" />
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -175,14 +216,17 @@ export function QuickActionFAB({
   };
 
   return (
-    <MaterialRipple>
+    <MaterialRipple className="fixed bottom-8 right-8 z-[1000]">
       <button
         onClick={onClick}
-        className={`fixed bottom-6 right-6 w-14 h-14 text-white rounded-full material-elevation-3 hover:material-elevation-4 material-transition flex items-center justify-center group z-50 ${getColors()} ${
-          visible ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
-        }`}
+        className={`w-16 h-16 text-white rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl material-transition flex items-center justify-center group ${getColors()} ${
+          visible ? 'scale-100 opacity-100 translate-y-0' : 'scale-0 opacity-0 translate-y-10'
+        } transition-all duration-500`}
       >
-        {getIcon()}
+        <span className="relative z-10 transition-transform duration-300 group-hover:scale-110">
+          {getIcon()}
+        </span>
+        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity" />
       </button>
     </MaterialRipple>
   );

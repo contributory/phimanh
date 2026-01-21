@@ -204,32 +204,44 @@ const fabAnimation = keyframes`
 
 const FloatingButton = styled('button')<{ visible: boolean }>(({ theme, visible }) => ({
   position: 'fixed',
-  bottom: 24,
-  right: 24,
-  width: 56,
-  height: 56,
-  borderRadius: '50%',
-  border: 'none',
-  backgroundColor: 'hsl(var(--primary))',
-  color: 'hsl(var(--primary-foreground))',
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+  bottom: 32,
+  right: 32,
+  width: 60,
+  height: 60,
+  borderRadius: '20px',
+  border: '1px solid rgba(255, 255, 255, 0.1)',
+  backgroundColor: 'rgba(239, 68, 68, 0.9)', // primary red with transparency
+  backdropFilter: 'blur(8px)',
+  color: 'white',
+  boxShadow: '0 8px 32px rgba(239, 68, 68, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-  transform: visible ? 'scale(1)' : 'scale(0)',
+  transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+  transform: visible ? 'scale(1) translateY(0)' : 'scale(0) translateY(40px)',
   opacity: visible ? 1 : 0,
-  animation: visible ? `${fabAnimation} 0.5s ease-out` : 'none',
+  zIndex: 1000,
+  overflow: 'hidden',
   
   '&:hover': {
-    transform: visible ? 'scale(1.1)' : 'scale(0)',
-    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.4)',
+    transform: visible ? 'scale(1.1) translateY(-4px)' : 'scale(0)',
+    boxShadow: '0 12px 40px rgba(239, 68, 68, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgb(239, 68, 68)',
   },
   
   '&:active': {
     transform: visible ? 'scale(0.95)' : 'scale(0)',
   },
+
+  '& svg': {
+    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+    transition: 'transform 0.3s ease',
+  },
+
+  '&:hover svg': {
+    transform: 'translateY(-2px)',
+  }
 }));
 
 interface MaterialFABProps {

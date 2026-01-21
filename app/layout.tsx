@@ -12,6 +12,7 @@ import HydrationFix from "@/components/ui/hydration-fix";
 import { VideoProvider } from "@/components/providers/video-provider";
 import GlobalPlayer from "@/components/player/global-player";
 import ReactQueryProvider from "@/components/providers/query-provider";
+import { Suspense } from "react";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -268,7 +269,9 @@ export default function RootLayout({
                   <PageTransition>
                     {children}
                   </PageTransition>
-                  <RouteLoadingOverlay />
+                  <Suspense fallback={null}>
+                    <RouteLoadingOverlay />
+                  </Suspense>
                   <GlobalPlayer />
                 </div>
               </LoadingProvider>
