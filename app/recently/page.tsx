@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
-import MovieMinimalCard from "@/components/movie/movie-minimal";
+import { MovieCardDefault } from "@/components/movie/movie-card-variants";
+import { ScrollReveal } from "@/components/ui/material-animations";
 
 export default function RecentlyWatchedPage() {
   const [movies, setMovies] = useState<any[]>([]);
@@ -31,39 +32,36 @@ export default function RecentlyWatchedPage() {
   }, []);
 
   return (
-    <main className="mx-auto max-w-screen-2xl px-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen">
+    <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
       <Header categories={categories} countries={countries} />
       <div className="py-8">
         <section className="py-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter">
               Phim Đã Xem Gần Đây
             </h1>
           </div>
 
           {movies.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-lg text-gray-600 dark:text-gray-400">
-                Bạn chưa xem phim nào gần đây. Hãy bắt đầu khám phá kho phim của chúng tôi!
+            <div className="text-center py-20 bg-zinc-900/50 rounded-xl">
+              <p className="text-lg text-zinc-500 font-bold uppercase tracking-widest">
+                Bạn chưa xem phim nào gần đây
               </p>
             </div>
           ) : (
-            <div
-              className="grid gap-6 auto-rows-[280px]"
-              style={{
-                gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-              }}
-            >
-              {movies.map((movie: any, index: number) => (
-                <div
-                  key={movie.slug}
-                  className="animate-float"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <MovieMinimalCard movie={movie} />
-                </div>
-              ))}
-            </div>
+            <ScrollReveal animation="fade" direction="up">
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                {movies.map((movie: any, index: number) => (
+                  <div
+                    key={`${movie?.slug ?? "movie"}-${index}`}
+                    className="material-transition"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    <MovieCardDefault movie={movie} />
+                  </div>
+                ))}
+              </div>
+            </ScrollReveal>
           )}
         </section>
       </div>

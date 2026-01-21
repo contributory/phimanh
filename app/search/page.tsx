@@ -1,8 +1,9 @@
 import PhimApi from "@/libs/phimapi.com";
-import MovieMinimalCard from "@/components/movie/movie-minimal";
+import { MovieCardDefault } from "@/components/movie/movie-card-variants";
 import Header from "@/components/header";
 import Pagination from "@/components/pagination";
 import Footer from "@/components/footer";
+import { ScrollReveal } from "@/components/ui/material-animations";
 
 type SearchPageProps = {
   searchParams: Promise<{
@@ -32,33 +33,33 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const [movies, pageInfo] = await api.search(query, index);
 
   return (
-    <main className="mx-auto max-w-screen-2xl px-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen">
+    <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
       <Header
         topics={topics}
         categories={categories}
       />
       <div className="py-8">
-        <h1 className="text-3xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter mb-8">
           Kết quả tìm kiếm cho "{query}"
         </h1>
-        <div
-          className="grid gap-6 auto-rows-[280px]"
-          style={{
-            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-          }}
-        >
-          {movies.map((movie: any, index: number) => (
-            <div
-              key={movie.slug}
-              className="animate-float"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <MovieMinimalCard movie={movie} />
-            </div>
-          ))}
-        </div>
+        
+        <ScrollReveal animation="fade" direction="up">
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            {movies.map((movie: any, idx: number) => (
+              <div
+                key={movie.slug}
+                className="material-transition"
+                style={{ animationDelay: `${idx * 0.05}s` }}
+              >
+                <MovieCardDefault movie={movie} />
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
       </div>
-      <Pagination />
+      <div className="py-8 border-t border-zinc-800/50 mt-8">
+        <Pagination />
+      </div>
       <Footer />
     </main>
   );

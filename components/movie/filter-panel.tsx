@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef, useMemo, memo } from "react";
+import { useLoading } from "@/components/ui/loading-context";
 import {
   Button,
   Select,
@@ -70,6 +71,7 @@ const LIMIT_OPTIONS = [
 const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { showLoading } = useLoading();
 
   const [filters, setFilters] = useState({
     typeList: searchParams.get("typeList") || "",
@@ -102,7 +104,8 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
   };
 
   const applyFilters = async () => {
-    setIsOpen(false);
+    setIsLoading(true);
+    showLoading();
     const params = new URLSearchParams();
     params.set("typeList", filters.typeList);
     params.set("sortField", filters.sortField);
@@ -117,7 +120,8 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
   };
 
   const resetFilters = async () => {
-    setIsOpen(false);
+    setIsLoading(true);
+    showLoading();
     await router.push("/");
   };
 

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Calendar, Tag, MapPin, Users } from 'lucide-react';
+import { decodeHtmlEntities } from '@/lib/utils';
 
 interface Movie {
   name: string;
@@ -135,7 +136,7 @@ export function MovieSEODescription({ movie }: MovieSEODescriptionProps) {
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
           <h3 className="font-medium mb-2">Nội dung phim {movie.name}</h3>
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-            {movie.content}
+            {decodeHtmlEntities(movie.content)}
           </p>
         </div>
       )}

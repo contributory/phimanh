@@ -3,7 +3,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useLoading } from "./loading-context";
 import ClientOnly from "./client-only";
 
 declare global {
@@ -30,8 +29,6 @@ export default function PageTransition({
   const pathname = usePathname();
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const { isLoading } = useLoading();
-
   useEffect(() => {
     setIsMounted(true);
     

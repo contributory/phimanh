@@ -4,14 +4,17 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { MovieStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import Breadcrumb, { useBreadcrumb } from "@/components/seo/breadcrumb";
+import { decodeHtmlEntities } from "@/lib/utils";
 
 export async function generateMetadata({ searchParams }: any) {
   const { slug } = await searchParams;
   const api = new PhimApi();
   const { movie } = await api.get(slug);
+  const cleanDescription = movie.content ? decodeHtmlEntities(movie.content) : "";
+
   return {
     title: `${movie.name} - Xem phim HD chất lượng cao | Phim Ảnh`,
-    description: movie.content ? movie.content.substring(0, 160) + '...' : `Xem phim ${movie.name} ${movie.origin_name ? `(${movie.origin_name})` : ''} HD chất lượng cao miễn phí tại Phim Ảnh.`,
+    description: cleanDescription ? cleanDescription.substring(0, 160) + '...' : `Xem phim ${movie.name} ${movie.origin_name ? `(${movie.origin_name})` : ''} HD chất lượng cao miễn phí tại Phim Ảnh.`,
     keywords: [
       movie.name,
       movie.origin_name,
@@ -27,7 +30,7 @@ export async function generateMetadata({ searchParams }: any) {
     ].join(', '),
     openGraph: {
       title: `${movie.name} - Xem phim HD chất lượng cao`,
-      description: movie.content ? movie.content.substring(0, 200) : `Xem phim ${movie.name} HD chất lượng cao miễn phí`,
+      description: cleanDescription ? cleanDescription.substring(0, 200) : `Xem phim ${movie.name} HD chất lượng cao miễn phí`,
       images: [
         {
           url: movie.poster_url,
@@ -47,7 +50,7 @@ export async function generateMetadata({ searchParams }: any) {
     twitter: {
       card: 'summary_large_image',
       title: `${movie.name} - Xem phim HD chất lượng cao`,
-      description: movie.content ? movie.content.substring(0, 200) : `Xem phim ${movie.name} HD chất lượng cao miễn phí`,
+      description: cleanDescription ? cleanDescription.substring(0, 200) : `Xem phim ${movie.name} HD chất lượng cao miễn phí`,
       images: [movie.thumb_url || movie.poster_url],
     },
   };
@@ -80,27 +83,15 @@ export default async function WatchPage({ searchParams }: any) {
       <BreadcrumbStructuredData items={structuredBreadcrumbItems} />
       
       <main className="min-h-screen relative">
-        <div
-          className="fixed inset-0 z-0"
-          style={{
-            backgroundImage: `url(${movie.poster_url})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        />
-
-        <div className="relative z-10 mx-auto max-w-screen-2xl px-4">
+        <div className="relative z-10 mx-auto w-full">
           <Header
             categories={categories}
             countries={countries}
           />
           
-          {/* Breadcrumb Navigation */}
-          <div className="relative z-20 bg-black/50 backdrop-blur-sm px-4 py-2">
-            <Breadcrumb items={breadcrumbItems} className="text-white/80" />
+          <div className="max-w-[1600px] mx-auto">
+            <Description movie={movie} serverData={server} slug={slug} thumb_url={movie.thumb_url} />
           </div>
-          <Description movie={movie} serverData={server} slug={slug} thumb_url={movie.thumb_url} />
           <Footer />
         </div>
       </main>

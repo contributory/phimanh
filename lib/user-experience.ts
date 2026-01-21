@@ -35,3 +35,39 @@ export function toggleFavoriteMovie(movie: Movie): void {
   }
   localStorage.setItem("favoriteMovies", JSON.stringify(movies));
 }
+
+export function getPlaybackProgress(slug: string): number {
+  if (typeof window === "undefined") return 0;
+  const progress = JSON.parse(localStorage.getItem("playbackProgress") || "{}");
+  return progress[slug] || 0;
+}
+
+export function savePlaybackProgress(slug: string, time: number, duration: number): void {
+  if (typeof window === "undefined" || !slug) return;
+  
+  const progress = JSON.parse(localStorage.getItem("playbackProgress") || "{}");
+  
+  // Nếu chỉ còn 5 phút (300 giây) nữa hết phim thì không lưu nữa mà xóa trạng thái
+  if (duration > 0 && duration - time < 300) {
+    if (progress[slug]) {
+      delete progress[slug];
+      localStorage.setItem("playbackProgress", JSON.stringify(progress));
+    }
+    return;
+  }
+
+  // Lưu trạng thái mới
+  if (time > 0) {
+    progress[slug] = time;
+    localStorage.setItem("playbackProgress", JSON.stringify(progress));
+  }
+}
+
+export function clearPlaybackProgress(slug: string): void {
+  if (typeof window === "undefined" || !slug) return;
+  const progress = JSON.parse(localStorage.getItem("playbackProgress") || "{}");
+  if (progress[slug]) {
+    delete progress[slug];
+    localStorage.setItem("playbackProgress", JSON.stringify(progress));
+  }
+}

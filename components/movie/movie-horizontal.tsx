@@ -3,21 +3,19 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { useLoading } from "@/components/ui/loading-context";
 import { Calendar, Play, Star } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface MovieHorizontalProps {
     movie: any;
 }
 
 export default function MovieHorizontalCard({ movie }: MovieHorizontalProps) {
-    const { showLoading, hideLoading } = useLoading();
+    const router = useRouter();
+    const { showLoading } = useLoading();
 
     const handleClick = () => {
         showLoading();
-        try {
-            window.location.href = `/watch?slug=${movie.slug}`;
-        } finally {
-            hideLoading();
-        }
+        router.push(`/watch?slug=${movie.slug}`);
     };
 
     const posterUrl = movie.poster_url?.startsWith("http")

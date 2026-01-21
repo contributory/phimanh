@@ -6,9 +6,16 @@ interface TopicSectionProps {
     slug: string;
   };
   movies: any[];
+  initialVisible?: number;
+  maxVisible?: number;
 }
 
-export default function TopicSection({ topic, movies }: TopicSectionProps) {
+export default function TopicSection({
+  topic,
+  movies,
+  initialVisible = 12,
+  maxVisible = 20,
+}: TopicSectionProps) {
   return (
     <MovieSection
       title={topic.name}
@@ -16,6 +23,8 @@ export default function TopicSection({ topic, movies }: TopicSectionProps) {
       viewAllLink={`/topic/${topic.slug}`}
       buttonColor="green"
       emptyMessage="Chưa có phim nào"
+      initialVisible={initialVisible}
+      maxVisible={maxVisible}
     />
   );
 }

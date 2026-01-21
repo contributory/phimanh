@@ -3,6 +3,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import MovieListClient from "@/components/movie/movie-list-client";
 import { ScrollToTopFAB } from "@/components/ui/material-fab";
+import { fetchMovieList } from "@/libs/movie-list";
 
 type CategoryPageProps = {
     params: Promise<{ slug: string }>;
@@ -39,22 +40,28 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
     const api = new PhimApi();
     const topics = api.listTopics();
-    const categories = await api.listCategories();
-    const countries = await api.listCountries();
+    const [categories, countries, listData] = await Promise.all([
+        api.listCategories(),
+        api.listCountries(),
+        fetchMovieList({ index: pageIndex, category: slug }),
+    ]);
     const category = categories.find((c: any) => c.slug === slug);
 
     return (
-        <main className="mx-auto max-w-screen-2xl px-4 material-surface gradient-surface min-h-screen">
+        <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
             <Header
                 categories={categories}
                 countries={countries}
                 topics={topics}
             />
             <div className="py-8">
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-8">
+                <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter mb-8">
                     Phim {category?.name || "Thể loại"}
                 </h1>
-                <MovieListClient index={pageIndex} category={slug} />
+                <MovieListClient
+                    movies={listData.movies}
+                    pageInfo={listData.pageInfo}
+                />
             </div>
             <Footer />
             <ScrollToTopFAB />

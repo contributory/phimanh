@@ -2,20 +2,18 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLoading } from "@/components/ui/loading-context";
+import { useRouter } from "next/navigation";
 
 interface MovieMinimalProps {
   movie: any;
 }
 
 export default function MovieMinimalCard({ movie }: MovieMinimalProps) {
-  const { showLoading, hideLoading } = useLoading();
+  const router = useRouter();
+  const { showLoading } = useLoading();
   const handleClick = () => {
     showLoading();
-    try {
-      window.location.href = `/watch?slug=${movie.slug}`;
-    } finally {
-      hideLoading();
-    }
+    router.push(`/watch?slug=${movie.slug}`);
   };
 
   return (

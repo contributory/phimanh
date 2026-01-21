@@ -6,18 +6,14 @@ import { useLoading } from "@/components/ui/loading-context";
 
 export default function BackButton() {
   const router = useRouter();
-  const { showLoading, hideLoading } = useLoading();
+  const { showLoading } = useLoading();
 
   const handleBack = () => {
     showLoading();
-    try {
-      if (typeof window !== "undefined" && window.history.length > 1) {
-        router.back();
-      } else {
-        router.push("/");
-      }
-    } finally {
-      hideLoading();
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
     }
   };
 

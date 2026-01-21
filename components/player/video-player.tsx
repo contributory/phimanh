@@ -16,11 +16,19 @@ import {
   SkipForward,
   SkipBack,
   ChevronsRight,
-  ChevronsLeft
+  ChevronsLeft,
+  PictureInPicture2,
+  Check,
+  Subtitles,
+  Volume2 as VolumeIcon,
+  Languages
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { useLoading } from "@/components/ui/loading-context";
+import { useVideoContext } from "@/components/providers/video-provider";
+import { searchSubtitles, Subtitle } from "@/libs/subtitles";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,12 +38,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 
 interface VideoPlayerProps {
   videoUrl: string;
   autoplay?: boolean;
   poster?: string;
+  movieTitle?: string;
+  movieSlug?: string;
   onError?: (error: any) => void;
   onEnded?: () => void;
 }
@@ -55,28 +66,148 @@ const VideoPlayer = ({
   videoUrl,
   autoplay = true,
   poster,
+  movieTitle,
+  movieSlug,
   onError,
   onEnded,
 }: VideoPlayerProps) => {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const { state: globalState, setVideo, updateState: updateGlobalState, videoRef: globalVideoRef } = useVideoContext();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const hlsRef = useRef<HLS | null>(null);
   const router = useRouter();
+  const { showLoading } = useLoading();
 
-  // State
-  const [isPlaying, setIsPlaying] = useState(false);
+  // local state that mirrors global state for UI response
+  const [isPlaying, setIsPlaying] = useState(globalState.isPlaying);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
+  const [currentTime, setCurrentTime] = useState(globalState.currentTime);
+  const [duration, setDuration] = useState(globalState.duration);
+  const [volume, setVolume] = useState(globalState.volume);
+  const [isMuted, setIsMuted] = useState(globalState.isMuted);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [buffered, setBuffered] = useState(0);
-  const [playbackRate, setPlaybackRate] = useState(1);
+  const [playbackRate, setPlaybackRate] = useState(globalState.playbackRate);
   const [quality, setQuality] = useState<number>(-1); // -1 is auto
   const [qualities, setQualities] = useState<{ height: number, level: number }[]>([]);
+  const [isPiPEnabled, setIsPiPEnabled] = useState(false);
+
+  // Use global video ref instead of local one
+  const videoRef = globalVideoRef;
+
+  // Initialize global state with current video info
+  useEffect(() => {
+    if (videoUrl && videoUrl !== globalState.videoUrl) {
+      setVideo(videoUrl, movieTitle, poster, movieSlug);
+    }
+  }, [videoUrl, movieTitle, poster, movieSlug, setVideo, globalState.videoUrl]);
+
+  // Subtitle & TTS State
+  const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
+  const [activeSubtitle, setActiveSubtitle] = useState<string | null>(null);
+  const [isTTSEnabled, setIsTTSEnabled] = useState(false);
+  const [currentSubText, setCurrentSubText] = useState("");
+  const synthRef = useRef<SpeechSynthesis | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  // Initialize TTS
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      synthRef.current = window.speechSynthesis;
+    }
+  }, []);
+
+  // Fetch Subtitles
+  useEffect(() => {
+    const fetchSubs = async () => {
+      if (movieTitle) {
+        const results = await searchSubtitles(movieTitle);
+        setSubtitles(results);
+      }
+    };
+    fetchSubs();
+  }, [movieTitle]);
+
+  // Handle Subtitle Text Changes for TTS
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !isTTSEnabled || !synthRef.current) return;
+
+    const onTrackChange = (event: Event) => {
+      const track = event.target as TextTrack;
+      if (track.mode === 'showing') {
+        const onCueChange = () => {
+          if (track.activeCues && track.activeCues.length > 0) {
+            const cue = track.activeCues[0] as VTTCue;
+            const text = cue.text.replace(/<[^>]*>/g, ''); // Remove HTML tags
+            if (text !== currentSubText) {
+              setCurrentSubText(text);
+              speak(text);
+            }
+          }
+        };
+        track.oncuechange = onCueChange;
+      }
+    };
+
+    const tracks = video.textTracks;
+    for (let i = 0; i < tracks.length; i++) {
+      const track = tracks[i];
+      track.addEventListener('cuechange', () => {
+        if (track.mode === 'showing' && track.activeCues && track.activeCues.length > 0) {
+          const cue = track.activeCues[0] as VTTCue;
+          const text = cue.text.replace(/<[^>]*>/g, '');
+          setCurrentSubText(text);
+          speak(text);
+        }
+      });
+    }
+  }, [isTTSEnabled]);
+
+  const speak = (text: string) => {
+    if (!synthRef.current || !isTTSEnabled) return;
+    
+    // Cancel previous speech
+    synthRef.current.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'vi-VN'; // Set to Vietnamese
+    utterance.rate = playbackRate;
+    utteranceRef.current = utterance;
+    synthRef.current.speak(utterance);
+  };
+
+  const handleSubtitleChange = (subId: string | null) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Remove existing tracks
+    const existingTracks = video.querySelectorAll('track');
+    existingTracks.forEach(track => track.remove());
+
+    setActiveSubtitle(subId);
+
+    if (subId) {
+      const selectedSub = subtitles.find(s => s.id === subId);
+      if (selectedSub) {
+        const track = document.createElement('track');
+        track.kind = 'subtitles';
+        track.label = selectedSub.label;
+        track.srclang = selectedSub.lang;
+        track.src = selectedSub.url;
+        track.default = true;
+        video.appendChild(track);
+        
+        // Ensure track is showing
+        setTimeout(() => {
+          if (video.textTracks.length > 0) {
+            video.textTracks[0].mode = 'showing';
+          }
+        }, 100);
+      }
+    }
+  };
 
   // Double tap state
   const [skipAnimation, setSkipAnimation] = useState<{ side: 'left' | 'right', id: number } | null>(null);
@@ -85,13 +216,30 @@ const VideoPlayer = ({
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    showLoading();
+    if (videoRef.current && isPlaying && document.pictureInPictureEnabled) {
+      try {
+        await videoRef.current.requestPictureInPicture();
+      } catch (err) {
+        console.error("Auto PiP failed:", err);
+      }
+    }
+
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
     } else {
       router.push("/");
     }
   };
+
+  // Sync local UI with global state changes
+  useEffect(() => {
+    setIsPlaying(globalState.isPlaying);
+    setCurrentTime(globalState.currentTime);
+    setDuration(globalState.duration);
+    // update loading state based on global activity if needed
+  }, [globalState.isPlaying, globalState.currentTime, globalState.duration]);
 
   // HLS and Video Setup
   useEffect(() => {
@@ -102,77 +250,21 @@ const VideoPlayer = ({
       return;
     }
 
-    setError(null);
-    setIsLoading(true);
+    // If this video is already being handled by GlobalPlayer, we don't re-init HLS here
+    // But we might need to attach the video to our UI container if it was moved.
+    // In this implementation, the <video> stays in GlobalPlayer and we just move it visually
+    // or we can have the video element move between containers using appendChild.
 
-    const initHls = () => {
-      if (HLS.isSupported()) {
-        const hls = new HLS({
-          enableWorker: true,
-          lowLatencyMode: true,
-          backBufferLength: 90,
-          startFragPrefetch: true,
-          maxBufferLength: 30,
-          maxMaxBufferLength: 600,
-        });
-        hls.loadSource(videoUrl);
-        hls.attachMedia(video);
-        hlsRef.current = hls;
+    setIsLoading(false); 
+  }, [videoUrl]);
 
-        hls.on(HLS.Events.MANIFEST_PARSED, (event, data) => {
-          console.log("Manifest parsed", data);
-          setIsLoading(false);
-
-          // Get available qualities
-          const availableQualities = data.levels.map((l, index) => ({
-            height: l.height,
-            level: index
-          })).sort((a, b) => b.height - a.height);
-          setQualities(availableQualities);
-
-          if (autoplay) {
-            video.play().catch((e) => {
-              if (e.name !== 'AbortError') console.error('Autoplay failed:', e);
-            });
-          }
-        });
-
-        hls.on(HLS.Events.ERROR, (event, data) => {
-          if (data.fatal) {
-            switch (data.type) {
-              case HLS.ErrorTypes.NETWORK_ERROR:
-                hls.startLoad();
-                break;
-              case HLS.ErrorTypes.MEDIA_ERROR:
-                hls.recoverMediaError();
-                break;
-              default:
-                setError("Không thể tải video. Vui lòng thử lại.");
-                setIsLoading(false);
-                onError?.(data);
-                break;
-            }
-          }
-        });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = videoUrl;
-        video.addEventListener('loadedmetadata', () => {
-          setIsLoading(false);
-          if (autoplay) video.play();
-        });
-      }
-    };
-
-    initHls();
-
-    return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-      video.src = '';
-    };
-  }, [videoUrl, autoplay, onError]);
+  // Sync volume/mute
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume;
+      videoRef.current.muted = isMuted;
+    }
+  }, [volume, isMuted, videoRef]);
 
   // Event Listeners
   useEffect(() => {
@@ -190,6 +282,8 @@ const VideoPlayer = ({
     const onDurationChange = () => setDuration(video.duration);
     const onWaiting = () => setIsLoading(true);
     const onPlaying = () => setIsLoading(false);
+    const onEnterPiP = () => setIsPiPEnabled(true);
+    const onLeavePiP = () => setIsPiPEnabled(false);
     const onEndedEvent = () => {
       setIsPlaying(false);
       onEnded?.();
@@ -201,6 +295,8 @@ const VideoPlayer = ({
     video.addEventListener('durationchange', onDurationChange);
     video.addEventListener('waiting', onWaiting);
     video.addEventListener('playing', onPlaying);
+    video.addEventListener('enterpictureinpicture', onEnterPiP);
+    video.addEventListener('leavepictureinpicture', onLeavePiP);
     video.addEventListener('ended', onEndedEvent);
 
     return () => {
@@ -210,6 +306,8 @@ const VideoPlayer = ({
       video.removeEventListener('durationchange', onDurationChange);
       video.removeEventListener('waiting', onWaiting);
       video.removeEventListener('playing', onPlaying);
+      video.removeEventListener('enterpictureinpicture', onEnterPiP);
+      video.removeEventListener('leavepictureinpicture', onLeavePiP);
       video.removeEventListener('ended', onEndedEvent);
     };
   }, [onEnded]);
@@ -318,6 +416,11 @@ const VideoPlayer = ({
 
     try {
       if (!document.fullscreenElement) {
+        // Exit PiP if entering fullscreen
+        if (document.pictureInPictureElement) {
+          await document.exitPictureInPicture();
+        }
+
         await containerRef.current.requestFullscreen();
         setIsFullscreen(true);
 
@@ -344,6 +447,20 @@ const VideoPlayer = ({
       }
     } catch (err) {
       console.error('Fullscreen toggle failed:', err);
+    }
+  };
+
+  const togglePiP = async () => {
+    if (!videoRef.current) return;
+
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (document.pictureInPictureEnabled) {
+        await videoRef.current.requestPictureInPicture();
+      }
+    } catch (err) {
+      console.error("PiP toggle failed:", err);
     }
   };
 
@@ -453,13 +570,8 @@ const VideoPlayer = ({
       }}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
-      {/* Video Element */}
-      <video
-        ref={videoRef}
-        className="w-full h-full object-contain"
-        poster={poster}
-        playsInline
-      />
+      {/* Video Element Placeholder Container */}
+      <div id="video-portal" className="w-full h-full" />
 
       {/* Gesture Zones */}
       <div className="absolute inset-0 flex z-10">
@@ -640,36 +752,118 @@ const VideoPlayer = ({
                   <Settings className="w-5 h-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-black/90 border-gray-800 text-white backdrop-blur-md w-56">
+              <DropdownMenuContent align="end" className="bg-black/90 border-gray-800 text-white backdrop-blur-md w-64 max-h-[80vh] overflow-y-auto custom-scrollbar">
                 <DropdownMenuLabel>Cài đặt</DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-gray-700" />
 
                 {/* Speed Submenu */}
-                <DropdownMenuLabel className="text-xs text-gray-400 mt-2">Tốc độ phát</DropdownMenuLabel>
-                <DropdownMenuRadioGroup value={playbackRate.toString()} onValueChange={(v) => handlePlaybackRateChange(parseFloat(v))}>
-                  <DropdownMenuRadioItem value="0.5">0.5x</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="1">Chuẩn</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="1.5">1.5x</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="2">2.0x</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-gray-500 mt-2">Tốc độ phát</DropdownMenuLabel>
+                <div className="grid grid-cols-2 gap-1 p-1">
+                  {[0.5, 1, 1.5, 2].map((rate) => (
+                    <DropdownMenuItem
+                      key={rate}
+                      onClick={() => handlePlaybackRateChange(rate)}
+                      className={cn(
+                        "flex items-center justify-center cursor-pointer transition-colors text-xs py-2 rounded-md",
+                        playbackRate === rate ? "bg-red-600/20 text-red-500 font-bold border border-red-500/50" : "hover:bg-white/10 border border-transparent"
+                      )}
+                    >
+                      <span>{rate === 1 ? "Chuẩn" : `${rate}x`}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </div>
 
                 {/* Quality Submenu (if HLS) */}
                 {qualities.length > 0 && (
                   <>
-                    <DropdownMenuSeparator className="bg-gray-700 my-2" />
-                    <DropdownMenuLabel className="text-xs text-gray-400">Chất lượng</DropdownMenuLabel>
-                    <DropdownMenuRadioGroup value={quality.toString()} onValueChange={(v) => handleQualityChange(parseInt(v))}>
-                      <DropdownMenuRadioItem value="-1">Tự động</DropdownMenuRadioItem>
+                    <DropdownMenuSeparator className="bg-gray-800 my-2" />
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-gray-500">Chất lượng</DropdownMenuLabel>
+                    <div className="grid grid-cols-3 gap-1 p-1">
+                      <DropdownMenuItem
+                        onClick={() => handleQualityChange(-1)}
+                        className={cn(
+                          "flex items-center justify-center cursor-pointer transition-colors text-[10px] py-1.5 rounded-md border",
+                          quality === -1 ? "bg-red-600/20 text-red-500 font-bold border-red-500/50" : "hover:bg-white/10 border-transparent"
+                        )}
+                      >
+                        <span>Auto</span>
+                      </DropdownMenuItem>
                       {qualities.map((q) => (
-                        <DropdownMenuRadioItem key={q.level} value={q.level.toString()}>
-                          {q.height}p
-                        </DropdownMenuRadioItem>
+                        <DropdownMenuItem
+                          key={q.level}
+                          onClick={() => handleQualityChange(q.level)}
+                          className={cn(
+                            "flex items-center justify-center cursor-pointer transition-colors text-[10px] py-1.5 rounded-md border",
+                            quality === q.level ? "bg-red-600/20 text-red-500 font-bold border-red-500/50" : "hover:bg-white/10 border-transparent"
+                          )}
+                        >
+                          <span>{q.height}p</span>
+                        </DropdownMenuItem>
                       ))}
-                    </DropdownMenuRadioGroup>
+                    </div>
                   </>
                 )}
+
+                {/* Subtitles & TTS */}
+                <DropdownMenuSeparator className="bg-gray-800 my-2" />
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-gray-500">Phụ đề & TTS</DropdownMenuLabel>
+                <div className="flex flex-col gap-1">
+                  <DropdownMenuCheckboxItem
+                    checked={isTTSEnabled}
+                    onCheckedChange={setIsTTSEnabled}
+                    className="cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <VolumeIcon className="w-4 h-4" />
+                      <span>Đọc phụ đề (TTS)</span>
+                    </div>
+                  </DropdownMenuCheckboxItem>
+                  
+                  <DropdownMenuSeparator className="bg-gray-800 my-1" />
+                  
+                  <DropdownMenuItem
+                    onClick={() => handleSubtitleChange(null)}
+                    className={cn(
+                      "flex items-center justify-between cursor-pointer transition-colors",
+                      activeSubtitle === null ? "bg-red-600/20 text-red-500 font-bold" : "hover:bg-white/10"
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Subtitles className="w-4 h-4" />
+                      <span>Tắt phụ đề</span>
+                    </div>
+                    {activeSubtitle === null && <Check className="w-4 h-4" />}
+                  </DropdownMenuItem>
+
+                  {subtitles.map((sub) => (
+                    <DropdownMenuItem
+                      key={sub.id}
+                      onClick={() => handleSubtitleChange(sub.id)}
+                      className={cn(
+                        "flex items-center justify-between cursor-pointer transition-colors",
+                        activeSubtitle === sub.id ? "bg-red-600/20 text-red-500 font-bold" : "hover:bg-white/10"
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Languages className="w-4 h-4" />
+                        <span className="truncate max-w-[150px]">{sub.label}</span>
+                      </div>
+                      {activeSubtitle === sub.id && <Check className="w-4 h-4" />}
+                    </DropdownMenuItem>
+                  ))}
+
+                  {subtitles.length === 0 && (
+                    <div className="px-2 py-1 text-xs text-gray-500 italic">
+                      Không tìm thấy phụ đề
+                    </div>
+                  )}
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <Button variant="ghost" size="icon" onClick={togglePiP} className="text-white hover:bg-white/20">
+              <PictureInPicture2 className="w-5 h-5" />
+            </Button>
 
             <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-white hover:bg-white/20">
               {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
@@ -682,4 +876,3 @@ const VideoPlayer = ({
 };
 
 export default VideoPlayer;
-

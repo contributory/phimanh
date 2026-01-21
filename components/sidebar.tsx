@@ -16,7 +16,9 @@ import {
   ChevronDown,
   ChevronRight,
   X,
-  Play
+  Play,
+  Filter,
+  Heart
 } from "lucide-react";
 
 interface SidebarProps {
@@ -47,9 +49,20 @@ export default function Sidebar({
     genres: false,
     countries: false,
     years: false,
+    advancedFilter: false,
+  });
+  const [filters, setFilters] = useState({
+    typeList: "",
+    sortField: "modified.time",
+    sortType: "desc",
+    sortLang: "",
+    category: "",
+    country: "",
+    year: "",
+    limit: "20",
   });
   const [mounted, setMounted] = useState(false);
-  const { showLoading, hideLoading } = useLoading();
+  const { showLoading } = useLoading();
 
   const isActiveLink = (href: string) => pathname === href;
   const isActiveTopic = (topicSlug: string) => pathname === `/topic/${topicSlug}`;
@@ -58,10 +71,6 @@ export default function Sidebar({
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    hideLoading();
-  }, [pathname]);
 
   // Close sidebar on route change
   useEffect(() => {
@@ -90,7 +99,21 @@ export default function Sidebar({
   const handleLinkClick = (path: string) => {
     showLoading();
     router.push(path);
-    onClose();
+  };
+
+  const handleApplyFilter = () => {
+    showLoading();
+    const params = new URLSearchParams();
+    if (filters.typeList) params.set("typeList", filters.typeList);
+    params.set("sortField", filters.sortField);
+    params.set("sortType", filters.sortType);
+    if (filters.sortLang) params.set("sortLang", filters.sortLang);
+    if (filters.category) params.set("category", filters.category);
+    if (filters.country) params.set("country", filters.country);
+    if (filters.year) params.set("year", filters.year);
+    params.set("limit", filters.limit);
+
+    router.push(`/filter?${params.toString()}`);
   };
 
   const NavItem = ({
@@ -109,20 +132,20 @@ export default function Sidebar({
     <Link
       href={href}
       onClick={onClick ? (e) => { e.preventDefault(); onClick(); } : undefined}
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-          ? "bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-600 dark:text-blue-400 font-semibold"
-          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+      className={`flex items-center gap-3 px-4 py-3 rounded-none transition-all duration-200 group ${isActive
+          ? "bg-white/5 text-red-600 font-black"
+          : "text-zinc-400 hover:bg-white/5 hover:text-white"
         }`}
     >
-      <div className={`p-2 rounded-lg ${isActive
-          ? "bg-gradient-to-br from-blue-500 to-purple-500 text-white"
-          : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:bg-gray-200 dark:group-hover:bg-gray-700"
+      <div className={`p-2 transition-colors ${isActive
+          ? "text-red-600"
+          : "text-zinc-500 group-hover:text-white"
         }`}>
-        <Icon className="w-4 h-4" />
+        <Icon className="w-5 h-5" />
       </div>
-      <span className="flex-1">{label}</span>
+      <span className="flex-1 text-xs uppercase tracking-[0.2em]">{label}</span>
       {isActive && (
-        <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+        <div className="w-1 h-6 bg-red-600 absolute left-0" />
       )}
     </Link>
   );
@@ -143,17 +166,17 @@ export default function Sidebar({
     <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        className="flex items-center gap-3 w-full px-4 py-3 text-zinc-400 hover:bg-white/5 hover:text-white transition-colors group"
       >
-        <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-          <Icon className="w-4 h-4" />
+        <div className="p-2 text-zinc-500 group-hover:text-white transition-colors">
+          <Icon className="w-5 h-5" />
         </div>
-        <span className="flex-1 text-left font-medium">{label}</span>
-        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`} />
+        <span className="flex-1 text-left text-xs font-black uppercase tracking-[0.2em]">{label}</span>
+        <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? "rotate-180" : ""}`} />
       </button>
 
       {isExpanded && (
-        <div className="ml-4 pl-4 border-l-2 border-gray-200 dark:border-gray-700 space-y-1 animate-in slide-in-from-top-2 duration-200">
+        <div className="bg-white/[0.02] border-y border-white/5 space-y-1 animate-in slide-in-from-top-2 duration-300">
           {children}
         </div>
       )}
@@ -172,12 +195,11 @@ export default function Sidebar({
     <Link
       href={href}
       onClick={() => handleLinkClick(href)}
-      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${isActive
-          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
-          : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+      className={`flex items-center gap-2 px-12 py-3 text-[10px] transition-colors uppercase tracking-widest ${isActive
+          ? "bg-red-600/10 text-red-600 font-bold"
+          : "text-zinc-500 hover:bg-white/5 hover:text-white"
         }`}
     >
-      <ChevronRight className="w-3 h-3" />
       <span>{label}</span>
     </Link>
   );
@@ -193,38 +215,30 @@ export default function Sidebar({
 
       {/* Sidebar Panel */}
       <div
-        className={`fixed left-0 top-0 bottom-0 w-80 bg-white dark:bg-gray-900 shadow-2xl z-50 transform transition-transform duration-300 ease-out flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed left-0 top-0 bottom-0 w-[80%] md:w-[400px] lg:w-[500px] bg-zinc-950 border-r border-white/5 shadow-[0_0_50px_rgba(0,0,0,0.8)] z-[200] transform transition-transform duration-500 ease-out flex flex-col ${isOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between p-8 border-b border-white/5 bg-black">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-              <Film className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="font-bold text-gray-900 dark:text-white">
-                Phim Ảnh
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Khám phá phim hay
-              </p>
-            </div>
+            <span className="text-2xl md:text-3xl font-black text-red-600 tracking-tighter uppercase">
+              PHIMANH
+            </span>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-3 rounded-full hover:bg-white/5 transition-colors group"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-6 h-6 md:w-8 md:h-8 text-zinc-500 group-hover:text-white" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+        <nav className="flex-1 overflow-y-auto py-10 space-y-10 scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none]">
           {/* Main Navigation */}
-          <div className="space-y-1">
-            <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Điều hướng
+          <div className="space-y-2">
+            <p className="px-8 mb-6 text-[11px] font-black text-zinc-600 uppercase tracking-[0.4em]">
+              Khám phá
             </p>
             <NavItem
               href="/"
@@ -232,6 +246,13 @@ export default function Sidebar({
               label="Trang Chủ"
               isActive={isActiveLink("/")}
               onClick={() => handleLinkClick("/")}
+            />
+            <NavItem
+              href="/foryou"
+              icon={Heart}
+              label="Dành Cho Bạn"
+              isActive={isActiveLink("/foryou")}
+              onClick={() => handleLinkClick("/foryou")}
             />
             <NavItem
               href="/new-updates"
@@ -243,16 +264,16 @@ export default function Sidebar({
             <NavItem
               href="/recently"
               icon={Clock}
-              label="Đã Xem Gần Đây"
+              label="Đã Xem"
               isActive={isActiveLink("/recently")}
               onClick={() => handleLinkClick("/recently")}
             />
           </div>
 
           {/* Topics Section */}
-          <div className="pt-4 space-y-1">
-            <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Danh mục phim
+          <div className="space-y-2">
+            <p className="px-8 mb-6 text-[11px] font-black text-zinc-600 uppercase tracking-[0.4em]">
+              Danh mục
             </p>
             {topics.map((topic) => (
               <NavItem
@@ -266,11 +287,118 @@ export default function Sidebar({
             ))}
           </div>
 
-          {/* Categories Section */}
-          <div className="pt-4">
-            <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Khám phá
-            </p>
+          {/* Advanced Filter Section */}
+          <div className="space-y-4">
+            <div className="px-8 flex items-center justify-between">
+              <p className="text-[11px] font-black text-zinc-600 uppercase tracking-[0.4em]">
+                Bộ lọc
+              </p>
+              <button
+                onClick={() => toggleSection("advancedFilter")}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all uppercase tracking-wider ${
+                  expandedSections.advancedFilter ? "bg-white text-black" : "bg-red-600 text-white hover:bg-red-700"
+                }`}
+              >
+                <Filter className="w-3 h-3" />
+                <span className="text-[10px] font-black">{expandedSections.advancedFilter ? "Đóng Lọc" : "Lọc Chi Tiết"}</span>
+              </button>
+            </div>
+
+            {expandedSections.advancedFilter && (
+              <div className="mx-8 p-6 bg-white/5 border border-white/5 space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Loại Phim</label>
+                    <select
+                      value={filters.typeList}
+                      onChange={(e) => setFilters({...filters, typeList: e.target.value})}
+                      className="w-full bg-black border border-white/10 text-white text-xs p-3 outline-none focus:border-red-600 transition-colors"
+                    >
+                      <option value="">Tất Cả</option>
+                      <option value="phim-bo">Phim Bộ</option>
+                      <option value="phim-le">Phim Lẻ</option>
+                      <option value="tv-shows">TV Shows</option>
+                      <option value="hoat-hinh">Hoạt Hình</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Sắp Xếp</label>
+                      <select
+                        value={filters.sortField}
+                        onChange={(e) => setFilters({...filters, sortField: e.target.value})}
+                        className="w-full bg-black border border-white/10 text-white text-xs p-3 outline-none focus:border-red-600 transition-colors"
+                      >
+                        <option value="modified.time">Cập Nhật</option>
+                        <option value="_id">ID</option>
+                        <option value="year">Năm</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Thứ Tự</label>
+                      <select
+                        value={filters.sortType}
+                        onChange={(e) => setFilters({...filters, sortType: e.target.value})}
+                        className="w-full bg-black border border-white/10 text-white text-xs p-3 outline-none focus:border-red-600 transition-colors"
+                      >
+                        <option value="desc">Giảm Dần</option>
+                        <option value="asc">Tăng Dần</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Quốc Gia</label>
+                    <select
+                      value={filters.country}
+                      onChange={(e) => setFilters({...filters, country: e.target.value})}
+                      className="w-full bg-black border border-white/10 text-white text-xs p-3 outline-none focus:border-red-600 transition-colors"
+                    >
+                      <option value="">Tất Cả Quốc Gia</option>
+                      {countries.map(c => (
+                        <option key={c.slug} value={c.slug}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Thể Loại</label>
+                    <select
+                      value={filters.category}
+                      onChange={(e) => setFilters({...filters, category: e.target.value})}
+                      className="w-full bg-black border border-white/10 text-white text-xs p-3 outline-none focus:border-red-600 transition-colors"
+                    >
+                      <option value="">Tất Cả Thể Loại</option>
+                      {categories.map(c => (
+                        <option key={c.slug} value={c.slug}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Năm</label>
+                    <select
+                      value={filters.year}
+                      onChange={(e) => setFilters({...filters, year: e.target.value})}
+                      className="w-full bg-black border border-white/10 text-white text-xs p-3 outline-none focus:border-red-600 transition-colors"
+                    >
+                      <option value="">Tất Cả Năm</option>
+                      {YEAR_OPTIONS.map(y => (
+                        <option key={y.value} value={y.value}>{y.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleApplyFilter}
+                  className="w-full py-4 bg-red-600 text-white font-black text-xs uppercase tracking-[0.2em] hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+                >
+                  Áp Dụng Bộ Lọc
+                </button>
+              </div>
+            )}
 
             <CollapsibleSection
               icon={Layers}
@@ -278,22 +406,16 @@ export default function Sidebar({
               isExpanded={expandedSections.genres}
               onToggle={() => toggleSection("genres")}
             >
-              {categories.slice(0, 15).map((cat) => (
-                <SubNavItem
-                  key={cat.slug}
-                  href={`/category/${cat.slug}`}
-                  label={cat.name}
-                  isActive={isActiveCategory(cat.slug)}
-                />
-              ))}
-              {categories.length > 15 && (
-                <Link
-                  href="/filter"
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  Xem tất cả ({categories.length})
-                </Link>
-              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 py-4">
+                {categories.map((cat) => (
+                  <SubNavItem
+                    key={cat.slug}
+                    href={`/category/${cat.slug}`}
+                    label={cat.name}
+                    isActive={isActiveCategory(cat.slug)}
+                  />
+                ))}
+              </div>
             </CollapsibleSection>
 
             <CollapsibleSection
@@ -302,50 +424,39 @@ export default function Sidebar({
               isExpanded={expandedSections.countries}
               onToggle={() => toggleSection("countries")}
             >
-              {countries.slice(0, 12).map((country) => (
-                <SubNavItem
-                  key={country.slug}
-                  href={`/filter?country=${country.slug}`}
-                  label={country.name}
-                  isActive={false}
-                />
-              ))}
+              <div className="grid grid-cols-1 md:grid-cols-2 py-4">
+                {countries.map((country) => (
+                  <SubNavItem
+                    key={country.slug}
+                    href={`/filter?country=${country.slug}`}
+                    label={country.name}
+                    isActive={false}
+                  />
+                ))}
+              </div>
             </CollapsibleSection>
 
             <CollapsibleSection
               icon={Calendar}
-              label="Năm Phát Hành"
+              label="Năm"
               isExpanded={expandedSections.years}
               onToggle={() => toggleSection("years")}
             >
-              {YEAR_OPTIONS.map((year) => (
-                <SubNavItem
-                  key={year.value}
-                  href={`/filter?year=${year.value}`}
-                  label={year.label}
-                  isActive={false}
-                />
-              ))}
+              <div className="grid grid-cols-3 px-8 py-6 gap-3">
+                {YEAR_OPTIONS.map((year) => (
+                  <Link
+                    key={year.value}
+                    href={`/filter?year=${year.value}`}
+                    onClick={() => handleLinkClick(`/filter?year=${year.value}`)}
+                    className="flex items-center justify-center py-3 text-[11px] border border-white/5 text-zinc-500 hover:border-red-600 hover:text-white transition-all uppercase tracking-widest font-bold"
+                  >
+                    {year.label}
+                  </Link>
+                ))}
+              </div>
             </CollapsibleSection>
           </div>
         </nav>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500">
-              <Film className="w-4 h-4 text-white" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">
-                Phim Ảnh v2.0
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                © 2024 All rights reserved
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </>
   );

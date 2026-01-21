@@ -1,4 +1,5 @@
 import React from 'react';
+import { decodeHtmlEntities } from '@/lib/utils';
 
 interface MovieStructuredDataProps {
   movie: {
@@ -41,7 +42,7 @@ export function MovieStructuredData({ movie, url }: MovieStructuredDataProps) {
     "@type": "Movie",
     "name": movie.name,
     "alternateName": movie.origin_name,
-    "description": movie.content,
+    "description": decodeHtmlEntities(movie.content),
     "image": [
       movie.poster_url,
       ...(movie.thumb_url ? [movie.thumb_url] : [])

@@ -1,9 +1,15 @@
 import { MetadataRoute } from "next";
 import PhimApi from "@/libs/phimapi.com";
+import { headers } from "next/headers";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://phimanh.netlify.app"; // Unified base URL
+  const headersList = await headers();
+  const host = headersList.get("host");
+  const protocol = headersList.get("x-forwarded-proto") || "https";
+  const baseUrl = host
+    ? `${protocol}://${host}`
+    : process.env.NEXT_PUBLIC_SITE_URL || "https://phimanh.*.*";
+
   const api = new PhimApi();
 
   try {

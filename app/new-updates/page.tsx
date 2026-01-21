@@ -2,6 +2,7 @@ import PhimApi from "@/libs/phimapi.com";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import MovieListClient from "@/components/movie/movie-list-client";
+import { fetchMovieList } from "@/libs/movie-list";
 
 type NewUpdatesProps = {
   searchParams: Promise<{
@@ -26,21 +27,27 @@ export default async function NewUpdatesPage({ searchParams }: NewUpdatesProps) 
 
   const api = new PhimApi();
   const topics = api.listTopics();
-  const categories = await api.listCategories();
-  const countries = await api.listCountries();
+  const [categories, countries, listData] = await Promise.all([
+    api.listCategories(),
+    api.listCountries(),
+    fetchMovieList({ index }),
+  ]);
 
   return (
-    <main className="mx-auto max-w-screen-2xl px-4 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen">
+    <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
       <Header
         categories={categories}
         countries={countries}
         topics={topics}
       />
       <div className="py-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-8">
+        <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter mb-8">
           Mới Cập Nhật
         </h1>
-        <MovieListClient index={index} />
+        <MovieListClient
+          movies={listData.movies}
+          pageInfo={listData.pageInfo}
+        />
       </div>
       <Footer />
     </main>

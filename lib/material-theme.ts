@@ -7,42 +7,42 @@ const roboto = Roboto({
   display: 'swap',
 });
 
-// Base colors matching current design system
+// Base colors matching current design system - Dark red and black theme
 const baseColors = {
   primary: {
-    main: '#2563eb', // blue-600
-    light: '#3b82f6', // blue-500
-    dark: '#1d4ed8', // blue-700
+    main: '#e50914', // Netflix Red
+    light: '#ff1f1f',
+    dark: '#b20710',
     contrastText: '#ffffff',
   },
   secondary: {
-    main: '#8b5cf6', // violet-500
-    light: '#a78bfa', // violet-400
-    dark: '#7c3aed', // violet-600
+    main: '#141414', // Very dark gray
+    light: '#2f2f2f',
+    dark: '#000000',
     contrastText: '#ffffff',
   },
   error: {
-    main: '#ef4444', // red-500
-    light: '#f87171', // red-400
-    dark: '#dc2626', // red-600
+    main: '#e50914',
+    light: '#ff1f1f',
+    dark: '#b20710',
     contrastText: '#ffffff',
   },
   warning: {
-    main: '#f59e0b', // amber-500
-    light: '#fbbf24', // amber-400
-    dark: '#d97706', // amber-600
-    contrastText: '#ffffff',
+    main: '#f5c518', // IMDb Gold
+    light: '#ffda44',
+    dark: '#c29b00',
+    contrastText: '#000000',
   },
   info: {
-    main: '#06b6d4', // cyan-500
-    light: '#22d3ee', // cyan-400
-    dark: '#0891b2', // cyan-600
+    main: '#e50914',
+    light: '#ff1f1f',
+    dark: '#b20710',
     contrastText: '#ffffff',
   },
   success: {
-    main: '#10b981', // emerald-500
-    light: '#34d399', // emerald-400
-    dark: '#059669', // emerald-600
+    main: '#46d369',
+    light: '#65e084',
+    dark: '#2ba84b',
     contrastText: '#ffffff',
   },
 };
@@ -54,26 +54,14 @@ const lightThemeOptions: ThemeOptions = {
     ...baseColors,
     background: {
       default: '#ffffff',
-      paper: '#f8fafc', // gray-50
+      paper: '#f5f5f5',
     },
     text: {
-      primary: '#0f172a', // slate-900
-      secondary: '#475569', // slate-600
-      disabled: '#94a3b8', // slate-400
+      primary: '#141414',
+      secondary: '#666666',
+      disabled: '#999999',
     },
-    divider: '#e2e8f0', // slate-200
-    grey: {
-      50: '#f8fafc',
-      100: '#f1f5f9',
-      200: '#e2e8f0',
-      300: '#cbd5e1',
-      400: '#94a3b8',
-      500: '#64748b',
-      600: '#475569',
-      700: '#334155',
-      800: '#1e293b',
-      900: '#0f172a',
-    },
+    divider: '#eeeeee',
   },
   typography: {
     fontFamily: roboto.style.fontFamily,
@@ -84,27 +72,27 @@ const lightThemeOptions: ThemeOptions = {
     },
     h2: {
       fontSize: '2rem',
-      fontWeight: 600,
+      fontWeight: 700,
       lineHeight: 1.3,
     },
     h3: {
       fontSize: '1.5rem',
-      fontWeight: 600,
+      fontWeight: 700,
       lineHeight: 1.4,
     },
     h4: {
       fontSize: '1.25rem',
-      fontWeight: 600,
+      fontWeight: 700,
       lineHeight: 1.4,
     },
     h5: {
       fontSize: '1.125rem',
-      fontWeight: 600,
+      fontWeight: 700,
       lineHeight: 1.5,
     },
     h6: {
       fontSize: '1rem',
-      fontWeight: 600,
+      fontWeight: 700,
       lineHeight: 1.5,
     },
     body1: {
@@ -118,12 +106,12 @@ const lightThemeOptions: ThemeOptions = {
       lineHeight: 1.5,
     },
     button: {
-      fontWeight: 500,
+      fontWeight: 600,
       textTransform: 'none' as const,
     },
   },
   shape: {
-    borderRadius: 8,
+    borderRadius: 4,
   },
   spacing: 8,
 };
@@ -135,27 +123,15 @@ const darkThemeOptions: ThemeOptions = {
     mode: 'dark',
     ...baseColors,
     background: {
-      default: '#0f172a', // slate-900
-      paper: '#1e293b', // slate-800
+      default: '#0a0a0a',
+      paper: '#141414',
     },
     text: {
-      primary: '#f1f5f9', // slate-100
-      secondary: '#cbd5e1', // slate-300
-      disabled: '#64748b', // slate-500
+      primary: '#ffffff',
+      secondary: '#b3b3b3',
+      disabled: '#808080',
     },
-    divider: '#334155', // slate-700
-    grey: {
-      50: '#0f172a',
-      100: '#1e293b',
-      200: '#334155',
-      300: '#475569',
-      400: '#64748b',
-      500: '#94a3b8',
-      600: '#cbd5e1',
-      700: '#e2e8f0',
-      800: '#f1f5f9',
-      900: '#f8fafc',
-    },
+    divider: '#333333',
   },
 };
 

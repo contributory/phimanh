@@ -1,141 +1,165 @@
+"use client";
+
 import Link from "next/link";
-import MovieMinimalCard from "@/components/movie/movie-minimal";
-import {
-  MovieCardLarge,
-  MovieCardWide,
-  MovieCardCompact,
-  MovieCardDefault,
-} from "@/components/movie/movie-card-variants";
-import { Card, CardContent } from "@/components/ui/enhanced-card";
-import {
-  MaterialRipple,
-  ScrollReveal,
-} from "@/components/ui/material-animations";
+import { MovieCardDefault } from "@/components/movie/movie-card-variants";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface MovieSectionProps {
   title: string;
   movies: any[];
   viewAllLink: string;
-  buttonColor?: "red" | "purple" | "green" | "orange" | "pink";
   emptyMessage?: string;
+  initialVisible?: number;
+  maxVisible?: number;
+  loadStep?: number;
+  buttonColor?: string;
   isClientSide?: boolean;
 }
 
-const buttonColors = {
-  red: "bg-red-600 hover:bg-red-700",
-  purple: "bg-purple-600 hover:bg-purple-700",
-  green: "bg-green-600 hover:bg-green-700",
-  orange: "bg-orange-600 hover:bg-orange-700",
-  pink: "bg-pink-600 hover:bg-pink-700",
-};
-
 export default function MovieSection({
   title,
-  movies,
+  movies = [],
   viewAllLink,
-  buttonColor = "red",
   emptyMessage = "Chưa có phim nào",
-  isClientSide = false,
+  initialVisible = 12,
+  maxVisible = 20,
+  loadStep = 4,
 }: MovieSectionProps) {
-  const content = (
-    <section className="py-8">
-      {/* Header với title và nút bên ngoài Card */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-1 h-8 bg-gradient-to-b from-red-600 to-pink-600 rounded-full"></div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const cappedMaxVisible = Math.min(maxVisible, movies.length || 0);
+  const [visibleCount, setVisibleCount] = useState(() =>
+    cappedMaxVisible ? Math.min(initialVisible, cappedMaxVisible) : 0
+  );
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = direction === 'left' ? -400 : 400;
+      scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  const [moved, setMoved] = useState(false);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setMoved(false);
+    setStartX(e.pageX - (scrollRef.current?.offsetLeft || 0));
+    setScrollLeft(scrollRef.current?.scrollLeft || 0);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - (scrollRef.current.offsetLeft || 0);
+    const walk = (x - startX) * 2;
+    if (Math.abs(walk) > 5) {
+      setMoved(true);
+    }
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  useEffect(() => {
+    setVisibleCount((prev) => {
+      if (!cappedMaxVisible) return 0;
+      const baseline = Math.min(initialVisible, cappedMaxVisible);
+      if (prev === 0) return baseline;
+      return Math.min(Math.max(prev, baseline), cappedMaxVisible);
+    });
+  }, [cappedMaxVisible, initialVisible]);
+
+  const maybeLoadMore = useCallback(() => {
+    if (!scrollRef.current) return;
+    const maxItems = Math.min(maxVisible, movies.length || 0);
+    if (!maxItems) return;
+
+    const { scrollLeft: currentLeft, clientWidth, scrollWidth } = scrollRef.current;
+    const nearEnd = currentLeft + clientWidth >= scrollWidth - 200;
+
+    if (nearEnd) {
+      setVisibleCount((prev) => Math.min(prev + loadStep, maxItems));
+    }
+  }, [loadStep, maxVisible, movies]);
+
+  const displayedMovies = (movies || []).slice(0, visibleCount || 0);
+
+  return (
+    <section className="py-4 md:py-6">
+      <div className="flex items-center justify-between mb-8 px-4 md:px-6">
+        <div className="flex items-center gap-6">
+          <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter">
             {title}
           </h2>
+          <div className="hidden md:flex items-center gap-2">
+            <button 
+              onClick={() => scroll('left')}
+              className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white transition-all bg-black/40 backdrop-blur-sm"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button 
+              onClick={() => scroll('right')}
+              className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white transition-all bg-black/40 backdrop-blur-sm"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
         </div>
         <Link
           href={viewAllLink}
-          className={`inline-flex items-center justify-center w-10 h-10 rounded-lg text-white font-semibold transition-all duration-200 hover:scale-105 shadow-md hover:shadow-lg ${buttonColors[buttonColor]}`}
+          className="text-[10px] md:text-xs font-black text-zinc-500 hover:text-red-600 transition-colors uppercase tracking-[0.2em]"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
-            />
-          </svg>
+          Xem tất cả
         </Link>
       </div>
 
-      {/* Card chứa movies */}
-      <Card variant="glass" className="overflow-hidden">
-        <CardContent className="p-6">
-          <div className="flex overflow-x-auto gap-4 pb-4 md:grid md:gap-4 md:grid-cols-6 md:auto-rows-[200px] md:overflow-visible scrollbar-thin">
-            {movies && movies.length > 0 ? (
-              movies.map((movie: any, index: number) => {
-                return (
-                  <ScrollReveal
-                    key={`${movie.slug || 'movie'}-${index}`}
-                    animation="grow"
-                    threshold={0.1}
-                  >
-                    <div
-                      className="flex-shrink-0 transform transition-transform duration-300 w-44 md:w-auto"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <MaterialRipple>
-                        <div className="rounded-xl overflow-hidden material-elevation-1 hover:material-elevation-3 material-transition h-full">
-                          <MovieCardDefault movie={movie} />
-                        </div>
-                      </MaterialRipple>
-                    </div>
-                  </ScrollReveal>
-                );
-              })
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-8 w-8 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 4v16M17 4v16"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      {emptyMessage}
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Đang tải dữ liệu hoặc chưa có phim trong danh mục này...
-                    </p>
-                  </div>
+      <div className="relative px-4 md:px-6 overflow-hidden">
+        {displayedMovies && displayedMovies.length > 0 ? (
+          <div 
+            ref={scrollRef}
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            onScroll={maybeLoadMore}
+            className={`flex gap-4 md:gap-6 overflow-x-auto pb-8 scrollbar-hide snap-x ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+          >
+            {displayedMovies.map((movie: any, index: number) => (
+              <div 
+                key={`${movie.slug}-${index}`}
+                className="flex-shrink-0 w-[280px] sm:w-[320px] md:w-[360px] snap-start"
+              >
+                <div className={moved ? "pointer-events-none" : "pointer-events-auto"}>
+                  <MovieCardDefault movie={movie} />
                 </div>
               </div>
-            )}
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <div className="text-center py-20 bg-zinc-900/50 rounded-lg">
+            <h3 className="text-lg font-bold text-zinc-500 uppercase tracking-widest">
+              {emptyMessage}
+            </h3>
+          </div>
+        )}
+      </div>
+
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </section>
-  );
-
-  if (isClientSide) {
-    return content;
-  }
-
-  return (
-    <ScrollReveal animation="fade" direction="up">
-      {content}
-    </ScrollReveal>
   );
 }

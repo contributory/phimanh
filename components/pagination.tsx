@@ -12,11 +12,18 @@ import {
 import { usePathname, useSearchParams } from "next/navigation";
 import React from "react";
 
-export default function PaginationComponent() {
+interface PaginationComponentProps {
+  pageInfo?: any;
+}
+
+export default function PaginationComponent({
+  pageInfo: initialPageInfo,
+}: PaginationComponentProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isMobile, setIsMobile] = React.useState(false);
-  const [pageInfo, setPageInfo] = React.useState<any>(null);
+  const [fetchedPageInfo, setFetchedPageInfo] = React.useState<any>(null);
+  const pageInfo = initialPageInfo ?? fetchedPageInfo;
 
   React.useEffect(() => {
     const checkMobile = () => {
@@ -30,6 +37,10 @@ export default function PaginationComponent() {
   }, []);
 
   React.useEffect(() => {
+    if (initialPageInfo) {
+      setFetchedPageInfo(null);
+      return;
+    }
     const index = Number(searchParams.get("index")) || 1;
     const category = searchParams.get("category");
     const topic = searchParams.get("topic");
@@ -71,15 +82,15 @@ export default function PaginationComponent() {
       .then((data) => {
         // Handle different response structures
         if (hasAdvancedFilters || category || topic) {
-          setPageInfo(data.data.params.pagination);
+          setFetchedPageInfo(data.data.params.pagination);
         } else {
-          setPageInfo(data.pagination);
+          setFetchedPageInfo(data.pagination);
         }
       })
       .catch(() => {
-        setPageInfo(null);
+        setFetchedPageInfo(null);
       });
-  }, [searchParams]);
+  }, [searchParams, initialPageInfo]);
 
   const createQueryString = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());

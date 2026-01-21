@@ -4,10 +4,14 @@ import "./globals.css";
 import GTM from "@/components/ui/GTM";
 import PageTransition from "@/components/ui/page-transition";
 import { LoadingProvider } from "@/components/ui/loading-context";
+import RouteLoadingOverlay from "@/components/ui/route-loading-overlay";
 import { WebsiteStructuredData, OrganizationStructuredData } from "@/components/seo/structured-data";
 import EnhancedGTMTracking from "@/components/seo/enhanced-gtm";
 import MaterialThemeProvider from "@/components/providers/material-theme-provider";
 import HydrationFix from "@/components/ui/hydration-fix";
+import { VideoProvider } from "@/components/providers/video-provider";
+import GlobalPlayer from "@/components/player/global-player";
+import ReactQueryProvider from "@/components/providers/query-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -257,11 +261,19 @@ export default function RootLayout({
 
         <HydrationFix />
         <MaterialThemeProvider>
-          <LoadingProvider>
-            <PageTransition>
-              {children}
-            </PageTransition>
-          </LoadingProvider>
+          <ReactQueryProvider>
+            <VideoProvider>
+              <LoadingProvider>
+                <div className="relative isolate">
+                  <PageTransition>
+                    {children}
+                  </PageTransition>
+                  <RouteLoadingOverlay />
+                  <GlobalPlayer />
+                </div>
+              </LoadingProvider>
+            </VideoProvider>
+          </ReactQueryProvider>
         </MaterialThemeProvider>
         {/* Global Sidebar - may be modified by browser extensions */}
         <div id="sidebar-root" suppressHydrationWarning></div>

@@ -7,14 +7,20 @@ interface RecentlyWatchedProps {
   limit?: number;
 }
 
-export default function RecentlyWatched({ limit }: RecentlyWatchedProps) {
+export default function RecentlyWatched({ limit = 20 }: RecentlyWatchedProps) {
   const [movies, setMovies] = useState<any[]>([]);
 
+  const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
+    setMounted(true);
     const Cookies = require('js-cookie');
     const recentlyWatched = JSON.parse(Cookies.get('recentlyWatched') || '[]');
-    setMovies(limit ? recentlyWatched.slice(0, limit) : recentlyWatched);
+    const cappedLimit = Math.min(limit, 20);
+    setMovies(recentlyWatched.slice(0, cappedLimit));
   }, [limit]);
+
+  if (!mounted || movies.length === 0) return null;
 
   return (
     <MovieSection
@@ -24,6 +30,8 @@ export default function RecentlyWatched({ limit }: RecentlyWatchedProps) {
       buttonColor="purple"
       emptyMessage="Chưa có phim đã xem"
       isClientSide={true}
+      initialVisible={6}
+      maxVisible={Math.min(limit, 20)}
     />
   );
 }
