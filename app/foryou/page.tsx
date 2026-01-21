@@ -29,9 +29,7 @@ export default async function ForYouPage() {
           <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter">
             Dành Cho Bạn
           </h1>
-          <p className="text-sm text-zinc-500 max-w-2xl">
-            Chúng tôi phân tích phim bạn đã xem để kết hợp thể loại, quốc gia, năm phát hành và loại phim từ nhiều endpoint khác nhau, sắp xếp lại thành danh sách gợi ý cá nhân hóa.
-          </p>
+          
         </div>
 
         <ForYouGrid limit={20} />

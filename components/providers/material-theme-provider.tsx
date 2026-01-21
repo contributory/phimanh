@@ -5,7 +5,9 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { getTheme } from '@/lib/material-theme';
 
 interface MaterialThemeContextType {
+  theme: 'light' | 'dark' | 'system';
   isDark: boolean;
+  setTheme: (theme: 'light' | 'dark' | 'system') => void;
   toggleTheme: () => void;
 }
 
@@ -24,22 +26,34 @@ interface MaterialThemeProviderProps {
 }
 
 export default function MaterialThemeProvider({ children }: MaterialThemeProviderProps) {
-  const [isDark, setIsDark] = useState(false); // Start with light theme always
+  const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>('system');
+  const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Only run theme detection after mount to prevent hydration mismatch
+  // Initialize theme from storage or default to system
   useEffect(() => {
     setMounted(true);
     
-    // Get theme from the inline script that runs before React
     if (typeof window !== 'undefined') {
-      const initialTheme = (window as any).__INITIAL_THEME__ || 'light';
-      setIsDark(initialTheme === 'dark');
+      const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null;
+      const initialTheme = savedTheme || 'system';
+      setThemeState(initialTheme);
       
-      // Listen for system theme changes only if no saved preference
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      
+      const updateTheme = (currentTheme: 'light' | 'dark' | 'system') => {
+        if (currentTheme === 'system') {
+          setIsDark(mediaQuery.matches);
+        } else {
+          setIsDark(currentTheme === 'dark');
+        }
+      };
+
+      updateTheme(initialTheme);
+
       const handleChange = (e: MediaQueryListEvent) => {
-        if (!localStorage.getItem('theme')) {
+        const currentTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system' | null;
+        if (!currentTheme || currentTheme === 'system') {
           setIsDark(e.matches);
         }
       };
@@ -60,21 +74,33 @@ export default function MaterialThemeProvider({ children }: MaterialThemeProvide
     }
   }, [isDark, mounted]);
 
-  const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    
+  const setTheme = (newTheme: 'light' | 'dark' | 'system') => {
+    setThemeState(newTheme);
     if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+      localStorage.setItem('theme', newTheme);
+      
+      if (newTheme === 'system') {
+        const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setIsDark(isSystemDark);
+      } else {
+        setIsDark(newTheme === 'dark');
+      }
     }
   };
 
-  // Always use the current theme state, no null checks needed
-  const theme = getTheme(isDark);
+  const toggleTheme = () => {
+    const modes: ('light' | 'dark' | 'system')[] = ['light', 'dark', 'system'];
+    const currentIndex = modes.indexOf(theme);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    setTheme(modes[nextIndex]);
+  };
+
+  // MUI theme based on calculated isDark
+  const muiTheme = getTheme(isDark);
 
   return (
-    <MaterialThemeContext.Provider value={{ isDark, toggleTheme }}>
-      <ThemeProvider theme={theme}>
+    <MaterialThemeContext.Provider value={{ theme, isDark, setTheme, toggleTheme }}>
+      <ThemeProvider theme={muiTheme}>
         <CssBaseline />
         <div suppressHydrationWarning style={{ display: 'contents' }}>
           {children}

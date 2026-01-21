@@ -36,7 +36,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
 
   return (
     <section 
-      className="relative h-[110vh] w-full overflow-hidden bg-black"
+      className="relative h-[110vh] w-full overflow-hidden bg-background"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -53,9 +53,9 @@ export default function HeroSection({ movies }: HeroSectionProps) {
             alt={m.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
-          <div className="absolute bottom-0 left-0 w-full h-[60%] bg-gradient-to-t from-black via-black/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
+          <div className="absolute bottom-0 left-0 w-full h-[60%] bg-gradient-to-t from-background via-background/80 to-transparent" />
         </div>
       ))}
 
@@ -89,7 +89,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                     </div>
                   </>
                 ) : m?.badgeText ? (
-                  <div className="bg-white/10 text-white px-3 py-1 rounded-sm font-black text-[10px] uppercase tracking-[0.2em] border border-white/10">
+                  <div className="bg-muted text-foreground px-3 py-1 rounded-sm font-black text-[10px] uppercase tracking-[0.2em] border border-border">
                     {m.badgeText}
                   </div>
                 ) : (
@@ -105,7 +105,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                 )}
               </div>
 
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-2 tracking-tighter uppercase leading-[0.9] max-w-4xl drop-shadow-2xl line-clamp-2">
+              <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-foreground mb-2 tracking-tighter uppercase leading-[0.9] max-w-4xl drop-shadow-sm line-clamp-2">
                 {m.name}
               </h1>
               
@@ -113,7 +113,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                 {m.origin_name}
               </h2>
 
-              <div className="flex flex-wrap items-center gap-x-5 mb-4 text-zinc-300 font-bold text-xs md:text-sm">
+              <div className="flex flex-wrap items-center gap-x-5 mb-4 text-muted-foreground font-bold text-xs md:text-sm">
                 <span className="flex items-center gap-2">
                   <Calendar className="w-3.5 h-3.5 text-red-600" />
                   {m.year}
@@ -122,12 +122,12 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                   <Tag className="w-3.5 h-3.5 text-red-600" />
                   {m.category?.map((c: any) => c.name).slice(0, 2).join(", ")}
                 </span>
-                <span className="px-1.5 py-0.5 bg-white/10 rounded text-[10px] border border-white/20">
+                <span className="px-1.5 py-0.5 bg-accent rounded text-[10px] border border-border">
                   {m.quality}
                 </span>
               </div>
 
-              <p className="text-zinc-400 text-sm md:text-base mb-4 line-clamp-2 font-medium max-w-xl leading-relaxed">
+              <p className="text-muted-foreground/80 text-sm md:text-base mb-4 line-clamp-2 font-medium max-w-xl leading-relaxed">
                 {m.content?.replace(/<[^>]*>?/gm, "") || "Trải nghiệm siêu phẩm điện ảnh đỉnh cao."}
               </p>
             </div>
@@ -140,7 +140,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
             href={`/watch?slug=${featuredMovie.slug}`}
             className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-sm font-black uppercase tracking-widest transition-all flex items-center gap-2 transform hover:scale-105 shadow-2xl w-fit text-sm"
           >
-            <Play className="w-5 h-5 fill-current" /> Xem ngay
+            <Play className="w-5 h-5 fill-current" /> Xem Phim
           </Link>
 
           <div className="flex items-center gap-3">
@@ -149,7 +149,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                 key={m.slug}
                 onClick={() => setActiveIndex(idx)}
                 className={`group relative w-14 h-20 md:w-16 md:h-24 overflow-hidden rounded-sm border transition-all transform hover:scale-110 ${
-                  idx === activeIndex ? "border-red-600 scale-110 z-20 shadow-[0_0_20px_rgba(229,9,20,0.4)]" : "border-white/10 opacity-60 hover:opacity-100"
+                  idx === activeIndex ? "border-primary scale-110 z-20 shadow-[0_0_20px_rgba(229,9,20,0.4)]" : "border-border opacity-60 hover:opacity-100"
                 }`}
               >
                 <img

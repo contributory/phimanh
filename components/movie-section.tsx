@@ -94,19 +94,19 @@ export default function MovieSection({
     <section className="py-4 md:py-6">
       <div className="flex items-center justify-between mb-8 px-4 md:px-6">
         <div className="flex items-center gap-6">
-          <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter">
+          <h2 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter">
             {title}
           </h2>
           <div className="hidden md:flex items-center gap-2">
             <button 
               onClick={() => scroll('left')}
-              className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white transition-all bg-black/40 backdrop-blur-sm"
+              className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground transition-all bg-background/40 backdrop-blur-sm"
             >
               <ChevronLeft className="w-6 h-6" />
             </button>
             <button 
               onClick={() => scroll('right')}
-              className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white transition-all bg-black/40 backdrop-blur-sm"
+              className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground transition-all bg-background/40 backdrop-blur-sm"
             >
               <ChevronRight className="w-6 h-6" />
             </button>
@@ -114,7 +114,7 @@ export default function MovieSection({
         </div>
         <Link
           href={viewAllLink}
-          className="text-[10px] md:text-xs font-black text-zinc-500 hover:text-red-600 transition-colors uppercase tracking-[0.2em]"
+          className="text-[10px] md:text-xs font-black text-muted-foreground hover:text-primary transition-colors uppercase tracking-[0.2em]"
         >
           Xem tất cả
         </Link>
@@ -143,8 +143,8 @@ export default function MovieSection({
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-zinc-900/50 rounded-lg">
-            <h3 className="text-lg font-bold text-zinc-500 uppercase tracking-widest">
+          <div className="text-center py-20 bg-muted/50 rounded-lg border border-border">
+            <h3 className="text-lg font-bold text-muted-foreground uppercase tracking-widest">
               {emptyMessage}
             </h3>
           </div>

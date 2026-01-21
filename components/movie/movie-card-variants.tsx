@@ -23,7 +23,7 @@ export function MovieCardDefault({ movie }: { movie: any }) {
       <button onClick={handleClick} className="block w-full text-left group">
         <div className="flex flex-col gap-3">
           {/* Thumbnail Container */}
-          <Card className="relative aspect-video overflow-hidden rounded-xl bg-zinc-900 border-none transition-all duration-300 shadow-lg ring-1 ring-white/10 group-hover:ring-white/20">
+          <Card className="relative aspect-video overflow-hidden rounded-xl bg-muted border-none transition-all duration-300 shadow-lg ring-1 ring-border group-hover:ring-primary/20">
             <img
               src={imageUrl}
               alt={movie.name}
@@ -31,24 +31,24 @@ export function MovieCardDefault({ movie }: { movie: any }) {
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute top-2 right-2 z-20">
-              <span className="px-1.5 py-0.5 bg-black/80 backdrop-blur-md text-white text-[10px] font-bold rounded shadow-sm border border-white/10">
+              <span className="px-1.5 py-0.5 bg-background/80 backdrop-blur-md text-foreground text-[10px] font-bold rounded shadow-sm border border-border">
                 {movie.quality || "HD"}
               </span>
             </div>
             {/* Overlay gradient for better hover effect */}
-            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </Card>
           
           {/* Movie Info */}
           <div className="px-1 space-y-1">
-            <h3 className="text-zinc-100 text-[15px] font-semibold line-clamp-2 leading-snug group-hover:text-red-500 transition-colors">
+            <h3 className="text-foreground text-[15px] font-semibold line-clamp-2 leading-snug group-hover:text-primary transition-colors">
               {movie.name}
             </h3>
-            <div className="flex items-center gap-2 text-zinc-400 text-xs font-medium">
+            <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
               <span className="line-clamp-1">{movie.origin_name}</span>
               {movie.year && (
                 <>
-                  <span className="w-1 h-1 rounded-full bg-zinc-600" />
+                  <span className="w-1 h-1 rounded-full bg-border" />
                   <span>{movie.year}</span>
                 </>
               )}

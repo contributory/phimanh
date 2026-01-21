@@ -17,7 +17,7 @@ export default function ForYouGrid({ limit = 20 }: ForYouGridProps) {
         {Array.from({ length: limit }).map((_, idx) => (
           <div
             key={idx}
-            className="h-64 rounded-xl bg-white/5 animate-pulse"
+            className="h-64 rounded-xl bg-muted animate-pulse"
           />
         ))}
       </div>
@@ -26,8 +26,8 @@ export default function ForYouGrid({ limit = 20 }: ForYouGridProps) {
 
   if (!movies.length) {
     return (
-      <div className="text-center py-20 bg-zinc-900/50 rounded-xl">
-        <p className="text-lg text-zinc-500 font-bold uppercase tracking-widest">
+      <div className="text-center py-20 bg-muted/50 rounded-xl border border-border">
+        <p className="text-lg text-muted-foreground font-bold uppercase tracking-widest">
           Chưa có gợi ý phù hợp - hãy xem thêm vài phim để chúng tôi học sở thích của bạn.
         </p>
       </div>

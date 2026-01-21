@@ -53,15 +53,15 @@ const lightThemeOptions: ThemeOptions = {
     mode: 'light',
     ...baseColors,
     background: {
-      default: '#ffffff',
-      paper: '#f5f5f5',
+      default: '#fafafa',
+      paper: '#ffffff',
     },
     text: {
-      primary: '#141414',
-      secondary: '#666666',
-      disabled: '#999999',
+      primary: '#020617',
+      secondary: '#64748b',
+      disabled: '#94a3b8',
     },
-    divider: '#eeeeee',
+    divider: '#f1f5f9',
   },
   typography: {
     fontFamily: roboto.style.fontFamily,

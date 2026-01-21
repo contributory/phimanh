@@ -82,7 +82,7 @@ export default function Header({
 
   return (
     <nav className="sticky top-0 z-[100] w-full">
-      <div className="backdrop-blur-xl bg-black/80 border-b border-white/5">
+      <div className="backdrop-blur-xl bg-background/80 border-b border-border shadow-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-6">
           <div className="flex items-center">
             <div
@@ -101,7 +101,7 @@ export default function Header({
               <Link
                 href="/new-updates"
                 className={`text-xs font-black transition-colors uppercase tracking-[0.2em] ${
-                  isActiveLink("/new-updates") ? "text-red-600" : "text-zinc-400 hover:text-white"
+                  isActiveLink("/new-updates") ? "text-red-600" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Mới nhất
@@ -110,7 +110,7 @@ export default function Header({
               <Link
                 href="/foryou"
                 className={`text-xs font-black transition-colors uppercase tracking-[0.2em] ${
-                  isActiveLink("/foryou") ? "text-red-600" : "text-zinc-400 hover:text-white"
+                  isActiveLink("/foryou") ? "text-red-600" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Dành cho bạn
@@ -119,22 +119,22 @@ export default function Header({
               <div className="relative group/dropdown">
                 <button
                   className={`flex items-center gap-1 text-xs font-black transition-colors uppercase tracking-[0.2em] ${
-                    topics.some((t) => isActiveTopic(t.slug)) ? "text-red-600" : "text-zinc-400 hover:text-white"
+                    topics.some((t) => isActiveTopic(t.slug)) ? "text-red-600" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <span>Danh mục</span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
 
-                <div className="absolute top-full left-0 mt-0 w-48 py-2 bg-black border border-white/10 opacity-0 invisible group-hover/dropdown:opacity-100 group-hover/dropdown:visible transition-all z-50 shadow-2xl">
+                <div className="absolute top-full left-0 mt-0 w-48 py-2 bg-popover border border-border opacity-0 invisible group-hover/dropdown:opacity-100 group-hover/dropdown:visible transition-all z-50 shadow-xl">
                   {topics.map((topic) => (
                     <Link
                       key={topic.slug}
                       href={`/topic/${topic.slug}`}
                       className={`block px-4 py-3 text-xs font-bold transition-colors uppercase tracking-widest ${
                         isActiveTopic(topic.slug)
-                          ? "text-red-600 bg-white/5"
-                          : "text-zinc-400 hover:text-white hover:bg-white/5"
+                          ? "text-red-600 bg-accent"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent"
                       }`}
                     >
                       {topic.name}
@@ -146,7 +146,7 @@ export default function Header({
               <Link
                 href="/recently"
                 className={`text-xs font-black transition-colors uppercase tracking-[0.2em] ${
-                  isActiveLink("/recently") ? "text-red-600" : "text-zinc-400 hover:text-white"
+                  isActiveLink("/recently") ? "text-red-600" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Đã xem
@@ -160,7 +160,7 @@ export default function Header({
                 setShowSearch(true);
                 setTimeout(() => inputRef.current?.focus(), 100);
               }}
-              className="text-zinc-400 hover:text-white transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Search className="w-5 h-5" />
             </button>
@@ -171,7 +171,7 @@ export default function Header({
 
             <button
               onClick={() => setShowSidebar(!showSidebar)}
-              className="text-zinc-400 hover:text-white transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <Menu className="w-6 h-6" />
             </button>
@@ -180,24 +180,24 @@ export default function Header({
       </div>
 
       {showSearch && (
-        <div className="fixed inset-0 z-[60] bg-black/95 animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[60] bg-background/98 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="container mx-auto px-6 py-12">
             <div className="flex justify-end mb-12">
-              <button onClick={closeSearch} className="text-zinc-500 hover:text-white transition-colors">
+              <button onClick={closeSearch} className="text-muted-foreground hover:text-foreground transition-colors">
                 <X className="w-10 h-10" />
               </button>
             </div>
 
             <form onSubmit={handleSearch} className="max-w-4xl mx-auto">
-              <div className="relative border-b-2 border-white/10 focus-within:border-red-600 transition-colors">
-                <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 text-zinc-600" />
+              <div className="relative border-b-2 border-border focus-within:border-primary transition-colors">
+                <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 text-muted-foreground" />
                 <input
                   ref={inputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Tìm kiếm..."
-                  className="w-full bg-transparent pl-14 pr-4 py-6 text-3xl md:text-5xl text-white outline-none placeholder:text-zinc-800 font-black uppercase tracking-tighter"
+                  className="w-full bg-transparent pl-14 pr-4 py-6 text-3xl md:text-5xl text-foreground outline-none placeholder:text-muted-foreground/30 font-black uppercase tracking-tighter"
                 />
               </div>
             </form>
