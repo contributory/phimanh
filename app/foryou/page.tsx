@@ -1,4 +1,4 @@
-import PhimApi from "@/libs/phimapi.com";
+import PhimApi from "@/services/phimapi.com";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import ForYouGrid from "@/components/foryou/for-you-grid";

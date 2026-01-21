@@ -1,4 +1,4 @@
-import PhimApi from "@/libs/phimapi.com";
+import PhimApi from "@/services/phimapi.com";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import TopicSection from "@/components/topic-section";

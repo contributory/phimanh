@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useLoading } from "@/components/ui/loading-context";
 import { useVideoContext } from "@/components/providers/video-provider";
-import { searchSubtitles, Subtitle } from "@/libs/subtitles";
+import { searchSubtitles, Subtitle } from "@/services/subtitles";
 import {
   DropdownMenu,
   DropdownMenuContent,

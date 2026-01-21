@@ -1,4 +1,4 @@
-import PhimApi from "@/libs/phimapi.com";
+import PhimApi from "@/services/phimapi.com";
 import { MovieCardDefault } from "@/components/movie/movie-card-variants";
 import Header from "@/components/header";
 import Pagination from "@/components/pagination";

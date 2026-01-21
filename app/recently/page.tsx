@@ -14,7 +14,7 @@ export default function RecentlyWatchedPage() {
   useEffect(() => {
     // Fetch categories and countries for header
     const fetchData = async () => {
-      const PhimApi = (await import("@/libs/phimapi.com")).default;
+      const PhimApi = (await import("@/services/phimapi.com")).default;
       const api = new PhimApi();
       const [cats, cnts] = await Promise.all([
         api.listCategories(),

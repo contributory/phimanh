@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Cookies from "js-cookie";
-import { buildForYouList } from "@/libs/foryou-recommendations";
+import { buildForYouList } from "@/services/foryou-recommendations";
 
 export function useForYouMovies(limit: number) {
   const { data: movies = [], isLoading: loading } = useQuery({

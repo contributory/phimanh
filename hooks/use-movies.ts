@@ -1,4 +1,4 @@
-import PhimApi from "@/libs/phimapi.com";
+import PhimApi from "@/services/phimapi.com";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 
 const api = new PhimApi();

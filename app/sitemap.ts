@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import PhimApi from "@/libs/phimapi.com";
+import PhimApi from "@/services/phimapi.com";
 import { headers } from "next/headers";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

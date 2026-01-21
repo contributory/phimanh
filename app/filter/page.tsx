@@ -1,9 +1,9 @@
-import PhimApi from "@/libs/phimapi.com";
+import PhimApi from "@/services/phimapi.com";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import MovieListClient from "@/components/movie/movie-list-client";
 import { ScrollToTopFAB } from "@/components/ui/material-fab";
-import { fetchMovieList } from "@/libs/movie-list";
+import { fetchMovieList } from "@/services/movie-list";
 
 type FilterPageProps = {
     searchParams: Promise<{

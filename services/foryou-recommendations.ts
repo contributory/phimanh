@@ -1,4 +1,4 @@
-import PhimApi from "@/libs/phimapi.com";
+import PhimApi from "@/services/phimapi.com";
 
 type BasicMovie = {
   slug?: string;
