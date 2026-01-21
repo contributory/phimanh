@@ -265,7 +265,7 @@ export default function RootLayout({
           <ReactQueryProvider>
             <VideoProvider>
               <LoadingProvider>
-                <div className="relative isolate">
+                <div className="relative isolate" suppressHydrationWarning>
                   <PageTransition>
                     {children}
                   </PageTransition>

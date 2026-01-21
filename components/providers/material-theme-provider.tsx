@@ -76,7 +76,9 @@ export default function MaterialThemeProvider({ children }: MaterialThemeProvide
     <MaterialThemeContext.Provider value={{ isDark, toggleTheme }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        {children}
+        <div suppressHydrationWarning style={{ display: 'contents' }}>
+          {children}
+        </div>
       </ThemeProvider>
     </MaterialThemeContext.Provider>
   );
