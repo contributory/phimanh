@@ -203,26 +203,26 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
 
           {/* Title and Stats */}
           <div className="space-y-4">
-            <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
               {movie.name}
             </h1>
             
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-white/10 hover:bg-white/20 text-white border-0 px-3 py-1 text-sm">
+                <Badge className="bg-muted hover:bg-muted/80 text-foreground border-0 px-3 py-1 text-sm">
                   {movie.year}
                 </Badge>
-                <Badge className="bg-white/10 hover:bg-white/20 text-white border-0 px-3 py-1 text-sm">
+                <Badge className="bg-muted hover:bg-muted/80 text-foreground border-0 px-3 py-1 text-sm">
                   {movie.quality}
                 </Badge>
-                <Badge className="bg-white/10 hover:bg-white/20 text-white border-0 px-3 py-1 text-sm">
+                <Badge className="bg-muted hover:bg-muted/80 text-foreground border-0 px-3 py-1 text-sm">
                   {movie.lang}
                 </Badge>
-                <div className="h-4 w-[1px] bg-white/10 mx-1 hidden sm:block" />
-                <span className="text-sm text-white/60 flex items-center gap-1.5">
+                <div className="h-4 w-[1px] bg-border mx-1 hidden sm:block" />
+                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
                   <Clock className="w-4 h-4" /> {movie.time}
                 </span>
-                <span className="text-sm text-white/60 flex items-center gap-1.5 ml-2">
+                <span className="text-sm text-muted-foreground flex items-center gap-1.5 ml-2">
                   <Globe className="w-4 h-4" /> {movie.country?.map((c: any) => c.name).join(", ")}
                 </span>
               </div>
@@ -231,28 +231,28 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
                 {movie.trailer_url && (
                   <button
                     onClick={() => setShowTrailer(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full text-sm font-semibold transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-full text-sm font-semibold transition-colors"
                   >
                     <Play className="w-4 h-4" /> Trailer
                   </button>
                 )}
-                <button className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors">
+                <button className="p-2 bg-muted hover:bg-muted/80 text-foreground rounded-full transition-colors">
                   <Heart className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
             {/* Description Card */}
-            <div className="bg-white/5 rounded-xl p-4 hover:bg-white/[0.08] transition-colors group">
+            <div className="bg-card rounded-xl p-4 hover:bg-card/80 transition-colors group border border-border">
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-4 text-sm font-semibold text-white">
+                <div className="flex items-center gap-4 text-sm font-semibold text-foreground">
                   <span>{movie.year}</span>
                   <div className="flex flex-wrap gap-2">
                     {movie.category?.slice(0, 3).map((cat: any) => (
                       <Link
                         key={cat.slug}
                         href={`/category/${cat.slug}`}
-                        className="text-indigo-400 hover:text-indigo-300 transition-colors"
+                        className="text-primary hover:text-primary/80 transition-colors"
                       >
                         #{cat.name}
                       </Link>
@@ -262,23 +262,23 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
               </div>
 
               <div className={cn(
-                "text-sm text-white/90 leading-relaxed overflow-hidden transition-all duration-300",
+                "text-sm text-foreground leading-relaxed overflow-hidden transition-all duration-300",
                 showDetails ? "max-h-[2000px]" : "max-h-20"
               )}>
                 <p className="whitespace-pre-line">{decodeHtmlEntities(movie.content)}</p>
                 
                 {showDetails && (
-                  <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="mt-4 pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {movie.director?.length > 0 && (
                       <div>
-                        <span className="text-white/50 block text-xs uppercase mb-1">Đạo diễn</span>
-                        <span className="text-sm">{movie.director.join(", ")}</span>
+                        <span className="text-muted-foreground block text-xs uppercase mb-1">Đạo diễn</span>
+                        <span className="text-sm text-foreground">{movie.director.join(", ")}</span>
                       </div>
                     )}
                     {movie.actor?.length > 0 && (
                       <div>
-                        <span className="text-white/50 block text-xs uppercase mb-1">Diễn viên</span>
-                        <span className="text-sm line-clamp-2">{movie.actor.join(", ")}</span>
+                        <span className="text-muted-foreground block text-xs uppercase mb-1">Diễn viên</span>
+                        <span className="text-sm line-clamp-2 text-foreground">{movie.actor.join(", ")}</span>
                       </div>
                     )}
                   </div>
@@ -287,7 +287,7 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
 
               <button
                 onClick={() => setShowDetails(!showDetails)}
-                className="mt-2 text-sm font-bold text-white hover:underline"
+                className="mt-2 text-sm font-bold text-foreground hover:underline"
               >
                 {showDetails ? "Ẩn bớt" : "Hiện thêm"}
               </button>

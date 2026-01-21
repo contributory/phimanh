@@ -57,12 +57,12 @@ export function MovieSEODescription({ movie }: MovieSEODescriptionProps) {
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg mt-6">
+    <div className="bg-muted p-6 rounded-lg mt-6">
       <h2 className="text-xl font-bold mb-4">Thông tin phim</h2>
       
       {/* SEO-optimized description */}
       <div className="mb-4">
-        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+        <p className="text-sm text-muted-foreground font-medium">
           {generateSEODescription()}
         </p>
       </div>
@@ -71,22 +71,22 @@ export function MovieSEODescription({ movie }: MovieSEODescriptionProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         {movie.year && (
           <div className="flex items-center">
-            <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-            <span className="text-gray-600 dark:text-gray-400">Năm sản xuất:</span>
+            <Calendar className="w-4 h-4 mr-2 text-primary" />
+            <span className="text-muted-foreground">Năm sản xuất:</span>
             <span className="ml-1 font-medium">{movie.year}</span>
           </div>
         )}
         
         {movie.country && movie.country.length > 0 && (
           <div className="flex items-center">
-            <MapPin className="w-4 h-4 mr-2 text-green-500" />
-            <span className="text-gray-600 dark:text-gray-400">Quốc gia:</span>
+            <MapPin className="w-4 h-4 mr-2 text-primary" />
+            <span className="text-muted-foreground">Quốc gia:</span>
             <div className="ml-1 flex flex-wrap gap-1">
               {movie.country.map((country, index) => (
                 <span key={country.slug}>
                   <Link 
                     href={`/?country=${country.slug}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
+                    className="text-primary hover:underline font-medium"
                     title={`Phim ${country.name}`}
                   >
                     {country.name}
@@ -100,14 +100,14 @@ export function MovieSEODescription({ movie }: MovieSEODescriptionProps) {
         
         {movie.category && movie.category.length > 0 && (
           <div className="flex items-start">
-            <Tag className="w-4 h-4 mr-2 text-purple-500 mt-0.5" />
-            <span className="text-gray-600 dark:text-gray-400">Thể loại:</span>
+            <Tag className="w-4 h-4 mr-2 text-primary mt-0.5" />
+            <span className="text-muted-foreground">Thể loại:</span>
             <div className="ml-1 flex flex-wrap gap-1">
               {movie.category.map((cat, index) => (
                 <span key={cat.slug}>
                   <Link 
                     href={`/?category=${cat.slug}`}
-                    className="text-blue-600 dark:text-blue-400 hover:underline"
+                    className="text-primary hover:underline font-medium"
                     title={`Phim ${cat.name}`}
                   >
                     {cat.name}
@@ -121,9 +121,9 @@ export function MovieSEODescription({ movie }: MovieSEODescriptionProps) {
         
         {(movie.actor && movie.actor.length > 0) && (
           <div className="flex items-start">
-            <Users className="w-4 h-4 mr-2 text-orange-500 mt-0.5" />
-            <span className="text-gray-600 dark:text-gray-400">Diễn viên:</span>
-            <div className="ml-1 text-sm">
+            <Users className="w-4 h-4 mr-2 text-primary mt-0.5" />
+            <span className="text-muted-foreground">Diễn viên:</span>
+            <div className="ml-1 text-sm font-medium">
               {movie.actor.slice(0, 3).join(', ')}
               {movie.actor.length > 3 && '...'}
             </div>
@@ -133,9 +133,9 @@ export function MovieSEODescription({ movie }: MovieSEODescriptionProps) {
 
       {/* Movie content/plot with SEO optimization */}
       {movie.content && (
-        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+        <div className="mt-4 pt-4 border-t border-border">
           <h3 className="font-medium mb-2">Nội dung phim {movie.name}</h3>
-          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+          <p className="text-sm text-foreground/80 leading-relaxed">
             {decodeHtmlEntities(movie.content)}
           </p>
         </div>
@@ -161,26 +161,26 @@ export function CategorySEOContent({
   const defaultDescription = `Khám phá kho tàng phim ${categoryName} chất lượng HD tại Phim Ảnh. ${movieCount ? `Hơn ${movieCount} bộ phim` : 'Nhiều bộ phim'} ${categoryName} hay nhất được cập nhật liên tục, xem miễn phí với phụ đề Việt Nam.`;
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 p-6 rounded-lg mb-6">
+    <div className="bg-muted p-6 rounded-lg mb-6">
       <h1 className="text-2xl md:text-3xl font-bold mb-4">
         Phim {categoryName} - Xem Online Chất Lượng HD
       </h1>
-      <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+      <p className="text-foreground/80 leading-relaxed">
         {description || defaultDescription}
       </p>
       
       <div className="mt-4 flex flex-wrap gap-2">
-        <span className="px-3 py-1 bg-white dark:bg-gray-600 rounded-full text-sm font-medium">
+        <span className="px-3 py-1 bg-background rounded-full text-sm font-medium border border-border">
           #{categoryName.toLowerCase().replace(/\s+/g, '')}
         </span>
-        <span className="px-3 py-1 bg-white dark:bg-gray-600 rounded-full text-sm">
+        <span className="px-3 py-1 bg-background rounded-full text-sm border border-border">
           Phim HD
         </span>
-        <span className="px-3 py-1 bg-white dark:bg-gray-600 rounded-full text-sm">
+        <span className="px-3 py-1 bg-background rounded-full text-sm border border-border">
           Miễn phí
         </span>
         {movieCount && (
-          <span className="px-3 py-1 bg-white dark:bg-gray-600 rounded-full text-sm">
+          <span className="px-3 py-1 bg-background rounded-full text-sm border border-border">
             {movieCount}+ phim
           </span>
         )}
@@ -215,9 +215,9 @@ export function MovieFAQ({ movie }: MovieFAQProps) {
       <h2 className="text-2xl font-bold mb-6">Câu hỏi thường gặp về phim {movie.name}</h2>
       <div className="space-y-4">
         {faqs.map((faq, index) => (
-          <div key={index} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div key={index} className="bg-muted/50 p-4 rounded-lg border border-border">
             <h3 className="font-semibold mb-2 text-lg">{faq.question}</h3>
-            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{faq.answer}</p>
+            <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
           </div>
         ))}
       </div>
@@ -238,7 +238,7 @@ export function HomepageSEOContent() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <h3 className="text-xl font-semibold mb-3">Tại sao chọn Phim Ảnh?</h3>
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-2 text-sm text-muted-foreground">
             <li>✅ Hơn 50,000+ bộ phim chất lượng HD, Full HD, 4K</li>
             <li>✅ Cập nhật phim mới nhất hàng ngày</li>
             <li>✅ Phụ đề Việt Nam và Thuyết minh chuyên nghiệp</li>
@@ -250,7 +250,7 @@ export function HomepageSEOContent() {
         
         <div>
           <h3 className="text-xl font-semibold mb-3">Thể loại phim đa dạng</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             Phim Ảnh sở hữu kho phim đa dạng với đầy đủ các thể loại từ phim hành động, 
             tình cảm, kinh dị, hài hước, phim bộ Trung Quốc, Hàn Quốc, Thái Lan, 
             anime Nhật Bản đến phim Hollywood bom tấn. Tất cả đều được cập nhật 
@@ -262,7 +262,7 @@ export function HomepageSEOContent() {
               'Phim hành động', 'Phim tình cảm', 'Phim kinh dị', 
               'Phim hài hước', 'Phim bộ', 'Anime', 'Phim chiếu rạp'
             ].map((genre) => (
-              <span key={genre} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded text-xs">
+              <span key={genre} className="px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium">
                 {genre}
               </span>
             ))}

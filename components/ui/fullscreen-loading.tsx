@@ -51,10 +51,10 @@ export default function FullscreenLoading({ transparent = false }: FullscreenLoa
           </h2>
 
           <div className="flex flex-col items-center gap-2">
-            <div className="h-1 w-48 bg-gray-800 rounded-full overflow-hidden relative">
-              <div className="absolute top-0 left-0 h-full bg-red-600 w-1/3 rounded-full animate-[loading_2s_ease-in-out_infinite]"></div>
+            <div className="h-1 w-48 bg-muted rounded-full overflow-hidden relative">
+              <div className="absolute top-0 left-0 h-full bg-primary w-1/3 rounded-full animate-[loading_2s_ease-in-out_infinite]"></div>
             </div>
-            <p className="text-gray-400 text-sm font-medium tracking-widest uppercase opacity-70">
+            <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
               Đang chuẩn bị nội dung...
             </p>
           </div>
@@ -66,7 +66,7 @@ export default function FullscreenLoading({ transparent = false }: FullscreenLoa
         <div
           className="absolute inset-0 z-0 opacity-20"
           style={{
-            backgroundImage: "radial-gradient(circle, #444 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)",
             backgroundSize: "40px 40px",
           }}
         ></div>
@@ -74,7 +74,7 @@ export default function FullscreenLoading({ transparent = false }: FullscreenLoa
 
       {/* Footer Disclaimer - Made more subtle */}
       <div className="fixed bottom-6 left-0 right-0 z-10 px-4 pointer-events-none">
-        <p className="text-[10px] text-gray-600 text-center max-w-2xl mx-auto leading-relaxed uppercase tracking-tighter">
+        <p className="text-[10px] text-muted-foreground/60 text-center max-w-2xl mx-auto leading-relaxed uppercase tracking-tighter">
           Nội dung phục vụ mục đích học tập & trải nghiệm kỹ thuật
         </p>
       </div>

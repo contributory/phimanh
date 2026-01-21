@@ -9,11 +9,12 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex flex-col items-center md:items-start">
             <span className="text-2xl font-black text-primary tracking-tighter uppercase mb-2">
-              PHIMANH
+              PHIM ẢNH
             </span>
             <p className="text-muted-foreground text-sm max-w-xs text-center md:text-left">
               Trải nghiệm điện ảnh chất lượng cao với giao diện tối giản và chuyên nghiệp.
             </p>
+            
           </div>
 
           <div className="flex gap-8 text-sm font-bold uppercase tracking-widest text-muted-foreground">
@@ -31,7 +32,7 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-border text-center">
           <p className="text-muted-foreground text-xs font-medium">
-            © {new Date().getFullYear()} PHIMANH. Giao diện được thiết kế tối giản cho trải nghiệm tốt nhất.
+            © {new Date().getFullYear()} PHIMANH. Trang web dành cho mục đích giáo dục, chúng tôi không lưu trữ và không chịu trách nhiệm cho nội dung xuất hiện trên trang web này.
           </p>
         </div>
       </div>

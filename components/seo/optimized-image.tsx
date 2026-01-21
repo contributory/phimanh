@@ -49,10 +49,10 @@ export default function OptimizedImage({
   if (hasError) {
     return (
       <div 
-        className={`bg-gray-200 dark:bg-gray-700 flex items-center justify-center ${className}`}
+        className={`bg-muted flex items-center justify-center ${className}`}
         style={{ width, height }}
       >
-        <span className="text-gray-400 text-sm">Không thể tải ảnh</span>
+        <span className="text-muted-foreground/60 text-sm">Không thể tải ảnh</span>
       </div>
     );
   }
@@ -61,7 +61,7 @@ export default function OptimizedImage({
     <div className={`relative overflow-hidden ${className}`}>
       {isLoading && (
         <div 
-          className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse"
+          className="absolute inset-0 bg-muted animate-pulse"
           style={{ width, height }}
         />
       )}

@@ -148,14 +148,14 @@ export default function PaginationComponent({
         {getVisiblePages().map((page, index) =>
           page === "..." ? (
             <PaginationItem key={index}>
-              <PaginationEllipsis className="px-2 text-gray-400" />
+              <PaginationEllipsis className="px-2 text-muted-foreground/60" />
             </PaginationItem>
           ) : (
             <PaginationItem key={index}>
               <PaginationLink
                 href={`${pathname}?${createQueryString(page as number)}`}
                 isActive={pageInfo.currentPage === page}
-                className={`rounded-lg px-3 py-1 font-medium transition-colors ${pageInfo.currentPage === page ? "bg-blue-600 text-white" : "text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"}`}
+                className={`rounded-lg px-3 py-1 font-medium transition-colors ${pageInfo.currentPage === page ? "bg-primary text-primary-foreground" : "text-foreground bg-muted hover:bg-muted/80"}`}
               >
                 {page}
               </PaginationLink>

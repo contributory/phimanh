@@ -55,11 +55,11 @@ export function RelatedMovies({ currentMovie, relatedMovies, title = "Phim liên
                 />
               )}
             </div>
-            <h3 className="mt-2 text-sm font-medium line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            <h3 className="mt-2 text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors">
               {movie.name}
             </h3>
             {movie.year && (
-              <p className="text-xs text-gray-500 dark:text-gray-400">{movie.year}</p>
+              <p className="text-xs text-muted-foreground">{movie.year}</p>
             )}
           </Link>
         ))}
@@ -84,12 +84,12 @@ export function CategoryLinks({ categories, title = "Thể loại phim", showCou
           <Link
             key={category.slug}
             href={`/category/${category.slug}`}
-            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 dark:bg-gray-700 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors"
+            className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-muted hover:bg-primary/10 hover:text-primary transition-colors"
             title={`Xem phim ${category.name}`}
           >
             {category.name}
             {showCount && category.count && (
-              <span className="ml-1 text-xs text-gray-500">({category.count})</span>
+              <span className="ml-1 text-xs text-muted-foreground">({category.count})</span>
             )}
           </Link>
         ))}
@@ -147,10 +147,10 @@ export function RecentlyWatchedLinks({ movies, title = "Xem gần đây" }: Rece
           <Link
             key={movie.slug}
             href={`/watch?slug=${movie.slug}`}
-            className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
+            className="flex items-center space-x-3 p-2 rounded-lg hover:bg-muted transition-colors group"
             title={`Tiếp tục xem ${movie.name}`}
           >
-            <div className="w-16 h-24 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden flex-shrink-0">
+            <div className="w-16 h-24 bg-muted rounded overflow-hidden flex-shrink-0">
               {movie.poster_url && (
                 <img
                   src={movie.poster_url}
@@ -161,15 +161,15 @@ export function RecentlyWatchedLinks({ movies, title = "Xem gần đây" }: Rece
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <h3 className="font-medium line-clamp-1 group-hover:text-primary transition-colors">
                 {movie.name}
               </h3>
               {movie.category && movie.category[0] && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-muted-foreground">
                   {movie.category[0].name}
                 </p>
               )}
-              <div className="flex items-center mt-1 text-xs text-gray-400">
+              <div className="flex items-center mt-1 text-xs text-muted-foreground/60">
                 <Eye className="w-3 h-3 mr-1" />
                 Tiếp tục xem
               </div>
@@ -196,21 +196,21 @@ export function PopularCategories({ categories, title = "Thể loại phổ bi�
           <Link
             key={category.slug}
             href={`/category/${category.slug}`}
-            className="group p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-lg hover:shadow-md transition-all"
+            className="group p-4 bg-muted/30 rounded-lg hover:shadow-md transition-all border border-transparent hover:border-primary/20"
             title={`Khám phá phim ${category.name}`}
           >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-lg group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
                   {category.name}
                 </h3>
                 {category.count && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     {category.count} phim
                   </p>
                 )}
               </div>
-              <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
+              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
           </Link>
         ))}
@@ -227,7 +227,7 @@ interface FooterSEOLinksProps {
 
 export function FooterSEOLinks({ categories, topics }: FooterSEOLinksProps) {
   return (
-    <div className="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8">
+    <div className="mt-12 border-t border-border pt-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {/* Categories */}
         <div>
@@ -237,7 +237,7 @@ export function FooterSEOLinks({ categories, topics }: FooterSEOLinksProps) {
               <Link
                 key={category.slug}
                 href={`/category/${category.slug}`}
-                className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                 title={`Phim ${category.name}`}
               >
                 Phim {category.name}
@@ -254,7 +254,7 @@ export function FooterSEOLinks({ categories, topics }: FooterSEOLinksProps) {
               <Link
                 key={topic.slug}
                 href={`/topic/${topic.slug}`}
-                className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                className="block text-sm text-muted-foreground hover:text-primary transition-colors"
                 title={`Phim ${topic.name}`}
               >
                 {topic.name}
@@ -269,19 +269,19 @@ export function FooterSEOLinks({ categories, topics }: FooterSEOLinksProps) {
           <div className="space-y-2">
             <Link
               href="/new-updates"
-              className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              className="block text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               Phim mới cập nhật
             </Link>
             <Link
               href="/recently"
-              className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              className="block text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               Phim xem gần đây
             </Link>
             <Link
               href="/search"
-              className="block text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              className="block text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               Tìm kiếm phim
             </Link>

@@ -15,18 +15,18 @@ interface BreadcrumbProps {
 
 export default function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
   return (
-    <nav className={`flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-4 ${className}`} aria-label="Breadcrumb">
+    <nav className={`flex items-center space-x-2 text-sm text-muted-foreground mb-4 ${className}`} aria-label="Breadcrumb">
       <ol className="inline-flex items-center space-x-2">
         {items.map((item, index) => (
           <li key={index} className="inline-flex items-center">
             {index > 0 && (
-              <ChevronRight className="w-3 h-3 mx-2 text-gray-400" aria-hidden="true" />
+              <ChevronRight className="w-3 h-3 mx-2 text-muted-foreground/50" aria-hidden="true" />
             )}
 
             {index === 0 ? (
               <Link
                 href={item.url}
-                className="inline-flex items-center text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                className="inline-flex items-center text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Trang chủ"
               >
                 <Home className="w-3 h-3 mr-1" />
@@ -34,7 +34,7 @@ export default function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
               </Link>
             ) : item.current || index === items.length - 1 ? (
               <span
-                className="text-gray-700 dark:text-gray-300 font-medium truncate max-w-[200px]"
+                className="text-foreground font-medium truncate max-w-[200px]"
                 aria-current="page"
                 title={item.name}
               >
@@ -43,7 +43,7 @@ export default function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
             ) : (
               <Link
                 href={item.url}
-                className="text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors truncate max-w-[150px]"
+                className="text-muted-foreground hover:text-primary transition-colors truncate max-w-[150px]"
                 title={item.name}
               >
                 {item.name}

@@ -55,7 +55,7 @@ export default async function TopicPage({ params, searchParams }: TopicPageProps
                 topics={topics}
             />
             <div className="py-8">
-                <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter mb-8">
+                <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter mb-8">
                     {topic?.name || "Danh sách phim"}
                 </h1>
                 <MovieListClient

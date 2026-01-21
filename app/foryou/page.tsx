@@ -26,7 +26,7 @@ export default async function ForYouPage() {
       />
       <div className="py-8 space-y-6">
         <div className="space-y-2">
-          <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter">
+          <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter">
             Dành Cho Bạn
           </h1>
           

@@ -37,7 +37,7 @@ export default function RecentlyWatchedPage() {
       <div className="py-8">
         <section className="py-8">
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter">
+            <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter">
               Phim Đã Xem Gần Đây
             </h1>
           </div>

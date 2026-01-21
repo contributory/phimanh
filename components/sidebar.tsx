@@ -337,7 +337,7 @@ export default function Sidebar({
           {/* Advanced Filter Section */}
           <div className="space-y-4">
             <div className="px-8 flex items-center justify-between">
-              <p className="text-[11px] font-black text-zinc-600 uppercase tracking-[0.4em]">
+              <p className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.4em]">
                 Bộ lọc
               </p>
               <button

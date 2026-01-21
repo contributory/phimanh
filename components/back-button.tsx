@@ -19,7 +19,7 @@ export default function BackButton() {
   return (
     <button
       onClick={handleBack}
-      className="flex items-center gap-3 px-6 py-3 mb-8 bg-zinc-900/50 backdrop-blur-xl border border-white/5 text-zinc-400 hover:text-white hover:border-red-500/50 hover:bg-zinc-900 transition-all duration-300 rounded-xl group uppercase tracking-[0.2em] text-[10px] font-black"
+      className="flex items-center gap-3 px-6 py-3 mb-8 bg-muted/50 backdrop-blur-xl border border-border text-muted-foreground hover:text-foreground hover:border-primary/50 hover:bg-muted transition-all duration-300 rounded-xl group uppercase tracking-[0.2em] text-[10px] font-black"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

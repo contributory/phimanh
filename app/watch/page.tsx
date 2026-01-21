@@ -74,7 +74,7 @@ export default async function WatchPage({ searchParams }: any) {
   }));
 
   return (
-    <div className="dark">
+    <>
       {/* Structured Data */}
       <MovieStructuredData
         movie={movie}
@@ -82,7 +82,7 @@ export default async function WatchPage({ searchParams }: any) {
       />
       <BreadcrumbStructuredData items={structuredBreadcrumbItems} />
       
-      <main className="min-h-screen relative">
+      <main className="min-h-screen relative bg-background">
         <div className="relative z-10 mx-auto w-full">
           <Header
             categories={categories}
@@ -95,6 +95,6 @@ export default async function WatchPage({ searchParams }: any) {
           <Footer />
         </div>
       </main>
-    </div>
+    </>
   );
 }

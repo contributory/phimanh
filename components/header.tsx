@@ -190,14 +190,14 @@ export default function Header({
 
             <form onSubmit={handleSearch} className="max-w-4xl mx-auto">
               <div className="relative border-b-2 border-border focus-within:border-primary transition-colors">
-                <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 text-muted-foreground" />
+                <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 text-muted-foreground/60" />
                 <input
                   ref={inputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Tìm kiếm..."
-                  className="w-full bg-transparent pl-14 pr-4 py-6 text-3xl md:text-5xl text-foreground outline-none placeholder:text-muted-foreground/30 font-black uppercase tracking-tighter"
+                  className="w-full bg-transparent pl-14 pr-4 py-6 text-3xl md:text-5xl text-foreground outline-none placeholder:text-muted-foreground/40 font-black uppercase tracking-tighter"
                 />
               </div>
             </form>

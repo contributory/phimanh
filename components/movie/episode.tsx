@@ -77,11 +77,11 @@ export default function Episode({
   // Handle edge case: no server data
   if (!serverData || serverData.length === 0) {
     return (
-      <div className="w-full p-8 text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 mb-4">
-          <List className="w-8 h-8 text-gray-400" />
+      <div className="w-full p-8 text-center bg-muted/30 rounded-xl border border-dashed border-border">
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+          <List className="w-8 h-8 text-muted-foreground/60" />
         </div>
-        <p className="text-gray-500 dark:text-gray-400 font-medium">Không có tập phim nào</p>
+        <p className="text-muted-foreground font-medium">Không có tập phim nào</p>
       </div>
     );
   }

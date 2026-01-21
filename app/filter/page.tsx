@@ -50,7 +50,7 @@ export default async function FilterPage({ searchParams }: FilterPageProps) {
                 topics={topics}
             />
             <div className="py-8">
-                <h1 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter mb-8">
+                <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter mb-8">
                     Kết quả Lọc
                 </h1>
                 <MovieListClient

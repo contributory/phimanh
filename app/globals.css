@@ -16,7 +16,7 @@
     --secondary: 0 0% 92%;
     --secondary-foreground: 224 71% 4%;
     --muted: 0 0% 94%;
-    --muted-foreground: 220 10% 25%;
+    --muted-foreground: 215.4 16.3% 35%; /* Đậm hơn một chút so với cũ (25% lightness trong HSL là khá đậm, nhưng thực tế có vẻ nó mờ. Hãy dùng giá trị chuẩn hơn) */
     --accent: 0 0% 92%;
     --accent-foreground: 224 71% 4%;
     --destructive: 0 84.2% 60.2%;

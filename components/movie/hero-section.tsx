@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Play, Star, Calendar, Tag } from "lucide-react";
+import { Play, Star, Calendar, Tag, Globe } from "lucide-react";
 
 interface HeroSectionProps {
   movies: any[];
@@ -122,6 +122,14 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                   <Tag className="w-3.5 h-3.5 text-red-600" />
                   {m.category?.map((c: any) => c.name).slice(0, 2).join(", ")}
                 </span>
+                {m.country && (Array.isArray(m.country) ? m.country.length > 0 : true) && (
+                  <span className="flex items-center gap-2">
+                    <Globe className="w-3.5 h-3.5 text-red-600" />
+                    {Array.isArray(m.country) 
+                      ? m.country.map((c: any) => c.name).slice(0, 2).join(", ")
+                      : typeof m.country === 'string' ? m.country : m.country?.name || ""}
+                  </span>
+                )}
                 <span className="px-1.5 py-0.5 bg-accent rounded text-[10px] border border-border">
                   {m.quality}
                 </span>
