@@ -298,7 +298,7 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
         {/* Sidebar: Episodes and Recommendations (Right side on desktop) */}
         <div className="w-full lg:w-[400px] flex flex-col gap-6">
           {/* Episode List */}
-          <div className="rounded-xl overflow-hidden bg-[#0f0f0f] border border-white/10">
+          <div className="rounded-xl overflow-hidden bg-card border border-border">
             <Episode
               serverData={serverData}
               currentServerIndex={currentEpisodeIndex?.server || 0}
@@ -326,7 +326,7 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
 
           {/* Recommendations Sidebar List */}
           <div className="space-y-4">
-            <h2 className="text-base font-bold text-white flex items-center gap-2 px-1">
+            <h2 className="text-base font-bold text-foreground flex items-center gap-2 px-1">
               <Sparkles className="w-4 h-4 text-amber-400" />
               Đề xuất cho bạn
             </h2>
@@ -338,7 +338,7 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
                   href={`/watch?slug=${rec.slug}`}
                   className="flex gap-3 group"
                 >
-                  <div className="relative flex-shrink-0 w-40 aspect-video rounded-lg overflow-hidden bg-white/5">
+                  <div className="relative flex-shrink-0 w-40 aspect-video rounded-lg overflow-hidden bg-muted">
                     <img
                       src={rec.poster_url?.startsWith("http") ? rec.poster_url : `https://phimimg.com/${rec.poster_url}`}
                       alt={rec.name}
@@ -351,13 +351,13 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
                   </div>
                   
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
-                    <h3 className="text-sm font-bold text-white line-clamp-2 group-hover:text-indigo-400 transition-colors leading-tight">
+                    <h3 className="text-sm font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-tight">
                       {rec.name}
                     </h3>
-                    <p className="text-xs text-white/50 mt-1 line-clamp-1">
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
                       {rec.year} • {rec.lang}
                     </p>
-                    <p className="text-[11px] text-white/40 mt-0.5 line-clamp-1">
+                    <p className="text-[11px] text-muted-foreground/80 mt-0.5 line-clamp-1">
                       {rec.origin_name}
                     </p>
                   </div>

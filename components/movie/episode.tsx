@@ -150,16 +150,16 @@ export default function Episode({
 
   return (
     <div className={cn(
-      "flex flex-col bg-[#0f0f0f] border border-white/10 rounded-xl overflow-hidden",
+      "flex flex-col bg-card border border-border rounded-xl overflow-hidden",
       compact ? "h-[500px]" : "h-full"
     )}>
       {/* Header Area */}
-      <div className="flex-shrink-0 p-4 bg-[#212121] border-b border-white/5">
+      <div className="flex-shrink-0 p-4 bg-muted/50 border-b border-border">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-base font-bold text-white leading-tight">Danh sách tập</h4>
-              <p className="text-xs text-white/50 mt-1">
+              <h4 className="text-base font-bold text-foreground leading-tight">Danh sách tập</h4>
+              <p className="text-xs text-muted-foreground mt-1">
                 {currentServerIndex + 1}/{serverData.length} Server • {currentEpisodeIndex + 1}/{totalEpisodes} Tập
               </p>
             </div>
@@ -167,12 +167,12 @@ export default function Episode({
             {/* Server Selector Dropdown */}
             {serverData.length > 1 && (
               <Select value={currentServerIndex.toString()} onValueChange={(value) => handleServerChange(parseInt(value))}>
-                <SelectTrigger className="w-[120px] h-8 text-[11px] bg-white/10 border-0 text-white rounded-md">
+                <SelectTrigger className="w-[120px] h-8 text-[11px] bg-muted border-0 text-foreground rounded-md">
                   <SelectValue placeholder="Server" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#212121] border-white/10">
+                <SelectContent className="bg-card border-border">
                   {serverData.map((server, index) => (
-                    <SelectItem key={index} value={index.toString()} className="text-xs text-white/80">
+                    <SelectItem key={index} value={index.toString()} className="text-xs text-foreground/80">
                       {server.server_name}
                     </SelectItem>
                   ))}
@@ -183,12 +183,12 @@ export default function Episode({
 
           {/* Quick Actions and Player Mode */}
           <div className="flex items-center gap-2">
-            <div className="flex bg-white/5 p-0.5 rounded-lg flex-1">
+            <div className="flex bg-muted p-0.5 rounded-lg flex-1">
               <button
                 onClick={() => onPlayerModeChange('m3u8')}
                 className={cn(
                   "flex-1 px-2 py-1.5 text-[10px] font-bold rounded-md transition-all",
-                  playerMode === 'm3u8' ? "bg-white/10 text-white" : "text-white/40 hover:text-white"
+                  playerMode === 'm3u8' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 M3U8
@@ -197,7 +197,7 @@ export default function Episode({
                 onClick={() => onPlayerModeChange('embed')}
                 className={cn(
                   "flex-1 px-2 py-1.5 text-[10px] font-bold rounded-md transition-all",
-                  playerMode === 'embed' ? "bg-white/10 text-white" : "text-white/40 hover:text-white"
+                  playerMode === 'embed' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 EMBED
@@ -206,7 +206,7 @@ export default function Episode({
             
             {totalEpisodes > 20 && (
               <div className="relative flex-[1.5]">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-white/30" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/50" />
                 <input
                   type="text"
                   placeholder="Tìm tập..."
@@ -215,7 +215,7 @@ export default function Episode({
                     setSearchQuery(e.target.value);
                     setCurrentPage(0);
                   }}
-                  className="w-full pl-7 pr-2 py-1.5 text-[11px] bg-white/5 border-0 rounded-lg text-white placeholder:text-white/20 outline-none focus:bg-white/10"
+                  className="w-full pl-7 pr-2 py-1.5 text-[11px] bg-muted border-0 rounded-lg text-foreground placeholder:text-muted-foreground/50 outline-none focus:bg-muted/80"
                 />
               </div>
             )}
@@ -226,7 +226,7 @@ export default function Episode({
       {/* Episode List Container */}
       <div
         ref={episodeListRef}
-        className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
+        className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent"
       >
         <div className="flex flex-col">
           {paginatedEpisodes.length > 0 ? paginatedEpisodes.map((episode, pageIndex) => {
@@ -245,23 +245,23 @@ export default function Episode({
                 )}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2 transition-colors group",
-                  isActive ? "bg-white/10" : "hover:bg-white/5"
+                  isActive ? "bg-muted" : "hover:bg-muted/50"
                 )}
               >
                 {/* Index / Playing Icon */}
                 <div className="flex-shrink-0 w-4 flex justify-center">
                   {isActive ? (
-                    <PlayCircle className="w-3.5 h-3.5 text-white" />
+                    <PlayCircle className="w-3.5 h-3.5 text-primary" />
                   ) : (
-                    <span className="text-[11px] text-white/40 group-hover:hidden">{actualIndex + 1}</span>
+                    <span className="text-[11px] text-muted-foreground/40 group-hover:hidden">{actualIndex + 1}</span>
                   )}
                   {!isActive && (
-                    <PlayCircle className="w-3.5 h-3.5 text-white hidden group-hover:block" />
+                    <PlayCircle className="w-3.5 h-3.5 text-muted-foreground hidden group-hover:block" />
                   )}
                 </div>
 
                 {/* Thumbnail-like Box (Minimalist YT Style) */}
-                <div className="flex-shrink-0 w-24 aspect-video rounded-md overflow-hidden bg-white/5 relative">
+                <div className="flex-shrink-0 w-24 aspect-video rounded-md overflow-hidden bg-muted relative">
                   <img
                     src={thumb_url || "/og-image.svg"}
                     alt={episode.name}
@@ -281,11 +281,11 @@ export default function Episode({
                 <div className="flex-1 min-w-0 text-left">
                   <h5 className={cn(
                     "text-xs font-semibold truncate",
-                    isActive ? "text-white" : "text-white/90"
+                    isActive ? "text-foreground" : "text-foreground/90"
                   )}>
                     Tập {episode.name}
                   </h5>
-                  <p className="text-[10px] text-white/40 truncate mt-0.5">
+                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">
                     {episode.filename || `Phần ${actualIndex + 1}`}
                   </p>
                 </div>
@@ -299,21 +299,21 @@ export default function Episode({
           
           {/* Pagination for long lists */}
           {totalPages > 1 && !searchQuery && (
-            <div className="p-4 flex items-center justify-center gap-4 border-t border-white/5">
+            <div className="p-4 flex items-center justify-center gap-4 border-t border-border">
               <button
                 disabled={currentPage === 0}
                 onClick={() => setCurrentPage(prev => prev - 1)}
-                className="p-1 text-white/40 hover:text-white disabled:opacity-10"
+                className="p-1 text-muted-foreground/40 hover:text-foreground disabled:opacity-10"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-[10px] font-bold text-white/60">
+              <span className="text-[10px] font-bold text-muted-foreground/60">
                 TRANG {currentPage + 1} / {totalPages}
               </span>
               <button
                 disabled={currentPage === totalPages - 1}
-                onClick={() => setCurrentPage(prev => prev + 1)}
-                className="p-1 text-white/40 hover:text-white disabled:opacity-10"
+                onClick={() => setCurrentPage(prev => prev - 1)}
+                className="p-1 text-muted-foreground/40 hover:text-foreground disabled:opacity-10"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
