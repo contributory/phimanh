@@ -1,8 +1,6 @@
 "use client";
 
-import {
-  MaterialRipple,
-} from "@/components/ui/material-animations";
+import { MaterialRipple } from "@/components/ui/material-animations";
 import { useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -42,14 +40,17 @@ export default function Header({
   };
 
   const isActiveLink = (href: string) => pathname === href;
-  const isActiveTopic = (topicSlug: string) => pathname === `/topic/${topicSlug}`;
+  const isActiveTopic = (topicSlug: string) =>
+    pathname === `/topic/${topicSlug}`;
+  const isActiveCountry = (countrySlug: string) =>
+    pathname === `/country/${countrySlug}`;
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       showLoading();
       await router.push(
-        `/search?query=${encodeURIComponent(searchQuery.trim())}`
+        `/search?query=${encodeURIComponent(searchQuery.trim())}`,
       );
       closeSearch();
     }
@@ -65,8 +66,8 @@ export default function Header({
       try {
         const res = await fetch(
           `https://phimapi.com/v1/api/tim-kiem?keyword=${encodeURIComponent(
-            searchQuery.trim()
-          )}&limit=6`
+            searchQuery.trim(),
+          )}&limit=6`,
         );
         const data = await res.json();
         setSuggestions(data.data.items || []);
@@ -101,7 +102,9 @@ export default function Header({
               <Link
                 href="/new-updates"
                 className={`text-xs font-black transition-colors uppercase tracking-[0.2em] ${
-                  isActiveLink("/new-updates") ? "text-red-600" : "text-muted-foreground hover:text-foreground"
+                  isActiveLink("/new-updates")
+                    ? "text-red-600"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Mới nhất
@@ -110,7 +113,9 @@ export default function Header({
               <Link
                 href="/foryou"
                 className={`text-xs font-black transition-colors uppercase tracking-[0.2em] ${
-                  isActiveLink("/foryou") ? "text-red-600" : "text-muted-foreground hover:text-foreground"
+                  isActiveLink("/foryou")
+                    ? "text-red-600"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Dành cho bạn
@@ -119,7 +124,9 @@ export default function Header({
               <div className="relative group/dropdown">
                 <button
                   className={`flex items-center gap-1 text-xs font-black transition-colors uppercase tracking-[0.2em] ${
-                    topics.some((t) => isActiveTopic(t.slug)) ? "text-red-600" : "text-muted-foreground hover:text-foreground"
+                    topics.some((t) => isActiveTopic(t.slug))
+                      ? "text-red-600"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <span>Danh mục</span>
@@ -146,7 +153,9 @@ export default function Header({
               <Link
                 href="/recently"
                 className={`text-xs font-black transition-colors uppercase tracking-[0.2em] ${
-                  isActiveLink("/recently") ? "text-red-600" : "text-muted-foreground hover:text-foreground"
+                  isActiveLink("/recently")
+                    ? "text-red-600"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Đã xem
@@ -183,7 +192,10 @@ export default function Header({
         <div className="fixed inset-0 z-[60] bg-background/98 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="container mx-auto px-6 py-12">
             <div className="flex justify-end mb-12">
-              <button onClick={closeSearch} className="text-muted-foreground hover:text-foreground transition-colors">
+              <button
+                onClick={closeSearch}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <X className="w-10 h-10" />
               </button>
             </div>

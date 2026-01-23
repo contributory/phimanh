@@ -72,6 +72,8 @@ export default function Sidebar({
   const isActiveLink = (href: string) => pathname === href;
   const isActiveTopic = (topicSlug: string) => pathname === `/topic/${topicSlug}`;
   const isActiveCategory = (categorySlug: string) => pathname === `/category/${categorySlug}`;
+  const isActiveCountry = (countrySlug: string) => pathname === `/country/${countrySlug}`;
+  const isActiveYear = (year: string) => pathname === `/year/${year}`;
 
   useEffect(() => {
     setMounted(true);
@@ -475,9 +477,9 @@ export default function Sidebar({
                 {countries.map((country) => (
                   <SubNavItem
                     key={country.slug}
-                    href={`/filter?country=${country.slug}`}
+                    href={`/country/${country.slug}`}
                     label={country.name}
-                    isActive={false}
+                    isActive={isActiveCountry(country.slug)}
                   />
                 ))}
               </div>
@@ -493,9 +495,13 @@ export default function Sidebar({
                 {YEAR_OPTIONS.map((year) => (
                   <Link
                     key={year.value}
-                    href={`/filter?year=${year.value}`}
-                    onClick={() => handleLinkClick(`/filter?year=${year.value}`)}
-                    className="flex items-center justify-center py-3 text-[11px] border border-border text-muted-foreground hover:border-red-600 hover:text-foreground transition-all uppercase tracking-widest font-bold"
+                    href={`/year/${year.value}`}
+                    onClick={() => handleLinkClick(`/year/${year.value}`)}
+                    className={`flex items-center justify-center py-3 text-[11px] border border-border transition-all uppercase tracking-widest font-bold ${
+                      isActiveYear(year.value)
+                        ? "border-red-600 text-red-600 bg-red-600/10"
+                        : "text-muted-foreground hover:border-red-600 hover:text-foreground"
+                    }`}
                   >
                     {year.label}
                   </Link>

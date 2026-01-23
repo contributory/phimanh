@@ -1,7 +1,17 @@
 "use client";
 
-import FullscreenLoading from "@/components/ui/fullscreen-loading";
+import { useEffect } from "react";
+import { useLoading } from "@/components/ui/loading-context";
 
 export default function Loading() {
-  return <FullscreenLoading />;
+  const { setSuspenseLoading } = useLoading();
+
+  useEffect(() => {
+    setSuspenseLoading(true);
+    return () => setSuspenseLoading(false);
+  }, [setSuspenseLoading]);
+
+  // Render nothing as RouteLoadingOverlay (in layout.tsx) will handle the UI
+  // based on the global isLoading state.
+  return null;
 }

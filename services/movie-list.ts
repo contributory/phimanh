@@ -9,6 +9,8 @@ type MovieListParams = {
   index?: number;
   category?: string;
   topic?: string;
+  country?: string;
+  year?: string;
   searchParams?: SearchParams;
 };
 
@@ -27,6 +29,8 @@ export async function fetchMovieList({
   index = 1,
   category,
   topic,
+  country,
+  year,
   searchParams,
 }: MovieListParams): Promise<MovieListData> {
   const typeList = getParam(searchParams, "typeList");
@@ -46,7 +50,7 @@ export async function fetchMovieList({
     const limit = getParam(searchParams, "limit") || "64";
 
     const urlObj = new URL(
-      `${API_BASE_URL}/v1/api/danh-sach/${resolvedTypeList}`
+      `${API_BASE_URL}/v1/api/danh-sach/${resolvedTypeList}`,
     );
     urlObj.searchParams.set("page", String(index));
     urlObj.searchParams.set("sort_field", resolvedSortField);
@@ -58,9 +62,13 @@ export async function fetchMovieList({
     if (filterYear) urlObj.searchParams.set("year", filterYear);
     url = urlObj.toString();
   } else if (category) {
-    url = `${API_BASE_URL}/v1/api/the-loai/${category}?page=${index}&limit=64`;
+    url = `${API_BASE_URL}/v1/api/the-loai/${category}?page=${index}&limit=30`;
   } else if (topic) {
-    url = `${API_BASE_URL}/v1/api/danh-sach/${topic}?page=${index}&limit=64`;
+    url = `${API_BASE_URL}/v1/api/danh-sach/${topic}?page=${index}&limit=30`;
+  } else if (country) {
+    url = `${API_BASE_URL}/v1/api/quoc-gia/${country}?page=${index}&limit=30`;
+  } else if (year) {
+    url = `${API_BASE_URL}/v1/api/danh-sach/phim-bo?page=${index}&year=${year}&limit=30`;
   } else {
     url = `${API_BASE_URL}/danh-sach/phim-moi-cap-nhat?page=${index}`;
   }
@@ -71,7 +79,7 @@ export async function fetchMovieList({
       return { movies: [], pageInfo: null };
     }
     const data = await response.json();
-    if (hasAdvancedFilters || category || topic) {
+    if (hasAdvancedFilters || category || topic || country || year) {
       return {
         movies: data?.data?.items ?? [],
         pageInfo: data?.data?.params?.pagination ?? null,

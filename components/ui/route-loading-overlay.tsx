@@ -15,7 +15,13 @@ export default function RouteLoadingOverlay() {
   const searchKey = searchParams ? searchParams.toString() : "";
 
   useEffect(() => {
-    hideLoading();
+    // We only hide loading if there is NO suspense loading happening.
+    // The 200ms delay gives Next.js time to mount the new page's Loading component.
+    const timer = setTimeout(() => {
+      hideLoading();
+    }, 200); 
+    
+    return () => clearTimeout(timer);
   }, [pathname, searchKey, hideLoading]);
 
   useEffect(() => {
@@ -54,7 +60,7 @@ export default function RouteLoadingOverlay() {
   if (!isLoading) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] pointer-events-auto" role="status" aria-live="polite">
+    <div className="fixed inset-0 z-[9999] pointer-events-auto animate-in fade-in duration-150" role="status" aria-live="polite">
       <FullscreenLoading transparent />
     </div>
   );
