@@ -20,6 +20,9 @@ const inter = Inter({
   display: "swap",
 });
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: {
     default: "Phim Ảnh - Xem phim HD chất lượng cao miễn phí 2024",

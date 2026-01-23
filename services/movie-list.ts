@@ -74,7 +74,14 @@ export async function fetchMovieList({
   }
 
   try {
-    const response = await fetch(url, { headers: DEFAULT_HEADERS });
+    const isSearch = !!getParam(searchParams, "keyword");
+    const response = await fetch(url, { 
+      headers: DEFAULT_HEADERS,
+      next: { 
+        revalidate: isSearch ? 0 : 600, 
+        tags: ['api-data'] 
+      }
+    });
     if (!response.ok) {
       return { movies: [], pageInfo: null };
     }

@@ -39,6 +39,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuCheckboxItem,
+  DropdownMenuPortal,
 } from "@/components/ui/dropdown-menu";
 
 interface VideoPlayerProps {
@@ -85,7 +86,14 @@ const VideoPlayer = ({
   const [volume, setVolume] = useState(globalState.volume);
   const [isMuted, setIsMuted] = useState(globalState.isMuted);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [showControls, setShowControls] = useState(true);
+
+  // Set isClient to true on mount
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const [error, setError] = useState<string | null>(null);
   const [buffered, setBuffered] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(globalState.playbackRate);
@@ -333,7 +341,14 @@ const VideoPlayer = ({
   // Fullscreen change event listener
   useEffect(() => {
     const handleFullscreenChange = () => {
-      if (!document.fullscreenElement) {
+      const isCurrentlyFullscreen = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement
+      );
+
+      if (!isCurrentlyFullscreen) {
         setIsFullscreen(false);
 
         // Unlock orientation when exiting fullscreen via browser controls
@@ -349,9 +364,11 @@ const VideoPlayer = ({
       }
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    const events = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'];
+    events.forEach(event => document.addEventListener(event, handleFullscreenChange));
+    
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      events.forEach(event => document.removeEventListener(event, handleFullscreenChange));
     };
   }, []);
 
@@ -415,13 +432,30 @@ const VideoPlayer = ({
     if (!containerRef.current) return;
 
     try {
-      if (!document.fullscreenElement) {
+      const isCurrentlyFullscreen = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).mozFullScreenElement ||
+        (document as any).msFullscreenElement
+      );
+
+      if (!isCurrentlyFullscreen) {
         // Exit PiP if entering fullscreen
         if (document.pictureInPictureElement) {
           await document.exitPictureInPicture();
         }
 
-        await containerRef.current.requestFullscreen();
+        const el = containerRef.current;
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+        } else if ((el as any).webkitRequestFullscreen) {
+          await (el as any).webkitRequestFullscreen();
+        } else if ((el as any).mozRequestFullScreen) {
+          await (el as any).mozRequestFullScreen();
+        } else if ((el as any).msRequestFullscreen) {
+          await (el as any).msRequestFullscreen();
+        }
+        
         setIsFullscreen(true);
 
         // Lock orientation to landscape on mobile
@@ -433,7 +467,16 @@ const VideoPlayer = ({
           }
         }
       } else {
-        await document.exitFullscreen();
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).mozCancelFullScreen) {
+          await (document as any).mozCancelFullScreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
+        
         setIsFullscreen(false);
 
         // Unlock orientation
@@ -556,12 +599,28 @@ const VideoPlayer = ({
     lastClickTimeRef.current = now;
   };
 
+  const isActuallyFullscreen = isClient && !!(
+    document.fullscreenElement ||
+    (document as any).webkitFullscreenElement ||
+    (document as any).mozFullScreenElement ||
+    (document as any).msFullscreenElement
+  );
+
+  useEffect(() => {
+    console.log("VideoPlayer Fullscreen State:", {
+      state: isFullscreen,
+      actual: isActuallyFullscreen,
+      container: !!containerRef.current
+    });
+  }, [isFullscreen, isActuallyFullscreen]);
+
   return (
     <div
       ref={containerRef}
+      id="video-player-container"
       className={cn(
         "relative bg-black group overflow-hidden select-none",
-        isFullscreen ? "w-screen h-screen fixed inset-0 z-50" : "w-full aspect-video"
+        isFullscreen ? "w-screen h-screen fixed inset-0 z-[99999]" : "w-full aspect-video"
       )}
       onMouseMove={(e) => {
         if (e.movementX !== 0 || e.movementY !== 0) {
@@ -574,19 +633,19 @@ const VideoPlayer = ({
       <div id="video-portal" className="w-full h-full" />
 
       {/* Gesture Zones */}
-      <div className="absolute inset-0 flex z-10">
+      <div className="absolute inset-0 flex z-[10]">
         <div
-          className="w-[35%] h-full z-20"
+          className="w-[35%] h-full z-[20]"
           onClick={(e) => handleSmartClick(e, 'left')}
           onDoubleClick={(e) => e.stopPropagation()} // Prevent native double click
         />
         <div
-          className="w-[30%] h-full z-20"
+          className="w-[30%] h-full z-[20]"
           onClick={(e) => handleSmartClick(e, 'center')}
           onDoubleClick={(e) => e.stopPropagation()}
         />
         <div
-          className="w-[35%] h-full z-20"
+          className="w-[35%] h-full z-[20]"
           onClick={(e) => handleSmartClick(e, 'right')}
           onDoubleClick={(e) => e.stopPropagation()}
         />
@@ -597,7 +656,7 @@ const VideoPlayer = ({
         <div
           key={skipAnimation.id}
           className={cn(
-            "absolute top-0 bottom-0 flex items-center justify-center w-[40%] z-30 bg-white/10 pointer-events-none animate-in fade-in zoom-in duration-300",
+            "absolute top-0 bottom-0 flex items-center justify-center w-[40%] z-[30] bg-white/10 pointer-events-none animate-in fade-in zoom-in duration-300",
             skipAnimation.side === 'left' ? "left-0 rounded-r-full" : "right-0 rounded-l-full"
           )}
           onAnimationEnd={() => setSkipAnimation(null)}
@@ -620,14 +679,14 @@ const VideoPlayer = ({
 
       {/* Loading Overlay */}
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-[20] pointer-events-none">
           <Loader2 className="w-12 h-12 text-white animate-spin" />
         </div>
       )}
 
       {/* Error Overlay */}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-30">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-[30]">
           <div className="text-center p-4">
             <p className="text-red-500 font-bold mb-2">Lỗi</p>
             <p className="text-white text-sm">{error}</p>
@@ -637,7 +696,7 @@ const VideoPlayer = ({
 
       {/* Back Button */}
       <div className={cn(
-        "absolute top-4 left-4 z-40 transition-opacity duration-300",
+        "absolute top-4 left-4 z-[40] transition-opacity duration-300",
         showControls ? "opacity-100" : "opacity-0"
       )}>
         <Button
@@ -652,13 +711,13 @@ const VideoPlayer = ({
 
       {/* Dimming Overlay */}
       <div className={cn(
-        "absolute inset-0 bg-black/40 z-30 transition-opacity duration-300 pointer-events-none",
+        "absolute inset-0 bg-black/40 z-[30] transition-opacity duration-300 pointer-events-none",
         showControls ? "opacity-100" : "opacity-0"
       )} />
 
       {/* Center Controls Overlay */}
       <div className={cn(
-        "absolute inset-0 flex items-center justify-center gap-24 z-40 transition-opacity duration-300 pointer-events-none",
+        "absolute inset-0 flex items-center justify-center gap-24 z-[40] transition-opacity duration-300 pointer-events-none",
         showControls ? "opacity-100" : "opacity-0"
       )}>
         <Button
@@ -691,7 +750,7 @@ const VideoPlayer = ({
 
       {/* Controls Overlay */}
       <div className={cn(
-        "absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300 z-30 pointer-events-none",
+        "absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent transition-opacity duration-300 z-[30] pointer-events-none",
         showControls ? "opacity-100" : "opacity-0"
       )}>
         {/* Progress Bar Container */}
@@ -704,7 +763,7 @@ const VideoPlayer = ({
               max={duration || 100}
               step={1}
               onValueChange={handleSeek}
-              className="z-20 py-4" // Add padding to make hit area larger
+              className="z-[20] py-4" // Add padding to make hit area larger
             />
             {/* Buffered Bar */}
             <div
@@ -746,119 +805,123 @@ const VideoPlayer = ({
           {/* Right Controls */}
           <div className="flex items-center gap-2">
             {/* Settings Menu */}
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
                   <Settings className="w-5 h-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-black/90 border-gray-800 text-white backdrop-blur-md w-64 max-h-[80vh] overflow-y-auto custom-scrollbar">
+              <DropdownMenuContent 
+                align="end" 
+                container={isActuallyFullscreen ? containerRef.current : undefined}
+                className="bg-black/90 border-gray-800 text-white backdrop-blur-md w-64 max-h-[80vh] overflow-y-auto custom-scrollbar z-[10002]"
+              >
                 <DropdownMenuLabel>Cài đặt</DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-gray-700" />
+                  <DropdownMenuSeparator className="bg-gray-700" />
 
-                {/* Speed Submenu */}
-                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-gray-500 mt-2">Tốc độ phát</DropdownMenuLabel>
-                <div className="grid grid-cols-2 gap-1 p-1">
-                  {[0.5, 1, 1.5, 2].map((rate) => (
-                    <DropdownMenuItem
-                      key={rate}
-                      onClick={() => handlePlaybackRateChange(rate)}
-                      className={cn(
-                        "flex items-center justify-center cursor-pointer transition-colors text-xs py-2 rounded-md",
-                        playbackRate === rate ? "bg-red-600/20 text-red-500 font-bold border border-red-500/50" : "hover:bg-white/10 border border-transparent"
-                      )}
-                    >
-                      <span>{rate === 1 ? "Chuẩn" : `${rate}x`}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </div>
-
-                {/* Quality Submenu (if HLS) */}
-                {qualities.length > 0 && (
-                  <>
-                    <DropdownMenuSeparator className="bg-gray-800 my-2" />
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-gray-500">Chất lượng</DropdownMenuLabel>
-                    <div className="grid grid-cols-3 gap-1 p-1">
+                  {/* Speed Submenu */}
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-gray-500 mt-2">Tốc độ phát</DropdownMenuLabel>
+                  <div className="grid grid-cols-2 gap-1 p-1">
+                    {[0.5, 1, 1.5, 2].map((rate) => (
                       <DropdownMenuItem
-                        onClick={() => handleQualityChange(-1)}
+                        key={rate}
+                        onClick={() => handlePlaybackRateChange(rate)}
                         className={cn(
-                          "flex items-center justify-center cursor-pointer transition-colors text-[10px] py-1.5 rounded-md border",
-                          quality === -1 ? "bg-red-600/20 text-red-500 font-bold border-red-500/50" : "hover:bg-white/10 border-transparent"
+                          "flex items-center justify-center cursor-pointer transition-colors text-xs py-2 rounded-md",
+                          playbackRate === rate ? "bg-red-600/20 text-red-500 font-bold border border-red-500/50" : "hover:bg-white/10 border border-transparent"
                         )}
                       >
-                        <span>Auto</span>
+                        <span>{rate === 1 ? "Chuẩn" : `${rate}x`}</span>
                       </DropdownMenuItem>
-                      {qualities.map((q) => (
+                    ))}
+                  </div>
+
+                  {/* Quality Submenu (if HLS) */}
+                  {qualities.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator className="bg-gray-800 my-2" />
+                      <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-gray-500">Chất lượng</DropdownMenuLabel>
+                      <div className="grid grid-cols-3 gap-1 p-1">
                         <DropdownMenuItem
-                          key={q.level}
-                          onClick={() => handleQualityChange(q.level)}
+                          onClick={() => handleQualityChange(-1)}
                           className={cn(
                             "flex items-center justify-center cursor-pointer transition-colors text-[10px] py-1.5 rounded-md border",
-                            quality === q.level ? "bg-red-600/20 text-red-500 font-bold border-red-500/50" : "hover:bg-white/10 border-transparent"
+                            quality === -1 ? "bg-red-600/20 text-red-500 font-bold border-red-500/50" : "hover:bg-white/10 border-transparent"
                           )}
                         >
-                          <span>{q.height}p</span>
+                          <span>Auto</span>
                         </DropdownMenuItem>
-                      ))}
-                    </div>
-                  </>
-                )}
+                        {qualities.map((q) => (
+                          <DropdownMenuItem
+                            key={q.level}
+                            onClick={() => handleQualityChange(q.level)}
+                            className={cn(
+                              "flex items-center justify-center cursor-pointer transition-colors text-[10px] py-1.5 rounded-md border",
+                              quality === q.level ? "bg-red-600/20 text-red-500 font-bold border-red-500/50" : "hover:bg-white/10 border-transparent"
+                            )}
+                          >
+                            <span>{q.height}p</span>
+                          </DropdownMenuItem>
+                        ))}
+                      </div>
+                    </>
+                  )}
 
-                {/* Subtitles & TTS */}
-                <DropdownMenuSeparator className="bg-gray-800 my-2" />
-                <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-gray-500">Phụ đề & TTS</DropdownMenuLabel>
-                <div className="flex flex-col gap-1">
-                  <DropdownMenuCheckboxItem
-                    checked={isTTSEnabled}
-                    onCheckedChange={setIsTTSEnabled}
-                    className="cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <VolumeIcon className="w-4 h-4" />
-                      <span>Đọc phụ đề (TTS)</span>
-                    </div>
-                  </DropdownMenuCheckboxItem>
-                  
-                  <DropdownMenuSeparator className="bg-gray-800 my-1" />
-                  
-                  <DropdownMenuItem
-                    onClick={() => handleSubtitleChange(null)}
-                    className={cn(
-                      "flex items-center justify-between cursor-pointer transition-colors",
-                      activeSubtitle === null ? "bg-red-600/20 text-red-500 font-bold" : "hover:bg-white/10"
-                    )}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Subtitles className="w-4 h-4" />
-                      <span>Tắt phụ đề</span>
-                    </div>
-                    {activeSubtitle === null && <Check className="w-4 h-4" />}
-                  </DropdownMenuItem>
-
-                  {subtitles.map((sub) => (
+                  {/* Subtitles & TTS */}
+                  <DropdownMenuSeparator className="bg-gray-800 my-2" />
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-gray-500">Phụ đề & TTS</DropdownMenuLabel>
+                  <div className="flex flex-col gap-1">
+                    <DropdownMenuCheckboxItem
+                      checked={isTTSEnabled}
+                      onCheckedChange={setIsTTSEnabled}
+                      className="cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <VolumeIcon className="w-4 h-4" />
+                        <span>Đọc phụ đề (TTS)</span>
+                      </div>
+                    </DropdownMenuCheckboxItem>
+                    
+                    <DropdownMenuSeparator className="bg-gray-800 my-1" />
+                    
                     <DropdownMenuItem
-                      key={sub.id}
-                      onClick={() => handleSubtitleChange(sub.id)}
+                      onClick={() => handleSubtitleChange(null)}
                       className={cn(
                         "flex items-center justify-between cursor-pointer transition-colors",
-                        activeSubtitle === sub.id ? "bg-red-600/20 text-red-500 font-bold" : "hover:bg-white/10"
+                        activeSubtitle === null ? "bg-red-600/20 text-red-500 font-bold" : "hover:bg-white/10"
                       )}
                     >
                       <div className="flex items-center gap-2">
-                        <Languages className="w-4 h-4" />
-                        <span className="truncate max-w-[150px]">{sub.label}</span>
+                        <Subtitles className="w-4 h-4" />
+                        <span>Tắt phụ đề</span>
                       </div>
-                      {activeSubtitle === sub.id && <Check className="w-4 h-4" />}
+                      {activeSubtitle === null && <Check className="w-4 h-4" />}
                     </DropdownMenuItem>
-                  ))}
 
-                  {subtitles.length === 0 && (
-                    <div className="px-2 py-1 text-xs text-gray-500 italic">
-                      Không tìm thấy phụ đề
-                    </div>
-                  )}
-                </div>
-              </DropdownMenuContent>
+                    {subtitles.map((sub) => (
+                      <DropdownMenuItem
+                        key={sub.id}
+                        onClick={() => handleSubtitleChange(sub.id)}
+                        className={cn(
+                          "flex items-center justify-between cursor-pointer transition-colors",
+                          activeSubtitle === sub.id ? "bg-red-600/20 text-red-500 font-bold" : "hover:bg-white/10"
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Languages className="w-4 h-4" />
+                          <span className="truncate max-w-[150px]">{sub.label}</span>
+                        </div>
+                        {activeSubtitle === sub.id && <Check className="w-4 h-4" />}
+                      </DropdownMenuItem>
+                    ))}
+
+                    {subtitles.length === 0 && (
+                      <div className="px-2 py-1 text-xs text-gray-500 italic">
+                        Không tìm thấy phụ đề
+                      </div>
+                    )}
+                  </div>
+                </DropdownMenuContent>
             </DropdownMenu>
 
             <Button variant="ghost" size="icon" onClick={togglePiP} className="text-white hover:bg-white/20">

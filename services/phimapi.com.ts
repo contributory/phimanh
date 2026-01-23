@@ -1,23 +1,12 @@
 export default class PhimApi {
-  private apiUrl = " https://phimapi.com";
-  private cache = new Map<string, { data: any; timestamp: number }>();
-  private CACHE_TTL = 1000 * 60 * 10; // 10 minutes
+  private apiUrl = "https://phimapi.com";
+  private CACHE_TTL = 600; // 10 minutes in seconds
 
   constructor() {
     this.apiUrl = "https://phimapi.com";
   }
 
   private async fetchWithCache(url: string, options: RequestInit = {}): Promise<any> {
-    const cacheKey = url;
-    const now = Date.now();
-    const cached = this.cache.get(cacheKey);
-
-    if (cached && now - cached.timestamp < this.CACHE_TTL) {
-      // Re-fetch in background to update cache (stale-while-revalidate)
-      this.backgroundFetch(url, options);
-      return cached.data;
-    }
-
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -25,32 +14,17 @@ export default class PhimApi {
         "User-Agent": "phimanh-bot/1.0",
         ...options.headers,
       },
+      next: {
+        revalidate: this.CACHE_TTL,
+        tags: ['api-data']
+      }
     });
 
     if (!response.ok) throw new Error("API error: " + response.status);
-    const data = await response.json();
-    this.cache.set(cacheKey, { data, timestamp: now });
-    return data;
+    return response.json();
   }
 
-  private async backgroundFetch(url: string, options: RequestInit = {}) {
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          Referer: "https://phimanh.netlify.app",
-          "User-Agent": "phimanh-bot/1.0",
-          ...options.headers,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        this.cache.set(url, { data, timestamp: Date.now() });
-      }
-    } catch (e) {
-      console.error("Background fetch failed", e);
-    }
-  }
+  // Loại bỏ backgroundFetch vì Next.js đã xử lý revalidate
 
   async get(slug: string): Promise<{ movie: any; server: any[] }> {
     const url = `${this.apiUrl}/phim/${slug}`;
@@ -110,7 +84,9 @@ export default class PhimApi {
 
   async search(query: string, index: number = 1): Promise<any> {
     const url = `${this.apiUrl}/v1/api/tim-kiem?keyword=${query}&limit=20&page=${index}`;
-    const data = await this.fetchWithCache(url);
+    const data = await this.fetchWithCache(url, {
+      next: { revalidate: 0 } // Disable cache for search
+    });
     return [data.data.items, data.data.params.pagination];
   }
 
