@@ -18,6 +18,12 @@ export function MovieCardDefault({ movie }: { movie: any }) {
     ? thumbUrl
     : thumbUrl ? `https://phimimg.com/${thumbUrl}` : '/placeholder-movie.png';
 
+  // Xử lý lỗi hình ảnh
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
+    target.src = '/placeholder-movie.png';
+  };
+
   return (
     <div className="w-full">
       <button onClick={handleClick} className="block w-full text-left group">
@@ -29,6 +35,7 @@ export function MovieCardDefault({ movie }: { movie: any }) {
               alt={movie.name}
               loading="lazy"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              onError={handleImageError}
             />
             <div className="absolute top-2 right-2 z-20">
               <span className="px-1.5 py-0.5 bg-background/80 backdrop-blur-md text-foreground text-[10px] font-bold rounded shadow-sm border border-border">
