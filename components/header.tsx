@@ -209,7 +209,7 @@ export default function Header({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Tìm kiếm..."
-                  className="w-full bg-transparent pl-14 pr-4 py-6 text-3xl md:text-5xl text-foreground outline-none placeholder:text-muted-foreground/40 font-black uppercase tracking-tighter"
+                  className="w-full bg-transparent pl-14 pr-4 py-6 text-3xl md:text-5xl text-foreground outline-none placeholder:text-muted-foreground/40 font-black tracking-tighter"
                 />
               </div>
             </form>
