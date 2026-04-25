@@ -99,7 +99,6 @@ const VideoPlayer = ({
   const [playbackRate, setPlaybackRate] = useState(globalState.playbackRate);
   const [quality, setQuality] = useState<number>(-1); // -1 is auto
   const [qualities, setQualities] = useState<{ height: number, level: number }[]>([]);
-  const [isPiPEnabled, setIsPiPEnabled] = useState(false);
 
   // Use global video ref instead of local one
   const videoRef = globalVideoRef;
@@ -290,8 +289,6 @@ const VideoPlayer = ({
     const onDurationChange = () => setDuration(video.duration);
     const onWaiting = () => setIsLoading(true);
     const onPlaying = () => setIsLoading(false);
-    const onEnterPiP = () => setIsPiPEnabled(true);
-    const onLeavePiP = () => setIsPiPEnabled(false);
     const onEndedEvent = () => {
       setIsPlaying(false);
       onEnded?.();
@@ -303,8 +300,6 @@ const VideoPlayer = ({
     video.addEventListener('durationchange', onDurationChange);
     video.addEventListener('waiting', onWaiting);
     video.addEventListener('playing', onPlaying);
-    video.addEventListener('enterpictureinpicture', onEnterPiP);
-    video.addEventListener('leavepictureinpicture', onLeavePiP);
     video.addEventListener('ended', onEndedEvent);
 
     return () => {
@@ -314,8 +309,6 @@ const VideoPlayer = ({
       video.removeEventListener('durationchange', onDurationChange);
       video.removeEventListener('waiting', onWaiting);
       video.removeEventListener('playing', onPlaying);
-      video.removeEventListener('enterpictureinpicture', onEnterPiP);
-      video.removeEventListener('leavepictureinpicture', onLeavePiP);
       video.removeEventListener('ended', onEndedEvent);
     };
   }, [onEnded]);

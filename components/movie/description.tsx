@@ -205,6 +205,11 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
           <div className="space-y-4">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
               {movie.name}
+              {movie.origin_name && movie.origin_name !== movie.name && (
+                <span className="text-muted-foreground font-normal ml-2 text-lg sm:text-xl">
+                  ({movie.origin_name})
+                </span>
+              )}
             </h1>
             
             <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">

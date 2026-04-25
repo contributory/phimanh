@@ -11,10 +11,13 @@ export async function generateMetadata({ searchParams }: any) {
   const api = new PhimApi();
   const { movie } = await api.get(slug);
   const cleanDescription = movie.content ? decodeHtmlEntities(movie.content) : "";
+  const displayName = movie.origin_name && movie.origin_name !== movie.name 
+    ? `${movie.name} (${movie.origin_name})` 
+    : movie.name;
 
   return {
-    title: `${movie.name} - Xem phim HD chất lượng cao | Phim Ảnh`,
-    description: cleanDescription ? cleanDescription.substring(0, 160) + '...' : `Xem phim ${movie.name} ${movie.origin_name ? `(${movie.origin_name})` : ''} HD chất lượng cao miễn phí tại Phim Ảnh.`,
+    title: `${displayName} - Xem phim HD chất lượng cao | Phim Ảnh`,
+    description: cleanDescription ? cleanDescription.substring(0, 160) + '...' : `Xem phim ${displayName} HD chất lượng cao miễn phí tại Phim Ảnh.`,
     keywords: [
       movie.name,
       movie.origin_name,
@@ -29,28 +32,28 @@ export async function generateMetadata({ searchParams }: any) {
       ...movie.country?.map((country: any) => `phim ${country.name}`) || []
     ].join(', '),
     openGraph: {
-      title: `${movie.name} - Xem phim HD chất lượng cao`,
-      description: cleanDescription ? cleanDescription.substring(0, 200) : `Xem phim ${movie.name} HD chất lượng cao miễn phí`,
+      title: `${displayName} - Xem phim HD chất lượng cao`,
+      description: cleanDescription ? cleanDescription.substring(0, 200) : `Xem phim ${displayName} HD chất lượng cao miễn phí`,
       images: [
         {
           url: movie.poster_url,
           width: 300,
           height: 450,
-          alt: `Poster phim ${movie.name}`,
+          alt: `Poster phim ${displayName}`,
         },
         ...(movie.thumb_url ? [{
           url: movie.thumb_url,
           width: 1200,
           height: 630,
-          alt: `Hình ảnh phim ${movie.name}`,
+          alt: `Hình ảnh phim ${displayName}`,
         }] : [])
       ],
       type: 'video.movie',
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${movie.name} - Xem phim HD chất lượng cao`,
-      description: cleanDescription ? cleanDescription.substring(0, 200) : `Xem phim ${movie.name} HD chất lượng cao miễn phí`,
+      title: `${displayName} - Xem phim HD chất lượng cao`,
+      description: cleanDescription ? cleanDescription.substring(0, 200) : `Xem phim ${displayName} HD chất lượng cao miễn phí`,
       images: [movie.thumb_url || movie.poster_url],
     },
   };
