@@ -23,7 +23,18 @@ const GlobalPlayer = () => {
   const shouldShow = state.videoUrl !== null;
   const isMinimized = state.isMinimized || !isWatchPage;
 
-  const handleMaximize = () => {
+  const handleMaximize = async () => {
+    const video = videoRef.current;
+    
+    // Exit PiP if currently in PiP mode
+    if (document.pictureInPictureElement === video) {
+      try {
+        await document.exitPictureInPicture();
+      } catch (e) {
+        console.log("Could not exit PiP:", e);
+      }
+    }
+    
     if (state.movieSlug) {
       toggleMinimize(false);
       router.push(`/watch?slug=${state.movieSlug}`);
@@ -82,6 +93,58 @@ const GlobalPlayer = () => {
   useEffect(() => {
     isInitialSeekDone.current = false;
   }, [state.movieSlug]);
+
+  // Handle PiP exit event - reinitialize video when exiting PiP
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !state.videoUrl) return;
+
+    const handleLeavePiP = () => {
+      console.log("Exited Picture-in-Picture, reinitializing...");
+      
+      // Reinitialize HLS after exiting PiP
+      if (HLS.isSupported()) {
+        if (hlsRef.current) {
+          hlsRef.current.destroy();
+          hlsRef.current = null;
+        }
+        
+        const hls = new HLS({
+          enableWorker: true,
+          lowLatencyMode: true,
+        });
+        hls.loadSource(state.videoUrl!);
+        hls.attachMedia(video);
+        hlsRef.current = hls;
+        
+        hls.on(HLS.Events.MANIFEST_PARSED, () => {
+          // Restore playback position if available
+          if (state.movieSlug && state.currentTime > 0) {
+            video.currentTime = state.currentTime;
+          }
+          if (state.isPlaying) {
+            video.play().catch(console.error);
+          }
+        });
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        // Native HLS for Safari
+        video.src = state.videoUrl;
+        video.onloadedmetadata = () => {
+          if (state.movieSlug && state.currentTime > 0) {
+            video.currentTime = state.currentTime;
+          }
+          if (state.isPlaying) {
+            video.play().catch(console.error);
+          }
+        };
+      }
+    };
+
+    video.addEventListener("leavepictureinpicture", handleLeavePiP);
+    return () => {
+      video.removeEventListener("leavepictureinpicture", handleLeavePiP);
+    };
+  }, [state.videoUrl, state.movieSlug, state.currentTime, state.isPlaying]);
 
   // Visibility Change - Native PiP Logic
   useEffect(() => {
@@ -158,15 +221,35 @@ const GlobalPlayer = () => {
     const video = videoRef.current;
     if (!video) return;
 
-    const moveVideo = () => {
+    const moveVideo = async () => {
       const portal = document.getElementById("video-portal");
       const container = containerRef.current;
 
       console.log("Moving video, isMinimized:", isMinimized, "portal:", !!portal, "container:", !!container);
 
+      // Check if video is currently in PiP mode
+      const wasInPiP = document.pictureInPictureElement === video;
+      
       if (!isMinimized && portal) {
         portal.appendChild(video);
         video.className = "w-full h-full object-contain";
+        
+        // Exit PiP if active
+        if (wasInPiP) {
+          try {
+            await document.exitPictureInPicture();
+          } catch (e) {
+            // PiP exit may fail, but that's ok
+          }
+        }
+        
+        // Resume playback after moving from PiP
+        // The leavepictureinpicture event handler will also reinitialize HLS if needed
+        if (state.isPlaying) {
+          video.play().catch(() => {
+            // Play might fail if user hasn't interacted yet
+          });
+        }
       } else if (container) {
         container.insertBefore(video, container.firstChild);
         video.className = "w-full h-full object-contain";
@@ -184,7 +267,7 @@ const GlobalPlayer = () => {
       clearTimeout(timeoutId);
       clearTimeout(timeoutId2);
     };
-  }, [isMinimized, state.videoUrl, videoRef, pathname]);
+  }, [isMinimized, state.videoUrl, videoRef, pathname, state.isPlaying]);
 
   if (!shouldShow) return null;
 
