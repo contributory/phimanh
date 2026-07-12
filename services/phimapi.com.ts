@@ -155,7 +155,8 @@ export default class PhimApi {
   async listCategories(): Promise<any> {
     try {
       const url = `${this.apiUrl}/the-loai`;
-      return await this.fetchWithCache(url);
+      const response = await this.fetchWithCache(url);
+      return response?.data?.items || [];
     } catch (error) {
       console.error('Failed to fetch categories:', error);
       // Return fallback categories
@@ -172,7 +173,8 @@ export default class PhimApi {
   async listCountries(): Promise<any> {
     try {
       const url = `${this.apiUrl}/quoc-gia`;
-      return await this.fetchWithCache(url);
+      const response = await this.fetchWithCache(url);
+      return response?.data?.items || [];
     } catch (error) {
       console.error('Failed to fetch countries:', error);
       // Return fallback countries
