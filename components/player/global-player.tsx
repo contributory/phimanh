@@ -72,7 +72,7 @@ const GlobalPlayer = () => {
         }
       });
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = state.videoUrl;
+      video.src = state.videoUrl!;
       
       // For native HLS (Safari/iOS)
       video.onloadedmetadata = () => {
@@ -128,7 +128,7 @@ const GlobalPlayer = () => {
         });
       } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
         // Native HLS for Safari
-        video.src = state.videoUrl;
+        video.src = state.videoUrl!;
         video.onloadedmetadata = () => {
           if (state.movieSlug && state.currentTime > 0) {
             video.currentTime = state.currentTime;
