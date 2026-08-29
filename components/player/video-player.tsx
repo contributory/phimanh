@@ -88,10 +88,12 @@ const VideoPlayer = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [isPiPSupported, setIsPiPSupported] = useState(false);
 
   // Set isClient to true on mount
   useEffect(() => {
     setIsClient(true);
+    setIsPiPSupported(typeof document !== "undefined" && !!document.pictureInPictureEnabled);
   }, []);
 
   const [error, setError] = useState<string | null>(null);
@@ -370,6 +372,11 @@ const VideoPlayer = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!videoRef.current) return;
 
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
+
       // Prevent default scrolling for space and arrow keys
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault();
@@ -599,21 +606,14 @@ const VideoPlayer = ({
     (document as any).msFullscreenElement
   );
 
-  useEffect(() => {
-    console.log("VideoPlayer Fullscreen State:", {
-      state: isFullscreen,
-      actual: isActuallyFullscreen,
-      container: !!containerRef.current
-    });
-  }, [isFullscreen, isActuallyFullscreen]);
-
   return (
     <div
       ref={containerRef}
       id="video-player-container"
       className={cn(
         "relative bg-black group overflow-hidden select-none",
-        isFullscreen ? "w-screen h-screen fixed inset-0 z-[99999]" : "w-full aspect-video"
+        isFullscreen ? "w-screen h-screen fixed inset-0 z-[99999]" : "w-full aspect-video",
+        !showControls && isPlaying && "cursor-none"
       )}
       onMouseMove={(e) => {
         if (e.movementX !== 0 || e.movementY !== 0) {
@@ -657,13 +657,13 @@ const VideoPlayer = ({
           <div className="flex flex-col items-center text-white">
             {skipAnimation.side === 'left' ? (
               <>
-                <ChevronsLeft className="w-12 h-12 mb-2 animate-pulse" />
-                <span className="text-sm font-bold">-10 giây</span>
+                <ChevronsLeft className="w-8 h-8 sm:w-12 sm:h-12 mb-1 sm:mb-2 animate-pulse" />
+                <span className="text-xs sm:text-sm font-bold">-10 giây</span>
               </>
             ) : (
               <>
-                <ChevronsRight className="w-12 h-12 mb-2 animate-pulse" />
-                <span className="text-sm font-bold">+10 giây</span>
+                <ChevronsRight className="w-8 h-8 sm:w-12 sm:h-12 mb-1 sm:mb-2 animate-pulse" />
+                <span className="text-xs sm:text-sm font-bold">+10 giây</span>
               </>
             )}
           </div>
@@ -673,7 +673,7 @@ const VideoPlayer = ({
       {/* Loading Overlay */}
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-[20] pointer-events-none">
-          <Loader2 className="w-12 h-12 text-white animate-spin" />
+          <Loader2 className="w-8 h-8 sm:w-12 sm:h-12 text-white animate-spin" />
         </div>
       )}
 
@@ -687,19 +687,26 @@ const VideoPlayer = ({
         </div>
       )}
 
-      {/* Back Button */}
+      {/* Top Bar */}
       <div className={cn(
-        "absolute top-4 left-4 z-[40] transition-opacity duration-300",
-        showControls ? "opacity-100" : "opacity-0"
+        "absolute top-0 inset-x-0 z-[40] flex items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 sm:py-3",
+        "bg-gradient-to-b from-black/70 to-transparent transition-all duration-300",
+        showControls ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2 pointer-events-none"
       )}>
         <Button
           variant="ghost"
           size="icon"
-          className="bg-black/40 hover:bg-black/60 text-white rounded-full w-10 h-10 backdrop-blur-sm"
+          aria-label="Quay lại"
+          className="shrink-0 bg-black/40 hover:bg-black/60 text-white rounded-full w-9 h-9 sm:w-10 sm:h-10 backdrop-blur-sm"
           onClick={handleBack}
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
+        {movieTitle && (
+          <p className="min-w-0 truncate text-white text-sm sm:text-base font-medium drop-shadow">
+            {movieTitle}
+          </p>
+        )}
       </div>
 
       {/* Dimming Overlay */}
@@ -710,34 +717,39 @@ const VideoPlayer = ({
 
       {/* Center Controls Overlay */}
       <div className={cn(
-        "absolute inset-0 flex items-center justify-center gap-24 z-[40] transition-opacity duration-300 pointer-events-none",
+        "absolute inset-0 flex items-center justify-center gap-8 sm:gap-16 md:gap-24 z-[40] transition-opacity duration-300 pointer-events-none",
         showControls ? "opacity-100" : "opacity-0"
       )}>
         <Button
           variant="ghost"
           size="icon"
+          aria-label="Lùi 10 giây"
           onClick={(e) => { e.stopPropagation(); skip(-10); }}
-          className="text-white hover:bg-transparent hover:text-white/80 w-24 h-24 rounded-full pointer-events-auto"
+          className="text-white hover:bg-white/10 active:scale-95 transition-transform w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full pointer-events-auto"
         >
-          <SkipBack className="w-12 h-12" />
+          <SkipBack className="w-6 h-6 sm:w-9 sm:h-9 md:w-11 md:h-11" />
         </Button>
 
         <Button
           variant="ghost"
           size="icon"
+          aria-label={isPlaying ? "Tạm dừng" : "Phát"}
           onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-          className="text-white hover:bg-transparent hover:text-white/80 w-32 h-32 rounded-full pointer-events-auto"
+          className="text-white hover:bg-white/10 active:scale-95 transition-transform w-16 h-16 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-full pointer-events-auto"
         >
-          {isPlaying ? <Pause className="w-16 h-16 fill-white" /> : <Play className="w-16 h-16 fill-white ml-2" />}
+          {isPlaying
+            ? <Pause className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 fill-white" />
+            : <Play className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 fill-white ml-1" />}
         </Button>
 
         <Button
           variant="ghost"
           size="icon"
+          aria-label="Tua 10 giây"
           onClick={(e) => { e.stopPropagation(); skip(10); }}
-          className="text-white hover:bg-transparent hover:text-white/80 w-24 h-24 rounded-full pointer-events-auto"
+          className="text-white hover:bg-white/10 active:scale-95 transition-transform w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full pointer-events-auto"
         >
-          <SkipForward className="w-12 h-12" />
+          <SkipForward className="w-6 h-6 sm:w-9 sm:h-9 md:w-11 md:h-11" />
         </Button>
       </div>
 
@@ -747,67 +759,76 @@ const VideoPlayer = ({
         showControls ? "opacity-100" : "opacity-0"
       )}>
         {/* Progress Bar Container */}
-        <div className="px-4 pb-0 group/progress pointer-events-auto">
-          {/* Hover Preview could go here */}
-          <div className="relative h-1.5 w-full cursor-pointer touch-none select-none flex items-center">
+        <div className="px-2 sm:px-4 pb-0 group/progress pointer-events-auto">
+          <div className="relative w-full cursor-pointer touch-none select-none flex items-center">
+            {/* Buffered Bar */}
+            <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1 bg-white/20 rounded-full overflow-hidden pointer-events-none">
+              <div
+                className="h-full bg-white/40"
+                style={{ width: duration ? `${Math.min((buffered / duration) * 100, 100)}%` : "0%" }}
+              />
+            </div>
             <Slider
               value={[currentTime]}
               min={0}
               max={duration || 100}
               step={1}
               onValueChange={handleSeek}
-              className="z-[20] py-4" // Add padding to make hit area larger
-            />
-            {/* Buffered Bar */}
-            <div
-              className="absolute top-1/2 -translate-y-1/2 left-0 h-1 bg-white/30 rounded-full pointer-events-none"
-              style={{ width: `${(buffered / duration) * 100}%` }}
+              aria-label="Tiến trình phát"
+              className="relative z-[20] py-4"
+              trackClassName="h-1 bg-transparent transition-[height] duration-200 group-hover/progress:h-1.5"
+              rangeClassName="bg-red-600"
+              thumbClassName="h-3.5 w-3.5 border-0 bg-red-600 opacity-0 transition-opacity max-sm:opacity-100 group-hover/progress:opacity-100 focus-visible:opacity-100"
             />
           </div>
         </div>
 
         {/* Controls Bar */}
-        <div className="px-4 pb-4 pt-2 flex items-center justify-between gap-4 pointer-events-auto">
+        <div className="px-2 sm:px-4 pb-2 sm:pb-4 pt-1 sm:pt-2 flex items-center justify-between gap-2 sm:gap-4 pointer-events-auto">
           {/* Left Controls */}
-          <div className="flex items-center gap-2 md:gap-4">
-            <Button variant="ghost" size="icon" onClick={togglePlay} className="text-white hover:bg-white/20">
-              {isPlaying ? <Pause className="w-6 h-6 fill-white" /> : <Play className="w-6 h-6 fill-white" />}
+          <div className="flex min-w-0 items-center gap-1 sm:gap-2 md:gap-3">
+            <Button variant="ghost" size="icon" aria-label={isPlaying ? "Tạm dừng" : "Phát"} onClick={togglePlay} className="text-white hover:bg-white/20 w-9 h-9 sm:w-10 sm:h-10">
+              {isPlaying ? <Pause className="w-5 h-5 sm:w-6 sm:h-6 fill-white" /> : <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-white" />}
             </Button>
 
             <div className="flex items-center gap-1 group/volume">
-              <Button variant="ghost" size="icon" onClick={toggleMute} className="text-white hover:bg-white/20 w-8 h-8">
+              <Button variant="ghost" size="icon" aria-label={isMuted || volume === 0 ? "Bật tiếng" : "Tắt tiếng"} onClick={toggleMute} className="text-white hover:bg-white/20 w-9 h-9 sm:w-8 sm:h-8">
                 {isMuted || volume === 0 ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
               </Button>
-              <div className="w-0 overflow-hidden group-hover/volume:w-20 transition-all duration-300 ease-in-out">
+              <div className="hidden sm:block w-0 overflow-hidden transition-all duration-300 ease-in-out group-hover/volume:w-20 group-focus-within/volume:w-20">
                 <Slider
                   value={[isMuted ? 0 : volume]}
                   min={0}
                   max={1}
                   step={0.01}
                   onValueChange={handleVolumeChange}
+                  aria-label="Âm lượng"
                   className="w-20"
+                  trackClassName="h-1 bg-white/30"
+                  rangeClassName="bg-white"
+                  thumbClassName="h-3 w-3 border-0 bg-white"
                 />
               </div>
             </div>
 
-            <div className="text-white text-xs md:text-sm font-medium tabular-nums">
+            <div className="text-white text-[11px] sm:text-sm font-medium tabular-nums whitespace-nowrap">
               {formatTime(currentTime)} / {formatTime(duration)}
             </div>
           </div>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-0.5 sm:gap-2">
             {/* Settings Menu */}
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                <Button variant="ghost" size="icon" aria-label="Cài đặt" className="text-white hover:bg-white/20 w-9 h-9 sm:w-10 sm:h-10">
                   <Settings className="w-5 h-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
                 container={isActuallyFullscreen ? containerRef.current : undefined}
-                className="bg-black/90 border-gray-800 text-white backdrop-blur-md w-64 max-h-[80vh] overflow-y-auto custom-scrollbar z-[10002]"
+                className="bg-black/90 border-gray-800 text-white backdrop-blur-md w-56 sm:w-64 max-h-[60vh] sm:max-h-[80vh] overflow-y-auto custom-scrollbar z-[10002]"
               >
                 <DropdownMenuLabel>Cài đặt</DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-gray-700" />
@@ -917,11 +938,13 @@ const VideoPlayer = ({
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button variant="ghost" size="icon" onClick={togglePiP} className="text-white hover:bg-white/20">
-              <PictureInPicture2 className="w-5 h-5" />
-            </Button>
+            {isPiPSupported && (
+              <Button variant="ghost" size="icon" aria-label="Thu nhỏ (PiP)" onClick={togglePiP} className="hidden sm:inline-flex text-white hover:bg-white/20 w-9 h-9 sm:w-10 sm:h-10">
+                <PictureInPicture2 className="w-5 h-5" />
+              </Button>
+            )}
 
-            <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-white hover:bg-white/20">
+            <Button variant="ghost" size="icon" aria-label={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"} onClick={toggleFullscreen} className="text-white hover:bg-white/20 w-9 h-9 sm:w-10 sm:h-10">
               {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
             </Button>
           </div>
