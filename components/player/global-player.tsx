@@ -277,11 +277,12 @@ const GlobalPlayer = () => {
       className={cn(
         "fixed z-[10001] transition-all duration-500 ease-in-out bg-black overflow-hidden shadow-2xl",
         isMinimized
-          ? "bottom-4 right-4 w-72 md:w-80 aspect-video rounded-xl"
+          ? "bottom-3 right-3 sm:bottom-4 sm:right-4 w-[min(18rem,calc(100vw-1.5rem))] md:w-80 aspect-video rounded-xl ring-1 ring-white/10"
           : "inset-0 w-full h-full pointer-events-none opacity-0 invisible"
       )}
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
+      onTouchStart={() => setShowControls(true)}
     >
       <video
         ref={videoRef}
@@ -303,14 +304,16 @@ const GlobalPlayer = () => {
               onClick={() => {
                 clearVideo();
               }}
-              className="text-white hover:bg-white/20 p-1 rounded-full"
+              aria-label="Đóng trình phát"
+              className="text-white hover:bg-white/20 p-1.5 rounded-full"
             >
               <X size={18} />
             </button>
             <div className="flex gap-1">
               <button
                 onClick={handleMaximize}
-                className="text-white hover:bg-white/20 p-1 rounded-full"
+                aria-label="Mở toàn màn hình"
+                className="text-white hover:bg-white/20 p-1.5 rounded-full"
               >
                 <Maximize2 size={18} />
               </button>
@@ -321,7 +324,8 @@ const GlobalPlayer = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="text-white hover:bg-transparent"
+              className="text-white hover:bg-white/10 rounded-full"
+              aria-label={state.isPlaying ? "Tạm dừng" : "Phát"}
               onClick={() => {
                 if (videoRef.current?.paused) videoRef.current.play();
                 else videoRef.current?.pause();
@@ -332,13 +336,13 @@ const GlobalPlayer = () => {
           </div>
 
           <div className="px-2 pb-2">
-            <p className="text-white text-[10px] truncate font-medium">
+            <p className="text-white text-[11px] truncate font-medium">
               {state.movieTitle || "Đang phát..."}
             </p>
             <div className="h-1 bg-white/20 w-full mt-1 rounded-full overflow-hidden">
               <div
                 className="h-full bg-red-600 transition-all duration-300"
-                style={{ width: `${(state.currentTime / state.duration) * 100}%` }}
+                style={{ width: state.duration ? `${Math.min((state.currentTime / state.duration) * 100, 100)}%` : "0%" }}
               />
             </div>
           </div>
