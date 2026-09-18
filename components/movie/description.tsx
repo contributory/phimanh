@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Play, Calendar, Clock, Globe, Film, ChevronRight, ChevronDown, Star, Users, Clapperboard, Tag, Sparkles, Heart } from "lucide-react";
 import Link from "next/link";
 import { cn, decodeHtmlEntities } from "@/lib/utils";
+import RemarkboxComments from "@/components/remarkbox-comments";
 
 interface DescriptionProps {
   movie: any;
@@ -297,6 +298,9 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
                 {showDetails ? "Ẩn bớt" : "Hiện thêm"}
               </button>
             </div>
+
+            {/* Comments directly below the movie description */}
+            <RemarkboxComments />
           </div>
         </div>
 
