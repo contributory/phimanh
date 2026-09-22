@@ -141,21 +141,21 @@ export default function PaginationComponent({
               Math.max(1, pageInfo.currentPage - 1)
             )}`}
             isActive={pageInfo.currentPage > 1}
-            className="rounded-lg px-3 py-1 font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-medium text-zinc-400 transition-colors hover:border-white/15 hover:bg-white/[0.08] hover:text-white"
           />
         </PaginationItem>
 
         {getVisiblePages().map((page, index) =>
           page === "..." ? (
             <PaginationItem key={index}>
-              <PaginationEllipsis className="px-2 text-muted-foreground/60" />
+              <PaginationEllipsis className="px-2 text-zinc-500" />
             </PaginationItem>
           ) : (
             <PaginationItem key={index}>
               <PaginationLink
                 href={`${pathname}?${createQueryString(page as number)}`}
                 isActive={pageInfo.currentPage === page}
-                className={`rounded-lg px-3 py-1 font-medium transition-colors ${pageInfo.currentPage === page ? "bg-primary text-primary-foreground" : "text-foreground bg-muted hover:bg-muted/80"}`}
+                className={`rounded-lg border px-3 py-1 font-medium transition-colors ${pageInfo.currentPage === page ? "border-white bg-white text-black" : "border-white/[0.08] bg-white/[0.04] text-zinc-400 hover:border-white/15 hover:bg-white/[0.08] hover:text-white"}`}
               >
                 {page}
               </PaginationLink>
@@ -169,7 +169,7 @@ export default function PaginationComponent({
               Math.min(pageInfo.totalPages, pageInfo.currentPage + 1)
             )}`}
             isActive={pageInfo.currentPage < pageInfo.totalPages}
-            className="rounded-lg px-3 py-1 font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+            className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-medium text-zinc-400 transition-colors hover:border-white/15 hover:bg-white/[0.08] hover:text-white"
           />
         </PaginationItem>
       </PaginationContent>

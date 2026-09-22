@@ -33,14 +33,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // Xử lý khi query trống
   if (!query || query.trim() === '') {
     return (
-      <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
+      <main className="mx-auto min-h-screen max-w-screen-2xl bg-[#070707] px-4 text-zinc-100">
         <Header topics={[]} categories={[]} />
         <div className="py-8">
           <div className="text-center py-16">
-            <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter mb-4">
+            <h1 className="text-2xl md:text-4xl font-black text-zinc-100 uppercase tracking-tighter mb-4">
               Vui lòng nhập từ khóa tìm kiếm
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-zinc-400">
               Hãy nhập tên phim hoặc từ khóa để tìm kiếm
             </p>
           </div>
@@ -66,20 +66,20 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     // Xử lý khi không có kết quả
     if (!movies || movies.length === 0) {
       return (
-        <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
+        <main className="mx-auto min-h-screen max-w-screen-2xl bg-[#070707] px-4 text-zinc-100">
           <Header
             topics={topics}
             categories={categories}
           />
           <div className="py-8">
-            <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter mb-8">
+            <h1 className="text-2xl md:text-4xl font-black text-zinc-100 uppercase tracking-tighter mb-8">
               Kết quả tìm kiếm cho "{query}"
             </h1>
             <div className="text-center py-16">
-              <p className="text-muted-foreground text-lg">
+              <p className="text-zinc-400 text-lg">
                 Không tìm thấy phim nào với từ khóa "{query}"
               </p>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-zinc-400 mt-2">
                 Hãy thử với từ khóa khác
               </p>
             </div>
@@ -90,13 +90,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     }
 
     return (
-      <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
+      <main className="mx-auto min-h-screen max-w-screen-2xl bg-[#070707] px-4 text-zinc-100">
         <Header
           topics={topics}
           categories={categories}
         />
         <div className="py-8">
-          <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter mb-8">
+          <h1 className="text-2xl md:text-4xl font-black text-zinc-100 uppercase tracking-tighter mb-8">
             Kết quả tìm kiếm cho "{query}"
           </h1>
           
@@ -133,14 +133,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     console.error('Search error:', error);
     
     return (
-      <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
+      <main className="mx-auto min-h-screen max-w-screen-2xl bg-[#070707] px-4 text-zinc-100">
         <Header topics={[]} categories={[]} />
         <div className="py-8">
           <div className="text-center py-16">
-            <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter mb-4">
+            <h1 className="text-2xl md:text-4xl font-black text-zinc-100 uppercase tracking-tighter mb-4">
               Đã xảy ra lỗi khi tìm kiếm
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-zinc-400">
               Vui lòng thử lại sau hoặc liên hệ quản trị viên
             </p>
           </div>
