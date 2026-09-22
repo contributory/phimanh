@@ -1,54 +1,28 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import { 
-  Fade, 
-  Slide, 
-  Grow, 
-  Zoom, 
-  Collapse,
-  Backdrop
-} from '@mui/material';
-import { styled, keyframes } from '@mui/material/styles';
+/**
+ * GSAP-powered animation primitives (Material-flavoured).
+ *
+ * Every component here is animated with GreenSock instead of
+ * CSS keyframes / MUI transitions, giving us proper easing curves,
+ * stagger choreography and scroll-driven reveals via ScrollTrigger.
+ */
 
-// Material Design ripple animation
-const rippleAnimation = keyframes`
-  0% {
-    transform: scale(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(4);
-    opacity: 0;
-  }
-`;
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  gsap,
+  ScrollTrigger,
+  ensureGsap,
+  prefersReducedMotion,
+  getFromVars,
+  triggerStart,
+  EASE,
+  useIsoLayoutEffect,
+} from '@/lib/gsap';
 
-// Enhanced ripple component
-const RippleContainer = styled('span')({
-  position: 'absolute',
-  inset: 0,
-  borderRadius: 'inherit',
-  pointerEvents: 'none',
-  overflow: 'hidden',
-});
-
-const RippleElement = styled('span')<{ 
-  x: number; 
-  y: number; 
-  size: number; 
-  animate: boolean; 
-}>(({ x, y, size, animate }) => ({
-  position: 'absolute',
-  left: x - size / 2,
-  top: y - size / 2,
-  width: size,
-  height: size,
-  borderRadius: '50%',
-  backgroundColor: 'currentColor',
-  opacity: 0.3,
-  transform: 'scale(0)',
-  animation: animate ? `${rippleAnimation} 0.6s ease-out` : 'none',
-}));
+/* ------------------------------------------------------------------ */
+/* Ripple — GSAP driven, zero re-renders per ripple                    */
+/* ------------------------------------------------------------------ */
 
 interface MaterialRippleProps {
   children: React.ReactNode;
@@ -56,41 +30,43 @@ interface MaterialRippleProps {
   className?: string;
 }
 
-export const MaterialRipple: React.FC<MaterialRippleProps> = ({ 
-  children, 
+export const MaterialRipple: React.FC<MaterialRippleProps> = ({
+  children,
   disabled = false,
-  className 
+  className,
 }) => {
-  const [ripples, setRipples] = useState<Array<{
-    key: number;
-    x: number;
-    y: number;
-    size: number;
-  }>>([]);
   const containerRef = useRef<HTMLDivElement>(null);
-  const rippleKeyRef = useRef(0);
+  const overlayRef = useRef<HTMLSpanElement>(null);
 
   const createRipple = (event: React.MouseEvent) => {
-    if (disabled || !containerRef.current) return;
-
+    if (disabled || !containerRef.current || !overlayRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const size = Math.max(rect.width, rect.height) * 2;
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    const newRipple = {
-      key: rippleKeyRef.current++,
-      x,
-      y,
-      size,
-    };
+    const ripple = document.createElement('span');
+    ripple.style.cssText = [
+      'position:absolute',
+      `left:${x - size / 2}px`,
+      `top:${y - size / 2}px`,
+      `width:${size}px`,
+      `height:${size}px`,
+      'border-radius:50%',
+      'background-color:currentColor',
+      'opacity:0.3',
+      'transform:scale(0)',
+      'pointer-events:none',
+    ].join(';');
+    overlayRef.current.appendChild(ripple);
 
-    setRipples(prev => [...prev, newRipple]);
-
-    // Remove ripple after animation
-    setTimeout(() => {
-      setRipples(prev => prev.filter(ripple => ripple.key !== newRipple.key));
-    }, 600);
+    gsap.to(ripple, {
+      scale: 4,
+      opacity: 0,
+      duration: 0.65,
+      ease: 'power2.out',
+      onComplete: () => ripple.parentNode?.removeChild(ripple),
+    });
   };
 
   return (
@@ -101,25 +77,28 @@ export const MaterialRipple: React.FC<MaterialRippleProps> = ({
     >
       {children}
       {!disabled && (
-        <RippleContainer>
-          {ripples.map(ripple => (
-            <RippleElement
-              key={ripple.key}
-              x={ripple.x}
-              y={ripple.y}
-              size={ripple.size}
-              animate={true}
-            />
-          ))}
-        </RippleContainer>
+        <span
+          ref={overlayRef}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: 'inherit',
+            pointerEvents: 'none',
+            overflow: 'hidden',
+          }}
+        />
       )}
     </div>
   );
 };
 
-// Staggered animation container
+/* ------------------------------------------------------------------ */
+/* Staggered container — children cascade in with GSAP stagger         */
+/* ------------------------------------------------------------------ */
+
 interface StaggeredAnimationProps {
   children: React.ReactElement[];
+  /** Stagger between items in milliseconds. */
   delay?: number;
   animation?: 'fade' | 'slide' | 'grow' | 'zoom';
   direction?: 'up' | 'down' | 'left' | 'right';
@@ -129,120 +108,39 @@ export const StaggeredAnimation: React.FC<StaggeredAnimationProps> = ({
   children,
   delay = 100,
   animation = 'fade',
-  direction = 'up'
+  direction = 'up',
 }) => {
-  const [visibleItems, setVisibleItems] = useState<Set<number>>(new Set());
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    children.forEach((_, index) => {
-      setTimeout(() => {
-        setVisibleItems(prev => new Set([...prev, index]));
-      }, index * delay);
-    });
-  }, [children, delay]);
+    const el = containerRef.current;
+    if (!el || prefersReducedMotion()) return;
+    ensureGsap();
 
-  const renderChild = (child: React.ReactElement, index: number) => {
-    const isVisible = visibleItems.has(index);
-    
-    switch (animation) {
-      case 'fade':
-        return (
-          <Fade key={index} in={isVisible} timeout={600}>
-            <div>{child}</div>
-          </Fade>
-        );
-      case 'slide':
-        return (
-          <Slide 
-            key={index} 
-            in={isVisible} 
-            timeout={600}
-            direction={direction}
-          >
-            <div>{child}</div>
-          </Slide>
-        );
-      case 'grow':
-        return (
-          <Grow key={index} in={isVisible} timeout={600}>
-            <div>{child}</div>
-          </Grow>
-        );
-      case 'zoom':
-        return (
-          <Zoom key={index} in={isVisible} timeout={600}>
-            <div>{child}</div>
-          </Zoom>
-        );
-      default:
-        return child;
-    }
-  };
+    const items = Array.from(el.children);
+    const tween = gsap.from(items, {
+      ...getFromVars(animation, direction),
+      duration: 0.65,
+      ease: EASE.out,
+      stagger: delay / 1000,
+      clearProps: 'transform,opacity,visibility',
+      overwrite: 'auto',
+    });
+    return () => {
+      tween.kill();
+    };
+  }, [children, delay, animation, direction]);
 
   return (
-    <>
-      {children.map((child, index) => renderChild(child, index))}
-    </>
+    <div ref={containerRef} style={{ display: 'contents' }}>
+      {children}
+    </div>
   );
 };
 
-// Floating Action Button animation
-const fabAnimation = keyframes`
-  0% {
-    transform: scale(0) rotate(-45deg);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.1) rotate(-22.5deg);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-`;
-
-const FloatingButton = styled('button')<{ visible: boolean }>(({ theme, visible }) => ({
-  position: 'fixed',
-  bottom: 32,
-  right: 32,
-  width: 60,
-  height: 60,
-  borderRadius: '20px',
-  border: '1px solid rgba(255, 255, 255, 0.1)',
-  backgroundColor: 'rgba(239, 68, 68, 0.9)', // primary red with transparency
-  backdropFilter: 'blur(8px)',
-  color: 'white',
-  boxShadow: '0 8px 32px rgba(239, 68, 68, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
-  transform: visible ? 'scale(1) translateY(0)' : 'scale(0) translateY(40px)',
-  opacity: visible ? 1 : 0,
-  zIndex: 1000,
-  overflow: 'hidden',
-  
-  '&:hover': {
-    transform: visible ? 'scale(1.1) translateY(-4px)' : 'scale(0)',
-    boxShadow: '0 12px 40px rgba(239, 68, 68, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.3)',
-    backgroundColor: 'rgb(239, 68, 68)',
-  },
-  
-  '&:active': {
-    transform: visible ? 'scale(0.95)' : 'scale(0)',
-  },
-
-  '& svg': {
-    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-    transition: 'transform 0.3s ease',
-  },
-
-  '&:hover svg': {
-    transform: 'translateY(-2px)',
-  }
-}));
+/* ------------------------------------------------------------------ */
+/* Floating Action Button — springy pop in / out                       */
+/* ------------------------------------------------------------------ */
 
 interface MaterialFABProps {
   children: React.ReactNode;
@@ -250,57 +148,145 @@ interface MaterialFABProps {
   onClick?: () => void;
 }
 
-export const MaterialFAB: React.FC<MaterialFABProps> = ({ 
-  children, 
+export const MaterialFAB: React.FC<MaterialFABProps> = ({
+  children,
   visible = true,
-  onClick 
+  onClick,
 }) => {
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const btn = btnRef.current;
+    if (!btn) return;
+
+    if (prefersReducedMotion()) {
+      gsap.set(btn, {
+        autoAlpha: visible ? 1 : 0,
+        scale: visible ? 1 : 0,
+        y: visible ? 0 : 40,
+      });
+      return;
+    }
+
+    gsap.to(btn, {
+      autoAlpha: visible ? 1 : 0,
+      scale: visible ? 1 : 0,
+      y: visible ? 0 : 40,
+      duration: 0.55,
+      ease: visible ? EASE.pop : EASE.in,
+      overwrite: 'auto',
+    });
+  }, [visible]);
+
+  const handleEnter = () => {
+    if (!visible || prefersReducedMotion()) return;
+    gsap.to(btnRef.current, {
+      scale: 1.08,
+      y: -4,
+      duration: 0.3,
+      ease: EASE.outSoft,
+      overwrite: 'auto',
+    });
+  };
+
+  const handleLeave = () => {
+    if (!visible || prefersReducedMotion()) return;
+    gsap.to(btnRef.current, {
+      scale: 1,
+      y: 0,
+      duration: 0.4,
+      ease: EASE.outSoft,
+      overwrite: 'auto',
+    });
+  };
+
   return (
-    <FloatingButton visible={visible} onClick={onClick}>
+    <button
+      ref={btnRef}
+      onClick={onClick}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+      style={{
+        position: 'fixed',
+        bottom: 32,
+        right: 32,
+        width: 60,
+        height: 60,
+        borderRadius: 20,
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        backgroundColor: 'rgba(239, 68, 68, 0.9)',
+        backdropFilter: 'blur(8px)',
+        color: 'white',
+        boxShadow:
+          '0 8px 32px rgba(239, 68, 68, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.2)',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        overflow: 'hidden',
+      }}
+    >
       {children}
-    </FloatingButton>
+    </button>
   );
 };
 
-// Loading animation component
-const pulseAnimation = keyframes`
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.7;
-  }
-`;
-
-const LoadingContainer = styled('div')({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 8,
-});
-
-const LoadingDot = styled('div')<{ delay: number }>(({ delay }) => ({
-  width: 12,
-  height: 12,
-  borderRadius: '50%',
-  backgroundColor: 'hsl(var(--primary))',
-  animation: `${pulseAnimation} 1.4s ease-in-out infinite`,
-  animationDelay: `${delay}s`,
-}));
+/* ------------------------------------------------------------------ */
+/* Loading dots — GSAP pulse with staggered breathing                  */
+/* ------------------------------------------------------------------ */
 
 export const MaterialLoading: React.FC = () => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || prefersReducedMotion()) return;
+
+    const tween = gsap.to(el.children, {
+      scale: 1.05,
+      opacity: 0.7,
+      duration: 0.7,
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: -1,
+      stagger: 0.2,
+    });
+    return () => {
+      tween.kill();
+    };
+  }, []);
+
   return (
-    <LoadingContainer>
-      <LoadingDot delay={0} />
-      <LoadingDot delay={0.2} />
-      <LoadingDot delay={0.4} />
-    </LoadingContainer>
+    <div
+      ref={ref}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+      }}
+    >
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          style={{
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            backgroundColor: 'hsl(var(--primary))',
+            display: 'block',
+          }}
+        />
+      ))}
+    </div>
   );
 };
 
-// Page transition wrapper
+/* ------------------------------------------------------------------ */
+/* Page transition — directional slide with GSAP                       */
+/* ------------------------------------------------------------------ */
+
 interface PageTransitionProps {
   children: React.ReactNode;
   direction?: 'horizontal' | 'vertical';
@@ -308,28 +294,41 @@ interface PageTransitionProps {
 
 export const MaterialPageTransition: React.FC<PageTransitionProps> = ({
   children,
-  direction = 'horizontal'
+  direction = 'horizontal',
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
+  useIsoLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || prefersReducedMotion()) return;
+
+    gsap.fromTo(
+      el,
+      direction === 'horizontal'
+        ? { xPercent: -6, autoAlpha: 0 }
+        : { yPercent: 6, autoAlpha: 0 },
+      {
+        xPercent: 0,
+        yPercent: 0,
+        autoAlpha: 1,
+        duration: 0.65,
+        ease: EASE.out,
+        clearProps: 'transform,opacity,visibility',
+      }
+    );
+  }, [direction]);
 
   return (
-    <Slide 
-      in={isVisible} 
-      direction={direction === 'horizontal' ? 'left' : 'up'}
-      timeout={500}
-    >
-      <div style={{ minHeight: '100vh' }}>
-        {children}
-      </div>
-    </Slide>
+    <div ref={ref} style={{ minHeight: '100vh' }}>
+      {children}
+    </div>
   );
 };
 
-// Expandable card animation
+/* ------------------------------------------------------------------ */
+/* Expandable card — GSAP height auto animation                        */
+/* ------------------------------------------------------------------ */
+
 interface ExpandableCardProps {
   children: React.ReactNode;
   expanded: boolean;
@@ -339,21 +338,65 @@ interface ExpandableCardProps {
 export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   children,
   expanded,
-  expandedContent
+  expandedContent,
 }) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [display, setDisplay] = useState(expanded);
+  const prevExpanded = useRef(expanded);
+
+  useIsoLayoutEffect(() => {
+    const el = contentRef.current;
+    if (!el || prevExpanded.current === expanded) return;
+    prevExpanded.current = expanded;
+
+    if (expanded) {
+      setDisplay(true);
+      gsap.fromTo(
+        el,
+        { height: 0, opacity: 0, overflow: 'hidden' },
+        {
+          height: 'auto',
+          opacity: 1,
+          duration: 0.35,
+          ease: EASE.out,
+          onComplete: () => gsap.set(el, { clearProps: 'height,opacity,overflow' }),
+        }
+      );
+    } else {
+      gsap.fromTo(
+        el,
+        { height: 'auto', opacity: 1, overflow: 'hidden' },
+        {
+          height: 0,
+          opacity: 0,
+          duration: 0.3,
+          ease: EASE.in,
+          onComplete: () => {
+            setDisplay(false);
+            gsap.set(el, { clearProps: 'height,opacity,overflow' });
+          },
+        }
+      );
+    }
+  }, [expanded]);
+
   return (
     <div>
       {children}
-      <Collapse in={expanded} timeout={300}>
-        <div style={{ paddingTop: 16 }}>
-          {expandedContent}
-        </div>
-      </Collapse>
+      <div
+        ref={contentRef}
+        style={{ display: display ? 'block' : 'none', paddingTop: 16 }}
+      >
+        {expandedContent}
+      </div>
     </div>
   );
 };
 
-// Modal with backdrop animation
+/* ------------------------------------------------------------------ */
+/* Modal — backdrop fade + springy zoom                                */
+/* ------------------------------------------------------------------ */
+
 interface MaterialModalProps {
   open: boolean;
   onClose: () => void;
@@ -363,68 +406,121 @@ interface MaterialModalProps {
 export const MaterialModal: React.FC<MaterialModalProps> = ({
   open,
   onClose,
-  children
+  children,
 }) => {
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useIsoLayoutEffect(() => {
+    const backdrop = backdropRef.current;
+    const panel = panelRef.current;
+    if (!backdrop || !panel) return;
+
+    if (open) {
+      backdrop.style.display = 'flex';
+      panel.style.display = 'block';
+      gsap.fromTo(
+        backdrop,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.3, ease: EASE.outSoft }
+      );
+      gsap.fromTo(
+        panel,
+        { scale: 0.7, autoAlpha: 0 },
+        { scale: 1, autoAlpha: 1, duration: 0.4, ease: EASE.popStrong }
+      );
+    } else {
+      gsap.to(backdrop, {
+        opacity: 0,
+        duration: 0.25,
+        ease: EASE.in,
+        onComplete: () => {
+          backdrop.style.display = 'none';
+        },
+      });
+      gsap.to(panel, {
+        scale: 0.85,
+        autoAlpha: 0,
+        duration: 0.25,
+        ease: EASE.in,
+        onComplete: () => {
+          panel.style.display = 'none';
+        },
+      });
+    }
+  }, [open]);
+
   return (
-    <Backdrop
-      sx={{
-        color: '#fff',
-        zIndex: (theme) => theme.zIndex.drawer + 1,
+    <div
+      ref={backdropRef}
+      onClick={onClose}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 1300,
+        display: open ? 'flex' : 'none',
+        alignItems: 'center',
+        justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
         backdropFilter: 'blur(4px)',
       }}
-      open={open}
-      onClick={onClose}
     >
-      <Zoom in={open} timeout={300}>
-        <div
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            backgroundColor: 'hsl(var(--card))',
-            borderRadius: 16,
-            padding: 24,
-            maxWidth: '90vw',
-            maxHeight: '90vh',
-            overflow: 'auto',
-          }}
-        >
-          {children}
-        </div>
-      </Zoom>
-    </Backdrop>
+      <div
+        ref={panelRef}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          backgroundColor: 'hsl(var(--card))',
+          borderRadius: 16,
+          padding: 24,
+          maxWidth: '90vw',
+          maxHeight: '90vh',
+          overflow: 'auto',
+        }}
+      >
+        {children}
+      </div>
+    </div>
   );
 };
 
-// Scroll reveal animation hook
+/* ------------------------------------------------------------------ */
+/* Scroll reveal hook — ScrollTrigger based, same public API           */
+/* ------------------------------------------------------------------ */
+
 export const useScrollReveal = (threshold = 0.1) => {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      { threshold }
-    );
-
-    if (ref.current) {
-      observer.observe(ref.current);
+    const el = ref.current;
+    if (!el) return;
+    if (prefersReducedMotion()) {
+      setIsVisible(true);
+      return;
     }
+    ensureGsap();
 
-    return () => observer.disconnect();
+    const st = ScrollTrigger.create({
+      trigger: el,
+      start: triggerStart(threshold),
+      once: true,
+      onEnter: () => setIsVisible(true),
+    });
+    return () => {
+      st.kill();
+    };
   }, [threshold]);
 
   return { ref, isVisible };
 };
 
-// Scroll reveal component
+/* ------------------------------------------------------------------ */
+/* ScrollReveal — cinematic scroll entrance with cascade delays        */
+/* ------------------------------------------------------------------ */
+
 interface ScrollRevealProps {
   children: React.ReactNode;
-  animation?: 'fade' | 'slide' | 'grow';
+  animation?: 'fade' | 'slide' | 'grow' | 'zoom';
   direction?: 'up' | 'down' | 'left' | 'right';
   threshold?: number;
 }
@@ -433,38 +529,39 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   children,
   animation = 'fade',
   direction = 'up',
-  threshold = 0.1
+  threshold = 0.1,
 }) => {
-  const { ref, isVisible } = useScrollReveal(threshold);
+  const ref = useRef<HTMLDivElement>(null);
 
-  const renderAnimation = () => {
-    switch (animation) {
-      case 'fade':
-        return (
-          <Fade in={isVisible} timeout={800}>
-            <div>{children}</div>
-          </Fade>
-        );
-      case 'slide':
-        return (
-          <Slide in={isVisible} direction={direction} timeout={800}>
-            <div>{children}</div>
-          </Slide>
-        );
-      case 'grow':
-        return (
-          <Grow in={isVisible} timeout={800}>
-            <div>{children}</div>
-          </Grow>
-        );
-      default:
-        return <div>{children}</div>;
-    }
-  };
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || prefersReducedMotion()) return;
+    ensureGsap();
 
-  return (
-    <div ref={ref}>
-      {renderAnimation()}
-    </div>
-  );
+    // Give items further along a row/grid a tiny extra delay so
+    // neighbouring cards cascade in instead of popping all at once.
+    const siblings = el.parentElement ? Array.from(el.parentElement.children) : [];
+    const index = siblings.indexOf(el);
+    const cascadeDelay = Math.max(0, index % 8) * 0.05;
+
+    const tween = gsap.from(el, {
+      ...getFromVars(animation, direction),
+      duration: 0.85,
+      delay: cascadeDelay,
+      ease: EASE.out,
+      clearProps: 'transform,opacity,visibility',
+      scrollTrigger: {
+        trigger: el,
+        start: triggerStart(threshold),
+        once: true,
+      },
+    });
+
+    return () => {
+      tween.scrollTrigger?.kill();
+      tween.kill();
+    };
+  }, [animation, direction, threshold]);
+
+  return <div ref={ref}>{children}</div>;
 };

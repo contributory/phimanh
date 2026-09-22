@@ -152,7 +152,7 @@ export default async function Home() {
   );
 
   return (
-    <main className="mx-auto max-w-screen-2xl material-surface min-h-screen bg-black">
+    <main className="min-h-screen overflow-hidden bg-[#070707] text-white">
       <Header
         categories={categories}
         countries={countries}
@@ -161,18 +161,14 @@ export default async function Home() {
       
       <ForYouHero fallbackMovies={fallbackHeroes} />
 
-      <div className="space-y-4 md:space-y-6 lg:space-y-8 pb-32 relative z-20">
-        <div className="px-4">
-          <ForYouSection limit={20} initialVisible={6} />
-        </div>
+      <div className="relative z-20 mx-auto max-w-[1500px] space-y-1 pb-24 md:space-y-2">
+        <ForYouSection limit={20} initialVisible={6} />
 
         <NewUpdatesSection movies={newUpdatesForSection} initialVisible={12} />
         
-        <div className="px-4">
-          <RecentlyWatched limit={20} />
-        </div>
+        <RecentlyWatched limit={20} />
 
-        <div className="space-y-6 md:space-y-8 lg:space-y-10 px-4">
+        <div className="space-y-1 md:space-y-2">
           {topicsWithMovies.map((topicData: any) => (
             <TopicSection
               key={topicData.slug}

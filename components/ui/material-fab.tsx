@@ -1,14 +1,59 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MaterialFAB, MaterialRipple } from './material-animations';
 import { Search, ArrowUp, Menu, Heart } from 'lucide-react';
+import { gsap, prefersReducedMotion, EASE, useIsoLayoutEffect } from '@/lib/gsap';
 
 interface MaterialFABGroupProps {
   onSearchClick?: () => void;
   onMenuClick?: () => void;
   onScrollTop?: () => void;
 }
+
+/** Menu items stagger in with a springy GSAP cascade. */
+const FABMenu: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useIsoLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || prefersReducedMotion()) return;
+    gsap.fromTo(
+      el,
+      { y: 18, autoAlpha: 0, scale: 0.9 },
+      { y: 0, autoAlpha: 1, scale: 1, duration: 0.5, ease: EASE.pop, clearProps: 'transform,opacity,visibility' }
+    );
+  }, []);
+
+  return (
+    <div ref={ref} className="flex flex-col gap-4">
+      {children}
+    </div>
+  );
+};
+
+/** Backdrop fades in via GSAP. */
+const FABBackdrop: React.FC<{ onClick: () => void }> = ({ onClick }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useIsoLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || prefersReducedMotion()) return;
+    gsap.fromTo(
+      el,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.4, ease: EASE.outSoft }
+    );
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm -z-10"
+      onClick={onClick}
+    />
+  );
+};
 
 export default function MaterialFABGroup({
   onSearchClick,
@@ -39,7 +84,7 @@ export default function MaterialFABGroup({
     <div className="fixed bottom-8 right-8 z-[1000] flex flex-col items-end gap-4">
       {/* Secondary FABs */}
       {isExpanded && (
-        <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <FABMenu>
           {/* Quick Search FAB */}
           <MaterialRipple>
             <button
@@ -80,7 +125,7 @@ export default function MaterialFABGroup({
               </button>
             </MaterialRipple>
           )}
-        </div>
+        </FABMenu>
       )}
 
       {/* Main FAB */}
@@ -96,12 +141,7 @@ export default function MaterialFABGroup({
       </MaterialRipple>
 
       {/* Backdrop */}
-      {isExpanded && (
-        <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm -z-10 animate-in fade-in duration-500"
-          onClick={() => setIsExpanded(false)}
-        />
-      )}
+      {isExpanded && <FABBackdrop onClick={() => setIsExpanded(false)} />}
     </div>
   );
 }
@@ -109,21 +149,56 @@ export default function MaterialFABGroup({
 // Simple scroll to top FAB with progress indicator
 export function ScrollToTopFAB() {
   const [visible, setVisible] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const circleRef = useRef<SVGCircleElement>(null);
 
+  // Drive the SVG progress ring directly with GSAP — no React
+  // re-renders while scrolling.
   useEffect(() => {
+    const CIRCUMFERENCE = 175.9;
+    const circle = circleRef.current;
+
     const handleScroll = () => {
       const scrollY = window.scrollY;
       const height = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = (scrollY / height) * 100;
-      
-      setScrollProgress(progress);
+      const progress = height > 0 ? scrollY / height : 0;
+
+      if (circle) {
+        gsap.set(circle, {
+          attr: { 'stroke-dashoffset': CIRCUMFERENCE - CIRCUMFERENCE * progress },
+        });
+      }
       setVisible(scrollY > 300);
     };
 
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Springy GSAP pop in / out when crossing the visibility threshold.
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+
+    if (prefersReducedMotion()) {
+      gsap.set(el, {
+        autoAlpha: visible ? 1 : 0,
+        scale: visible ? 1 : 0.5,
+        y: visible ? 0 : 16,
+      });
+      return;
+    }
+
+    gsap.to(el, {
+      autoAlpha: visible ? 1 : 0,
+      scale: visible ? 1 : 0.5,
+      y: visible ? 0 : 16,
+      duration: 0.5,
+      ease: visible ? EASE.pop : EASE.in,
+      overwrite: 'auto',
+    });
+  }, [visible]);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -134,7 +209,7 @@ export function ScrollToTopFAB() {
 
   return (
     <div className="fixed bottom-8 right-8 z-[1000] pointer-events-none">
-      <div className={`relative transition-all duration-500 transform ${visible ? 'scale-100 opacity-100 translate-y-0' : 'scale-0 opacity-0 translate-y-10'}`}>
+      <div ref={wrapRef} className="relative">
         <button
           onClick={scrollToTop}
           className="relative w-16 h-16 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center group pointer-events-auto hover:border-red-500/50 transition-colors shadow-2xl"
@@ -151,8 +226,9 @@ export function ScrollToTopFAB() {
               strokeWidth="2"
               className="text-white/5"
             />
-            {/* Active Progress Circle */}
+            {/* Active Progress Circle — driven by GSAP on scroll */}
             <circle
+              ref={circleRef}
               cx="32"
               cy="32"
               r="28"
@@ -160,9 +236,9 @@ export function ScrollToTopFAB() {
               stroke="currentColor"
               strokeWidth="2"
               strokeDasharray={175.9}
-              strokeDashoffset={175.9 - (175.9 * scrollProgress) / 100}
+              strokeDashoffset={175.9}
               strokeLinecap="round"
-              className="text-red-500 transition-all duration-200"
+              className="text-red-500"
             />
           </svg>
           
@@ -185,6 +261,32 @@ export function QuickActionFAB({
   onClick?: () => void;
   visible?: boolean;
 }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // GSAP pop in / out instead of CSS transform classes.
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+
+    if (prefersReducedMotion()) {
+      gsap.set(el, {
+        autoAlpha: visible ? 1 : 0,
+        scale: visible ? 1 : 0.5,
+        y: visible ? 0 : 16,
+      });
+      return;
+    }
+
+    gsap.to(el, {
+      autoAlpha: visible ? 1 : 0,
+      scale: visible ? 1 : 0.5,
+      y: visible ? 0 : 16,
+      duration: 0.5,
+      ease: visible ? EASE.pop : EASE.in,
+      overwrite: 'auto',
+    });
+  }, [visible]);
+
   const getIcon = () => {
     switch (type) {
       case 'search':
@@ -217,17 +319,17 @@ export function QuickActionFAB({
 
   return (
     <MaterialRipple className="fixed bottom-8 right-8 z-[1000]">
-      <button
-        onClick={onClick}
-        className={`w-16 h-16 text-white rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl material-transition flex items-center justify-center group ${getColors()} ${
-          visible ? 'scale-100 opacity-100 translate-y-0' : 'scale-0 opacity-0 translate-y-10'
-        } transition-all duration-500`}
-      >
-        <span className="relative z-10 transition-transform duration-300 group-hover:scale-110">
-          {getIcon()}
-        </span>
-        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity" />
-      </button>
+      <div ref={wrapRef}>
+        <button
+          onClick={onClick}
+          className={`w-16 h-16 text-white rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl flex items-center justify-center group ${getColors()}`}
+        >
+          <span className="relative z-10 transition-transform duration-300 group-hover:scale-110">
+            {getIcon()}
+          </span>
+          <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 rounded-2xl transition-opacity" />
+        </button>
+      </div>
     </MaterialRipple>
   );
 }

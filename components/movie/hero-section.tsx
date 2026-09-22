@@ -1,172 +1,425 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { Play, Star, Calendar, Tag, Globe } from "lucide-react";
+import { Calendar, Play, Star } from "lucide-react";
+import {
+  gsap,
+  ensureGsap,
+  prefersReducedMotion,
+  EASE,
+  useIsoLayoutEffect,
+} from "@/lib/gsap";
+
+const SLIDE_DURATION = 8000;
 
 interface HeroSectionProps {
   movies: any[];
 }
 
+const imageUrl = (value?: string) => {
+  if (!value) return "/placeholder-movie.png";
+  return value.startsWith("http") ? value : `https://phimimg.com/${value}`;
+};
+
 export default function HeroSection({ movies }: HeroSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const rootRef = useRef<HTMLElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+  const progressTweenRef = useRef<gsap.core.Tween | null>(null);
 
   const nextSlide = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % movies.length);
   }, [movies.length]);
 
   useEffect(() => {
-    if (isPaused) return;
-    const interval = setInterval(nextSlide, 8000);
+    if (isPaused || movies.length < 2) return;
+    const interval = setInterval(nextSlide, SLIDE_DURATION);
     return () => clearInterval(interval);
-  }, [nextSlide, isPaused]);
+  }, [nextSlide, isPaused, movies.length]);
 
   const featuredMovie = movies[activeIndex];
 
-  if (!featuredMovie) return null;
-
-  const getRating = (m: any) => {
-    const imdb = Number(m?.imdb?.rating);
+  const getRating = (movie: any) => {
+    const imdb = Number(movie?.imdb?.rating);
     if (!Number.isNaN(imdb) && imdb > 0) return imdb.toFixed(1);
-    const tmdb = Number(m?.tmdb?.vote_average);
+    const tmdb = Number(movie?.tmdb?.vote_average);
     if (!Number.isNaN(tmdb) && tmdb > 0) return tmdb.toFixed(1);
     return null;
   };
 
+  const resetCard = useCallback(() => {
+    if (!cardRef.current || prefersReducedMotion()) return;
+
+    gsap.to(cardRef.current, {
+      x: 0,
+      y: 0,
+      rotateX: 0,
+      rotateY: 0,
+      duration: 0.75,
+      ease: "power3.out",
+      overwrite: "auto",
+    });
+
+    if (glowRef.current) {
+      gsap.to(glowRef.current, {
+        opacity: 0.18,
+        duration: 0.5,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    }
+  }, []);
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLElement>) => {
+    if (
+      !cardRef.current ||
+      prefersReducedMotion() ||
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches
+    ) {
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const px = (event.clientX - rect.left) / rect.width;
+    const py = (event.clientY - rect.top) / rect.height;
+    const x = (px - 0.5) * 2;
+    const y = (py - 0.5) * 2;
+    const edgeStrength = Math.max(0, (Math.abs(x) - 0.52) / 0.48);
+    const edgeDirection = Math.sign(x);
+
+    gsap.to(cardRef.current, {
+      x: x * 22 + edgeDirection * edgeStrength * 52,
+      y: y * 8,
+      rotateX: y * -4.5,
+      rotateY: x * 6.5 + edgeDirection * edgeStrength * 4,
+      duration: 0.42,
+      ease: "power3.out",
+      overwrite: "auto",
+    });
+
+    if (glowRef.current) {
+      glowRef.current.style.background = `radial-gradient(circle at ${px * 100}% ${py * 100}%, rgba(255,255,255,0.22), rgba(255,255,255,0.05) 24%, transparent 52%)`;
+      gsap.to(glowRef.current, {
+        opacity: 1,
+        duration: 0.25,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    }
+  };
+
+  useIsoLayoutEffect(() => {
+    if (!rootRef.current || prefersReducedMotion()) return;
+    ensureGsap();
+    const root = rootRef.current;
+
+    root.querySelectorAll<HTMLElement>("[data-hero-bg]").forEach((bg, idx) => {
+      const active = idx === activeIndex;
+      const img = bg.querySelector("img");
+
+      gsap.to(bg, {
+        autoAlpha: active ? 1 : 0,
+        duration: 1,
+        ease: "power2.inOut",
+        overwrite: "auto",
+      });
+
+      if (active && img) {
+        gsap.fromTo(
+          img,
+          { scale: 1.06 },
+          {
+            scale: 1,
+            duration: SLIDE_DURATION / 1000,
+            ease: "none",
+            overwrite: "auto",
+          },
+        );
+      }
+    });
+
+    root.querySelectorAll<HTMLElement>("[data-hero-text]").forEach((block, idx) => {
+      const active = idx === activeIndex;
+      const parts = block.querySelectorAll("[data-hero-part]");
+
+      if (active) {
+        gsap.set(block, { pointerEvents: "auto" });
+        gsap.fromTo(
+          parts,
+          { y: 20, autoAlpha: 0 },
+          {
+            y: 0,
+            autoAlpha: 1,
+            duration: 0.65,
+            ease: EASE.out,
+            stagger: 0.055,
+            delay: 0.16,
+            overwrite: "auto",
+          },
+        );
+      } else {
+        gsap.set(block, { pointerEvents: "none" });
+        gsap.to(parts, {
+          y: -12,
+          autoAlpha: 0,
+          duration: 0.28,
+          ease: EASE.in,
+          stagger: 0.02,
+          overwrite: "auto",
+        });
+      }
+    });
+  }, [activeIndex]);
+
+  useIsoLayoutEffect(() => {
+    if (!rootRef.current || prefersReducedMotion()) return;
+
+    const bar = rootRef.current.querySelector<HTMLElement>(
+      `[data-hero-progress="${activeIndex}"]`,
+    );
+    if (!bar) return;
+
+    const tween = gsap.fromTo(
+      bar,
+      { scaleX: 0 },
+      {
+        scaleX: 1,
+        duration: SLIDE_DURATION / 1000,
+        ease: "none",
+        paused: isPaused,
+      },
+    );
+
+    progressTweenRef.current = tween;
+    return () => {
+      tween.kill();
+      progressTweenRef.current = null;
+    };
+  }, [activeIndex]);
+
+  useEffect(() => {
+    const tween = progressTweenRef.current;
+    if (!tween) return;
+    if (isPaused) tween.pause();
+    else tween.restart();
+  }, [isPaused]);
+
+  if (!featuredMovie) return null;
+
+  const featuredRating = getRating(featuredMovie);
+  const featuredCategories = featuredMovie.category
+    ?.map((category: any) => category.name)
+    .slice(0, 2)
+    .join(" · ");
+
   return (
-    <section 
-      className="relative h-[110vh] w-full overflow-hidden bg-background"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+    <section
+      ref={rootRef}
+      className="relative min-h-[680px] overflow-hidden bg-[#070707] px-4 pb-10 pt-24 md:min-h-[760px] md:px-8 md:pb-14 lg:px-10"
+      onPointerMove={handlePointerMove}
+      onPointerEnter={() => setIsPaused(true)}
+      onPointerLeave={() => {
+        setIsPaused(false);
+        resetCard();
+      }}
     >
-      {/* Background Images - Crossfade smoothly */}
-      {movies.map((m, idx) => (
+      {movies.map((movie, idx) => (
         <div
-          key={m.slug}
-          className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
-            idx === activeIndex ? "opacity-100" : "opacity-0"
-          }`}
+          key={movie.slug}
+          data-hero-bg={idx}
+          className={`absolute inset-0 ${idx === activeIndex ? "opacity-100" : "opacity-0"}`}
         >
           <img
-            src={m.thumb_url?.startsWith("http") ? m.thumb_url : `https://phimimg.com/${m.thumb_url}`}
-            alt={m.name}
-            className="w-full h-full object-cover"
+            src={imageUrl(movie.thumb_url || movie.poster_url)}
+            alt=""
+            className="h-full w-full scale-105 object-cover blur-[2px]"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/20 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-80" />
-          <div className="absolute bottom-0 left-0 w-full h-[60%] bg-gradient-to-t from-background via-background/80 to-transparent" />
+          <div className="absolute inset-0 bg-black/72" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_38%,rgba(255,255,255,0.08),transparent_32%),linear-gradient(to_bottom,rgba(7,7,7,0.2),#070707_92%)]" />
         </div>
       ))}
 
-      {/* Content Area */}
-      <div className="relative h-full container mx-auto px-6 flex flex-col justify-end pb-20 md:pb-28 max-w-6xl z-10">
-        
-        {/* Only the text part changes with smooth transition */}
-        <div className="relative h-40 md:h-52 flex flex-col justify-end">
-          {movies.map((m, idx) => (
-            <div 
-              key={`text-${m.slug}`}
-              className={`absolute bottom-0 left-0 w-full transition-all duration-1000 ease-in-out ${
-                idx === activeIndex ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-              }`}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                {m?.badgeType === "personal" ? (
-                  <div className="bg-red-600 text-white px-3 py-1 rounded-sm font-black text-[10px] uppercase tracking-[0.2em]">
-                    {m.badgeText || "Dành cho bạn"}
-                  </div>
-                ) : m?.badgeType === "imdb" ? (
-                  <>
-                    <div className="bg-[#f5c518] text-black px-2 py-0.5 rounded-sm font-black text-[10px]">
-                      IMDb
-                    </div>
-                    <div className="flex items-center text-[#f5c518] gap-1">
-                      <Star className="w-3.5 h-3.5 fill-current" />
-                      <span className="font-bold text-xs">
-                        {getRating(m) ? `${getRating(m)} / 10` : "8.5 / 10"}
-                      </span>
-                    </div>
-                  </>
-                ) : m?.badgeText ? (
-                  <div className="bg-muted text-foreground px-3 py-1 rounded-sm font-black text-[10px] uppercase tracking-[0.2em] border border-border">
-                    {m.badgeText}
-                  </div>
-                ) : (
-                  <>
-                    <div className="bg-[#f5c518] text-black px-2 py-0.5 rounded-sm font-black text-[10px]">
-                      IMDb
-                    </div>
-                    <div className="flex items-center text-[#f5c518] gap-1">
-                      <Star className="w-3.5 h-3.5 fill-current" />
-                      <span className="font-bold text-xs">8.5 / 10</span>
-                    </div>
-                  </>
-                )}
-              </div>
+      <div
+        className="relative z-10 mx-auto flex min-h-[570px] w-full max-w-[1500px] items-center justify-center md:min-h-[640px]"
+        style={{ perspective: "1500px" }}
+      >
+        <div
+          ref={cardRef}
+          className="relative w-full max-w-[1320px] will-change-transform"
+          style={{ transformStyle: "preserve-3d" }}
+        >
+          <div className="absolute -inset-8 -z-10 rounded-[44px] bg-black/50 blur-3xl" />
 
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-foreground mb-2 tracking-tighter uppercase leading-[0.9] max-w-4xl drop-shadow-sm line-clamp-2">
-                {m.name}
-              </h1>
-              
-              <h2 className="text-base md:text-lg font-bold text-red-600 mb-4 tracking-tight uppercase opacity-90 drop-shadow-lg">
-                {m.origin_name}
-              </h2>
-
-              <div className="flex flex-wrap items-center gap-x-5 mb-4 text-muted-foreground font-bold text-xs md:text-sm">
-                <span className="flex items-center gap-2">
-                  <Calendar className="w-3.5 h-3.5 text-red-600" />
-                  {m.year}
-                </span>
-                <span className="flex items-center gap-2">
-                  <Tag className="w-3.5 h-3.5 text-red-600" />
-                  {m.category?.map((c: any) => c.name).slice(0, 2).join(", ")}
-                </span>
-                {m.country && (Array.isArray(m.country) ? m.country.length > 0 : true) && (
-                  <span className="flex items-center gap-2">
-                    <Globe className="w-3.5 h-3.5 text-red-600" />
-                    {Array.isArray(m.country) 
-                      ? m.country.map((c: any) => c.name).slice(0, 2).join(", ")
-                      : typeof m.country === 'string' ? m.country : m.country?.name || ""}
-                  </span>
-                )}
-                <span className="px-1.5 py-0.5 bg-accent rounded text-[10px] border border-border">
-                  {m.quality}
-                </span>
-              </div>
-
-              <p className="text-muted-foreground/80 text-sm md:text-base mb-4 line-clamp-2 font-medium max-w-xl leading-relaxed">
-                {m.content?.replace(/<[^>]*>?/gm, "") || "Trải nghiệm siêu phẩm điện ảnh đỉnh cao."}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Fixed Buttons and Thumbnails */}
-        <div className="flex flex-col md:flex-row md:items-center gap-6 mt-8">
-          <Link
-            href={`/watch?slug=${featuredMovie.slug}`}
-            className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-sm font-black uppercase tracking-widest transition-all flex items-center gap-2 transform hover:scale-105 shadow-2xl w-fit text-sm"
+          <div
+            className="relative min-h-[540px] overflow-hidden rounded-[28px] border border-white/[0.12] bg-zinc-950 shadow-[0_45px_120px_rgba(0,0,0,0.6)] md:min-h-[590px]"
+            style={{ transformStyle: "preserve-3d" }}
           >
-            <Play className="w-5 h-5 fill-current" /> Xem Phim
-          </Link>
-
-          <div className="flex items-center gap-3">
-            {movies.map((m, idx) => (
-              <button
-                key={m.slug}
-                onClick={() => setActiveIndex(idx)}
-                className={`group relative w-14 h-20 md:w-16 md:h-24 overflow-hidden rounded-sm border transition-all transform hover:scale-110 ${
-                  idx === activeIndex ? "border-primary scale-110 z-20 shadow-[0_0_20px_rgba(229,9,20,0.4)]" : "border-border opacity-60 hover:opacity-100"
-                }`}
+            {movies.map((movie, idx) => (
+              <div
+                key={`card-bg-${movie.slug}`}
+                className={`absolute inset-0 transition-opacity duration-700 ${idx === activeIndex ? "opacity-100" : "opacity-0"}`}
               >
                 <img
-                  src={m.poster_url?.startsWith("http") ? m.poster_url : `https://phimimg.com/${m.poster_url}`}
-                  alt={m.name}
-                  className="w-full h-full object-cover"
+                  src={imageUrl(movie.thumb_url || movie.poster_url)}
+                  alt={movie.name}
+                  className="h-full w-full object-cover"
                 />
-              </button>
+                <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/72 to-black/22" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/92 via-transparent to-black/20" />
+              </div>
             ))}
+
+            <div
+              ref={glowRef}
+              className="pointer-events-none absolute inset-0 z-20 opacity-[0.18]"
+            />
+
+            <div
+              className="relative z-30 grid min-h-[540px] gap-8 p-6 sm:p-8 md:min-h-[590px] md:p-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end lg:p-14"
+              style={{ transformStyle: "preserve-3d" }}
+            >
+              <div
+                className="relative min-h-[360px] max-w-3xl self-end"
+                style={{ transform: "translateZ(72px)" }}
+              >
+                {movies.map((movie, idx) => {
+                  const rating = getRating(movie);
+                  const movieCategories = movie.category
+                    ?.map((category: any) => category.name)
+                    .slice(0, 2)
+                    .join(" · ");
+
+                  return (
+                    <div
+                      key={`text-${movie.slug}`}
+                      data-hero-text={idx}
+                      className={`absolute bottom-0 left-0 w-full ${idx === activeIndex ? "opacity-100" : "pointer-events-none opacity-0"}`}
+                    >
+                      <div
+                        data-hero-part
+                        className="mb-4 flex flex-wrap items-center gap-2 text-xs text-zinc-400"
+                      >
+                        {movie.badgeText && (
+                          <span className="rounded-full border border-white/12 bg-white/10 px-3 py-1 font-medium text-zinc-100 backdrop-blur-md">
+                            {movie.badgeText}
+                          </span>
+                        )}
+                        {rating && (
+                          <span className="flex items-center gap-1.5 rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 font-medium text-amber-200">
+                            <Star className="h-3.5 w-3.5 fill-current" />
+                            {rating}
+                          </span>
+                        )}
+                        {movie.quality && (
+                          <span className="rounded-full border border-white/10 bg-black/35 px-3 py-1 font-medium text-zinc-300 backdrop-blur-md">
+                            {movie.quality}
+                          </span>
+                        )}
+                      </div>
+
+                      <h1
+                        data-hero-part
+                        className="max-w-3xl text-4xl font-semibold leading-[0.98] tracking-[-0.045em] text-white sm:text-5xl md:text-6xl lg:text-7xl"
+                      >
+                        {movie.name}
+                      </h1>
+
+                      {movie.origin_name && (
+                        <p
+                          data-hero-part
+                          className="mt-3 text-sm font-medium text-zinc-400 md:text-base"
+                        >
+                          {movie.origin_name}
+                        </p>
+                      )}
+
+                      <div
+                        data-hero-part
+                        className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-zinc-400 md:text-sm"
+                      >
+                        {movie.year && (
+                          <span className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {movie.year}
+                          </span>
+                        )}
+                        {movieCategories && <span>{movieCategories}</span>}
+                        {movie.episode_current && <span>{movie.episode_current}</span>}
+                      </div>
+
+                      <p
+                        data-hero-part
+                        className="mt-4 line-clamp-3 max-w-2xl text-sm leading-6 text-zinc-300 md:text-[15px]"
+                      >
+                        {movie.content?.replace(/<[^>]*>?/gm, "") ||
+                          "Khám phá một bộ phim nổi bật được tuyển chọn cho bạn."}
+                      </p>
+
+                      <div data-hero-part className="mt-6">
+                        <Link
+                          href={`/watch?slug=${movie.slug}`}
+                          className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-zinc-200"
+                        >
+                          <Play className="h-4 w-4 fill-current" />
+                          Xem ngay
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div
+                className="self-end lg:justify-self-end"
+                style={{ transform: "translateZ(96px)" }}
+              >
+                <div className="mb-3 hidden text-right lg:block">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
+                    Đang nổi bật
+                  </p>
+                  <p className="mt-1 max-w-[320px] truncate text-sm font-medium text-zinc-300">
+                    {featuredMovie.name}
+                  </p>
+                </div>
+
+                <div className="scrollbar-hide flex max-w-full gap-2 overflow-x-auto pb-1 lg:max-w-[360px]">
+                  {movies.map((movie, idx) => (
+                    <button
+                      key={movie.slug}
+                      onClick={() => setActiveIndex(idx)}
+                      title={movie.name}
+                      aria-label={`Chọn ${movie.name}`}
+                      className={`relative h-16 w-28 flex-shrink-0 overflow-hidden rounded-xl border transition-all duration-300 ${idx === activeIndex ? "border-white/70 opacity-100 shadow-[0_12px_30px_rgba(0,0,0,0.35)]" : "border-white/10 opacity-45 hover:border-white/25 hover:opacity-85"}`}
+                    >
+                      <img
+                        src={imageUrl(movie.thumb_url || movie.poster_url)}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                      <span className="absolute inset-0 bg-black/15" />
+                      <span
+                        data-hero-progress={idx}
+                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left scale-x-0 bg-white"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div
+              className="pointer-events-none absolute inset-x-6 bottom-5 z-30 hidden items-center justify-between text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 md:flex"
+              style={{ transform: "translateZ(34px)" }}
+            >
+              <span>PHIMANH / FEATURED</span>
+              <span>
+                {featuredRating ? `★ ${featuredRating}` : featuredMovie.quality || "HD"}
+                {featuredCategories ? ` · ${featuredCategories}` : ""}
+              </span>
+            </div>
           </div>
         </div>
       </div>
