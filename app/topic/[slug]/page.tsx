@@ -48,14 +48,14 @@ export default async function TopicPage({ params, searchParams }: TopicPageProps
     const topic = topics.find((t: any) => t.slug === slug);
 
     return (
-        <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
+        <main className="content-page">
             <Header
                 categories={categories}
                 countries={countries}
                 topics={topics}
             />
-            <div className="py-8">
-                <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter mb-8">
+            <div className="content-page-inner">
+                <h1 className="content-page-title">
                     {topic?.name || "Danh sách phim"}
                 </h1>
                 <MovieListClient

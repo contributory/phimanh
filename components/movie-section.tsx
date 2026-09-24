@@ -26,6 +26,7 @@ export default function MovieSection({
   initialVisible = 12,
   maxVisible = 20,
   loadStep = 4,
+  buttonColor = "violet",
 }: MovieSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLElement>(null);
@@ -83,6 +84,17 @@ export default function MovieSection({
   }, [loadStep, maxVisible, movies]);
 
   const displayedMovies = movies.slice(0, visibleCount || 0);
+  const accent =
+    ({
+      red: "#ef4444",
+      green: "#22c55e",
+      purple: "#a855f7",
+      violet: "#8b5cf6",
+      cyan: "#06b6d4",
+      amber: "#f59e0b",
+      rose: "#f43f5e",
+      emerald: "#10b981",
+    } as Record<string, string>)[buttonColor] || "#8b5cf6";
 
   useEffect(() => {
     if (!rootRef.current || prefersReducedMotion()) return;
@@ -108,12 +120,35 @@ export default function MovieSection({
   }, []);
 
   return (
-    <section ref={rootRef} className="py-5 md:py-7">
-      <div className="mb-4 flex items-end justify-between px-4 md:px-8 lg:px-10">
+    <section
+      ref={rootRef}
+      className="relative mx-2 my-3 overflow-hidden rounded-[28px] border border-white/[0.07] bg-white/[0.02] py-5 md:mx-4 md:my-4 md:py-7"
+      style={{
+        background: `radial-gradient(circle at 8% 0%, ${accent}26 0%, transparent 30%), linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.01) 100%)`,
+      }}
+    >
+      <div
+        className="pointer-events-none absolute -right-24 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full blur-3xl md:h-64 md:w-64"
+        style={{ backgroundColor: `${accent}18` }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-px"
+        style={{ background: `linear-gradient(90deg, transparent 8%, ${accent}aa 50%, transparent 92%)` }}
+      />
+      <div className="relative z-10 mb-4 flex items-end justify-between px-4 md:px-8 lg:px-10">
         <div data-section-title>
-          <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
-            Khám phá
-          </p>
+          <div className="mb-2 flex items-center gap-2">
+            <span
+              className="h-1.5 w-8 rounded-full"
+              style={{ backgroundColor: accent, boxShadow: `0 0 22px ${accent}88` }}
+            />
+            <p
+              className="text-[10px] font-semibold uppercase tracking-[0.2em]"
+              style={{ color: `${accent}cc` }}
+            >
+              Khám phá
+            </p>
+          </div>
           <h2 className="text-xl font-semibold tracking-tight text-zinc-100 md:text-2xl">
             {title}
           </h2>
@@ -138,7 +173,12 @@ export default function MovieSection({
           </div>
           <Link
             href={viewAllLink}
-            className="ml-1 flex items-center gap-1.5 rounded-full px-2 py-1 text-xs font-medium text-zinc-500 transition hover:text-white"
+            className="ml-1 flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold transition hover:brightness-125"
+            style={{
+              color: accent,
+              backgroundColor: `${accent}12`,
+              border: `1px solid ${accent}26`,
+            }}
           >
             Xem tất cả
             <ArrowRight className="h-3.5 w-3.5" />
@@ -146,7 +186,7 @@ export default function MovieSection({
         </div>
       </div>
 
-      <div className="relative overflow-hidden px-4 md:px-8 lg:px-10">
+      <div className="relative z-10 overflow-hidden px-4 md:px-8 lg:px-10">
         {displayedMovies.length > 0 ? (
           <div
             ref={scrollRef}

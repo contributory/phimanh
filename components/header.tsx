@@ -4,7 +4,6 @@ import { MaterialRipple } from "@/components/ui/material-animations";
 import { useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import ThemeToggle from "@/components/theme-toggle";
 import Sidebar from "@/components/sidebar";
 import Link from "next/link";
 import { useLoading } from "@/components/ui/loading-context";
@@ -152,8 +151,13 @@ function HeaderContent({
   }, [searchQuery]);
 
   return (
-    <nav className={`fixed top-0 z-[100] w-full transition-all duration-300 ${scrolled ? 'border-b border-white/[0.06] bg-[#070707]/88 backdrop-blur-xl' : 'bg-gradient-to-b from-black/75 via-black/35 to-transparent'}`}>
-      <div className="mx-auto flex h-[72px] w-full max-w-[1500px] items-center justify-between px-4 md:px-8 lg:px-10">
+    <>
+      <div
+        aria-hidden="true"
+        className="h-[var(--app-header-safe-height)] w-full shrink-0"
+      />
+      <nav className={`fixed inset-x-0 top-0 z-[100] w-full pt-[var(--app-safe-top)] transition-all duration-300 ${scrolled ? 'border-b border-white/[0.06] bg-[#070707]/88 backdrop-blur-xl' : 'bg-gradient-to-b from-black/75 via-black/35 to-transparent'}`}>
+        <div className="mx-auto flex h-[var(--app-header-height)] w-full max-w-[1500px] items-center justify-between px-4 md:px-8 lg:px-10">
         <div className="flex items-center gap-10">
           <div
             onClick={() => {
@@ -251,10 +255,6 @@ function HeaderContent({
             </span>
           </button>
 
-          <div className="hidden sm:block">
-            <ThemeToggle />
-          </div>
-
           <button
             onClick={() => setShowSidebar(!showSidebar)}
             className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-400 transition hover:bg-white/[0.07] hover:text-white"
@@ -271,7 +271,7 @@ function HeaderContent({
             onClick={closeSearch}
             className="fixed inset-0 z-[55] cursor-default bg-black/55 backdrop-blur-[2px]"
           />
-          <div className="fixed left-0 right-0 top-[72px] z-[60] px-3 sm:px-4 md:px-8">
+          <div className="fixed left-0 right-0 top-[var(--app-header-safe-height)] z-[60] px-3 sm:px-4 md:px-8">
             <div className="mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-white/[0.09] bg-[#111111] shadow-[0_28px_90px_rgba(0,0,0,0.55)]">
               <form onSubmit={handleSearch} className="p-3 sm:p-4">
                 <div className="flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] p-1.5 transition focus-within:border-white/20 focus-within:bg-white/[0.055]">
@@ -380,7 +380,8 @@ function HeaderContent({
           topics={topics}
         />
       </Suspense>
-    </nav>
+      </nav>
+    </>
   );
 }
 

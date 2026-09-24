@@ -33,11 +33,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // Xử lý khi query trống
   if (!query || query.trim() === '') {
     return (
-      <main className="mx-auto min-h-screen max-w-screen-2xl bg-[#070707] px-4 text-zinc-100">
+      <main className="content-page">
         <Header topics={[]} categories={[]} />
-        <div className="py-8">
+        <div className="content-page-inner">
           <div className="text-center py-16">
-            <h1 className="text-2xl md:text-4xl font-black text-zinc-100 uppercase tracking-tighter mb-4">
+            <h1 className="content-page-title">
               Vui lòng nhập từ khóa tìm kiếm
             </h1>
             <p className="text-zinc-400">
@@ -66,13 +66,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     // Xử lý khi không có kết quả
     if (!movies || movies.length === 0) {
       return (
-        <main className="mx-auto min-h-screen max-w-screen-2xl bg-[#070707] px-4 text-zinc-100">
+        <main className="content-page">
           <Header
             topics={topics}
             categories={categories}
           />
-          <div className="py-8">
-            <h1 className="text-2xl md:text-4xl font-black text-zinc-100 uppercase tracking-tighter mb-8">
+          <div className="content-page-inner">
+            <h1 className="content-page-title">
               Kết quả tìm kiếm cho "{query}"
             </h1>
             <div className="text-center py-16">
@@ -90,13 +90,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     }
 
     return (
-      <main className="mx-auto min-h-screen max-w-screen-2xl bg-[#070707] px-4 text-zinc-100">
+      <main className="content-page">
         <Header
           topics={topics}
           categories={categories}
         />
-        <div className="py-8">
-          <h1 className="text-2xl md:text-4xl font-black text-zinc-100 uppercase tracking-tighter mb-8">
+        <div className="content-page-inner">
+          <h1 className="content-page-title">
             Kết quả tìm kiếm cho "{query}"
           </h1>
           
@@ -106,7 +106,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </div>
           }>
             <ScrollReveal animation="fade" direction="up">
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              <div className="content-grid-panel movie-list-grid">
                 {movies.map((movie: any, idx: number) => (
                   <div
                     key={movie.slug}
@@ -120,7 +120,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             </ScrollReveal>
           </Suspense>
         </div>
-        <div className="py-8 border-t border-zinc-800/50 mt-8">
+        <div className="mx-auto mt-8 w-full max-w-[1500px] border-t border-white/[0.07] px-4 py-8 md:px-8 lg:px-10">
           <Suspense fallback={null}>
             <Pagination />
           </Suspense>
@@ -133,11 +133,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     console.error('Search error:', error);
     
     return (
-      <main className="mx-auto min-h-screen max-w-screen-2xl bg-[#070707] px-4 text-zinc-100">
+      <main className="content-page">
         <Header topics={[]} categories={[]} />
-        <div className="py-8">
+        <div className="content-page-inner">
           <div className="text-center py-16">
-            <h1 className="text-2xl md:text-4xl font-black text-zinc-100 uppercase tracking-tighter mb-4">
+            <h1 className="content-page-title">
               Đã xảy ra lỗi khi tìm kiếm
             </h1>
             <p className="text-zinc-400">

@@ -13,12 +13,13 @@ export default function ForYouGrid({ limit = 20 }: ForYouGridProps) {
 
   if (loading) {
     return (
-      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+      <div className="content-grid-panel movie-list-grid">
         {Array.from({ length: limit }).map((_, idx) => (
-          <div
-            key={idx}
-            className="h-64 rounded-xl bg-muted animate-pulse"
-          />
+          <div key={idx} className="animate-pulse space-y-2.5">
+            <div className="aspect-video rounded-lg bg-white/[0.055]" />
+            <div className="h-4 w-4/5 rounded bg-white/[0.05]" />
+            <div className="h-3 w-3/5 rounded bg-white/[0.035]" />
+          </div>
         ))}
       </div>
     );
@@ -26,7 +27,7 @@ export default function ForYouGrid({ limit = 20 }: ForYouGridProps) {
 
   if (!movies.length) {
     return (
-      <div className="text-center py-20 bg-muted/50 rounded-xl border border-border">
+      <div className="content-grid-panel py-20 text-center">
         <p className="text-lg text-muted-foreground font-bold uppercase tracking-widest">
           Chưa có gợi ý phù hợp - hãy xem thêm vài phim để chúng tôi học sở thích của bạn.
         </p>
@@ -36,7 +37,7 @@ export default function ForYouGrid({ limit = 20 }: ForYouGridProps) {
 
   return (
     <ScrollReveal animation="fade" direction="up">
-      <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+      <div className="content-grid-panel movie-list-grid">
         {movies.slice(0, limit).map((movie: any, index: number) => (
           <div
             key={`${movie.slug}-${index}`}

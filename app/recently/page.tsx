@@ -32,25 +32,25 @@ export default function RecentlyWatchedPage() {
   }, []);
 
   return (
-    <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
+    <main className="content-page">
       <Header categories={categories} countries={countries} />
-      <div className="py-8">
-        <section className="py-8">
+      <div className="content-page-inner">
+        <section>
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter">
+            <h1 className="content-page-title">
               Phim Đã Xem Gần Đây
             </h1>
           </div>
 
           {movies.length === 0 ? (
-            <div className="text-center py-20 bg-zinc-900/50 rounded-xl">
+            <div className="content-grid-panel py-20 text-center">
               <p className="text-lg text-zinc-500 font-bold uppercase tracking-widest">
                 Bạn chưa xem phim nào gần đây
               </p>
             </div>
           ) : (
             <ScrollReveal animation="fade" direction="up">
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              <div className="content-grid-panel movie-list-grid">
                 {movies.map((movie: any, index: number) => (
                   <div
                     key={`${movie?.slug ?? "movie"}-${index}`}

@@ -47,21 +47,21 @@ const baseColors = {
   },
 };
 
-// Light theme configuration
-const lightThemeOptions: ThemeOptions = {
+// Shared dark theme configuration.
+const themeOptions: ThemeOptions = {
   palette: {
-    mode: 'light',
+    mode: 'dark',
     ...baseColors,
     background: {
-      default: '#fafafa',
-      paper: '#ffffff',
+      default: '#070707',
+      paper: '#0f0f0f',
     },
     text: {
-      primary: '#020617',
-      secondary: '#64748b',
-      disabled: '#94a3b8',
+      primary: '#fafafa',
+      secondary: '#a1a1aa',
+      disabled: '#71717a',
     },
-    divider: '#f1f5f9',
+    divider: 'rgba(255,255,255,0.10)',
   },
   typography: {
     fontFamily: roboto.style.fontFamily,
@@ -116,24 +116,6 @@ const lightThemeOptions: ThemeOptions = {
   spacing: 8,
 };
 
-// Dark theme configuration
-const darkThemeOptions: ThemeOptions = {
-  ...lightThemeOptions,
-  palette: {
-    mode: 'dark',
-    ...baseColors,
-    background: {
-      default: '#0a0a0a',
-      paper: '#141414',
-    },
-    text: {
-      primary: '#ffffff',
-      secondary: '#b3b3b3',
-      disabled: '#808080',
-    },
-    divider: '#333333',
-  },
-};
 
 // Component customizations
 const componentOverrides = {
@@ -176,7 +158,7 @@ const componentOverrides = {
         '& .MuiOutlinedInput-root': {
           borderRadius: 8,
           '& fieldset': {
-            borderColor: 'rgba(0,0,0,0.12)',
+            borderColor: 'rgba(255,255,255,0.12)',
           },
           '&:hover fieldset': {
             borderColor: 'var(--mui-palette-primary-main)',
@@ -200,10 +182,10 @@ const componentOverrides = {
   MuiAppBar: {
     styleOverrides: {
       root: {
-        backgroundColor: 'rgba(255,255,255,0.95)',
+        backgroundColor: 'rgba(7,7,7,0.95)',
         backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(0,0,0,0.08)',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.35)',
       },
     },
   },
@@ -222,20 +204,15 @@ const componentOverrides = {
   },
 };
 
-// Create themes
-export const lightTheme = createTheme({
-  ...lightThemeOptions,
-  components: componentOverrides,
-});
-
+// Create the single application theme.
 export const darkTheme = createTheme({
-  ...darkThemeOptions,
+  ...themeOptions,
   components: {
     ...componentOverrides,
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: 'rgba(15,23,42,0.95)',
+          backgroundColor: 'rgba(7,7,7,0.95)',
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
           boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
@@ -244,6 +221,3 @@ export const darkTheme = createTheme({
     },
   },
 });
-
-// Theme provider utility
-export const getTheme = (isDark: boolean) => isDark ? darkTheme : lightTheme;

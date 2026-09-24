@@ -199,15 +199,8 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
             p: 3,
             borderRadius: 3,
             backdropFilter: "blur(10px)",
-            background: (theme) =>
-              theme.palette.mode === "dark"
-                ? "rgba(18, 18, 18, 0.95)"
-                : "rgba(255, 255, 255, 0.95)",
-            border: (theme) =>
-              `1px solid ${theme.palette.mode === "dark"
-                ? "rgba(255, 255, 255, 0.12)"
-                : "rgba(0, 0, 0, 0.12)"
-              }`,
+            background: "rgba(18, 18, 18, 0.95)",
+            border: "1px solid rgba(255, 255, 255, 0.12)",
             transform: { md: "translateX(-100%)" },
           }}
         >
@@ -397,11 +390,7 @@ const FilterPanel = ({ categories = [], countries = [] }: FilterPanelProps) => {
               justifyContent: "flex-end",
               pt: 3,
               mt: 3,
-              borderTop: (theme) =>
-                `1px solid ${theme.palette.mode === "dark"
-                  ? "rgba(255, 255, 255, 0.12)"
-                  : "rgba(0, 0, 0, 0.12)"
-                }`,
+              borderTop: "1px solid rgba(255, 255, 255, 0.12)",
             }}
           >
             <Button

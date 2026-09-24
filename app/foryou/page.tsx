@@ -18,15 +18,15 @@ export default async function ForYouPage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
+    <main className="content-page">
       <Header
         categories={categories}
         countries={countries}
         topics={topics}
       />
-      <div className="py-8 space-y-6">
+      <div className="content-page-inner space-y-6">
         <div className="space-y-2">
-          <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter">
+          <h1 className="content-page-title">
             Dành Cho Bạn
           </h1>
           
