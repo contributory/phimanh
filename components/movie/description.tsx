@@ -9,8 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Play, Calendar, Clock, Globe, Film, ChevronRight, ChevronDown, Star, Users, Clapperboard, Tag, Sparkles, Heart } from "lucide-react";
 import Link from "next/link";
-import { cn, decodeHtmlEntities } from "@/lib/utils";
-import RemarkboxComments from "@/components/remarkbox-comments";
+import { cn, stripHtml } from "@/lib/utils";
 
 interface DescriptionProps {
   movie: any;
@@ -155,7 +154,7 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
   }, [currentEpisodeUrl, currentEpisodeIndex, movie.slug]);
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto space-y-6 pt-4 pb-8 px-2 sm:px-4 lg:px-6">
+    <div className="mx-auto w-full max-w-[1500px] space-y-6 px-4 pb-8 pt-4 md:px-8 lg:px-10">
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Main Content Area: Player and Movie Info (Left side on desktop) */}
         <div className="w-full lg:flex-1 min-w-0 space-y-4">
@@ -271,7 +270,7 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
                 "text-sm text-foreground leading-relaxed overflow-hidden transition-all duration-300",
                 showDetails ? "max-h-[2000px]" : "max-h-20"
               )}>
-                <p className="whitespace-pre-line">{decodeHtmlEntities(movie.content)}</p>
+                <p className="whitespace-pre-line">{stripHtml(movie.content)}</p>
                 
                 {showDetails && (
                   <div className="mt-4 pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -299,8 +298,6 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
               </button>
             </div>
 
-            {/* Comments directly below the movie description */}
-            <RemarkboxComments />
           </div>
         </div>
 

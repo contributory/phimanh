@@ -16,12 +16,15 @@ export default function TopicSection({
   initialVisible = 12,
   maxVisible = 20,
 }: TopicSectionProps) {
+  const accents = ["emerald", "cyan", "violet", "amber", "rose"] as const;
+  const accentIndex = Array.from(topic.slug).reduce((sum, char) => sum + char.charCodeAt(0), 0) % accents.length;
+
   return (
     <MovieSection
       title={topic.name}
       movies={movies}
       viewAllLink={`/topic/${topic.slug}`}
-      buttonColor="green"
+      buttonColor={accents[accentIndex]}
       emptyMessage="Chưa có phim nào"
       initialVisible={initialVisible}
       maxVisible={maxVisible}

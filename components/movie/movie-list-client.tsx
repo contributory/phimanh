@@ -1,9 +1,9 @@
 "use client";
+
+import { Suspense } from "react";
 import { MovieCardDefault } from "@/components/movie/movie-card-variants";
 import Pagination from "@/components/pagination";
-import { Card, CardContent } from "@/components/ui/enhanced-card";
 import { ScrollReveal } from "@/components/ui/material-animations";
-import { Suspense } from "react";
 
 interface MovieListClientProps {
   movies?: any[];
@@ -17,35 +17,14 @@ export default function MovieListClient({
   if (movies.length === 0) {
     return (
       <ScrollReveal animation="fade">
-        <div className="py-16">
-          <Card variant="glass" className="text-center p-12 max-w-2xl mx-auto">
-            <CardContent className="space-y-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center mx-auto">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-12 w-12 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
-                </svg>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-foreground">
-                  Không tìm thấy phim nào
-                </h3>
-                <p className="text-muted-foreground text-lg">
-                  Không có phim nào phù hợp với tiêu chí tìm kiếm của bạn. Vui lòng thử lại với các tùy chọn khác.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="content-grid-panel mx-auto max-w-3xl py-14 text-center md:py-20">
+          <div className="mx-auto mb-5 h-1 w-16 rounded-full bg-gradient-to-r from-violet-400 to-cyan-400 shadow-[0_0_24px_rgba(139,92,246,0.4)]" />
+          <h3 className="text-xl font-semibold tracking-tight text-zinc-100 md:text-2xl">
+            Không tìm thấy phim nào
+          </h3>
+          <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-zinc-500 md:text-base">
+            Không có phim phù hợp với tiêu chí hiện tại. Hãy đổi bộ lọc hoặc thử một danh mục khác.
+          </p>
         </div>
       </ScrollReveal>
     );
@@ -53,26 +32,29 @@ export default function MovieListClient({
 
   return (
     <ScrollReveal animation="fade" direction="up">
-      <div className="py-4">
-        {/* Movie count info */}
-        <div className="mb-4 text-sm text-muted-foreground">
-          Hiển thị {movies.length} phim
-          {pageInfo && pageInfo.totalItems && (
-            <span> / Tổng {pageInfo.totalItems} phim</span>
-          )}
+      <div className="content-grid-panel">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] pb-4">
+          <p className="text-xs font-medium text-zinc-500 md:text-sm">
+            Hiển thị <span className="text-zinc-300">{movies.length}</span> phim
+            {pageInfo?.totalItems ? (
+              <span> / {pageInfo.totalItems} phim</span>
+            ) : null}
+          </p>
+          <span className="text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-700">
+            PHIMANH / COLLECTION
+          </span>
         </div>
 
-        {/* Responsive grid: YouTube style */}
-        <div className="grid gap-x-4 gap-y-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {movies.map((movie: any, idx: number) => (
+        <div className="movie-list-grid">
+          {movies.map((movie: any, index: number) => (
             <ScrollReveal
               key={movie.slug}
               animation="fade"
-              threshold={0.1}
+              threshold={0.08}
             >
               <div
                 className="material-transition"
-                style={{ animationDelay: `${idx * 0.02}s` }}
+                style={{ animationDelay: `${index * 0.015}s` }}
               >
                 <MovieCardDefault movie={movie} />
               </div>
@@ -80,16 +62,13 @@ export default function MovieListClient({
           ))}
         </div>
 
-        {/* Pagination with Material Design */}
-        <div className="mt-8">
-          <Card variant="glass">
-            <CardContent className="p-4">
-              <Suspense fallback={null}>
-                <Pagination pageInfo={pageInfo} />
-              </Suspense>
-            </CardContent>
-          </Card>
-        </div>
+        {pageInfo && (
+          <div className="mt-8 border-t border-white/[0.07] pt-6">
+            <Suspense fallback={null}>
+              <Pagination pageInfo={pageInfo} />
+            </Suspense>
+          </div>
+        )}
       </div>
     </ScrollReveal>
   );

@@ -22,3 +22,14 @@ export function decodeHtmlEntities(text: string): string {
     return entities[match] || match;
   });
 }
+
+export function stripHtml(text: string): string {
+  if (!text) return "";
+
+  return decodeHtmlEntities(text)
+    .replace(/<\s*br\s*\/?\s*>/gi, "\n")
+    .replace(/<\s*\/p\s*>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}

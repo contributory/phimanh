@@ -218,7 +218,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
   return (
     <section
       ref={rootRef}
-      className="relative min-h-[680px] overflow-hidden bg-[#070707] px-4 pb-10 pt-24 md:min-h-[760px] md:px-8 md:pb-14 lg:px-10"
+      className="relative h-[220px] overflow-hidden bg-[#070707] px-3 py-2.5 sm:h-[240px] sm:px-4 sm:py-3 md:h-[260px] md:px-8 md:py-4 lg:h-[280px] lg:px-10"
       onPointerMove={handlePointerMove}
       onPointerEnter={() => setIsPaused(true)}
       onPointerLeave={() => {
@@ -243,18 +243,18 @@ export default function HeroSection({ movies }: HeroSectionProps) {
       ))}
 
       <div
-        className="relative z-10 mx-auto flex min-h-[570px] w-full max-w-[1500px] items-center justify-center md:min-h-[640px]"
+        className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-[1500px] items-center justify-center"
         style={{ perspective: "1500px" }}
       >
         <div
           ref={cardRef}
-          className="relative w-full max-w-[1320px] will-change-transform"
+          className="relative h-full w-full max-w-[1320px] will-change-transform"
           style={{ transformStyle: "preserve-3d" }}
         >
           <div className="absolute -inset-8 -z-10 rounded-[44px] bg-black/50 blur-3xl" />
 
           <div
-            className="relative min-h-[540px] overflow-hidden rounded-[28px] border border-white/[0.12] bg-zinc-950 shadow-[0_45px_120px_rgba(0,0,0,0.6)] md:min-h-[590px]"
+            className="relative h-full min-h-0 overflow-hidden rounded-[20px] border border-white/[0.12] bg-zinc-950 shadow-[0_20px_55px_rgba(0,0,0,0.5)] sm:rounded-[24px]"
             style={{ transformStyle: "preserve-3d" }}
           >
             {movies.map((movie, idx) => (
@@ -278,11 +278,11 @@ export default function HeroSection({ movies }: HeroSectionProps) {
             />
 
             <div
-              className="relative z-30 grid min-h-[540px] gap-8 p-6 sm:p-8 md:min-h-[590px] md:p-12 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end lg:p-14"
+              className="relative z-30 grid h-full min-h-0 grid-rows-[1fr_auto] gap-2 p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_280px] md:grid-rows-1 md:items-end md:gap-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:p-7"
               style={{ transformStyle: "preserve-3d" }}
             >
               <div
-                className="relative min-h-[360px] max-w-3xl self-end"
+                className="relative h-full min-h-0 max-w-3xl self-end"
                 style={{ transform: "translateZ(72px)" }}
               >
                 {movies.map((movie, idx) => {
@@ -300,7 +300,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                     >
                       <div
                         data-hero-part
-                        className="mb-4 flex flex-wrap items-center gap-2 text-xs text-zinc-400"
+                        className="mb-3 hidden flex-wrap items-center gap-2 text-xs text-zinc-400 md:flex md:mb-4"
                       >
                         {movie.badgeText && (
                           <span className="rounded-full border border-white/12 bg-white/10 px-3 py-1 font-medium text-zinc-100 backdrop-blur-md">
@@ -322,7 +322,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
 
                       <h1
                         data-hero-part
-                        className="max-w-3xl text-4xl font-semibold leading-[0.98] tracking-[-0.045em] text-white sm:text-5xl md:text-6xl lg:text-7xl"
+                        className="line-clamp-2 max-w-3xl text-[clamp(1.65rem,7vw,2.25rem)] font-semibold leading-[0.98] tracking-[-0.04em] text-white sm:text-4xl md:text-[2.6rem] lg:text-5xl"
                       >
                         {movie.name}
                       </h1>
@@ -330,7 +330,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                       {movie.origin_name && (
                         <p
                           data-hero-part
-                          className="mt-3 text-sm font-medium text-zinc-400 md:text-base"
+                          className="mt-3 hidden line-clamp-1 text-base font-medium text-zinc-400 md:block"
                         >
                           {movie.origin_name}
                         </p>
@@ -338,7 +338,7 @@ export default function HeroSection({ movies }: HeroSectionProps) {
 
                       <div
                         data-hero-part
-                        className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-medium text-zinc-400 md:text-sm"
+                        className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-zinc-400 sm:mt-3 sm:text-xs md:mt-4 md:gap-x-4 md:gap-y-2 md:text-sm"
                       >
                         {movie.year && (
                           <span className="flex items-center gap-1.5">
@@ -346,22 +346,14 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                             {movie.year}
                           </span>
                         )}
-                        {movieCategories && <span>{movieCategories}</span>}
-                        {movie.episode_current && <span>{movie.episode_current}</span>}
+                        {movieCategories && <span className="hidden sm:inline">{movieCategories}</span>}
+                        {movie.episode_current && <span className="hidden sm:inline">{movie.episode_current}</span>}
                       </div>
 
-                      <p
-                        data-hero-part
-                        className="mt-4 line-clamp-3 max-w-2xl text-sm leading-6 text-zinc-300 md:text-[15px]"
-                      >
-                        {movie.content?.replace(/<[^>]*>?/gm, "") ||
-                          "Khám phá một bộ phim nổi bật được tuyển chọn cho bạn."}
-                      </p>
-
-                      <div data-hero-part className="mt-6">
+                      <div data-hero-part className="mt-2.5 sm:mt-3 md:mt-4">
                         <Link
                           href={`/watch?slug=${movie.slug}`}
-                          className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-zinc-200"
+                          className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-black transition hover:bg-zinc-200 sm:px-5 sm:py-2.5 sm:text-sm"
                         >
                           <Play className="h-4 w-4 fill-current" />
                           Xem ngay
@@ -373,10 +365,10 @@ export default function HeroSection({ movies }: HeroSectionProps) {
               </div>
 
               <div
-                className="self-end lg:justify-self-end"
-                style={{ transform: "translateZ(96px)" }}
+                className="self-end md:justify-self-end"
+                style={{ transform: "translateZ(60px)" }}
               >
-                <div className="mb-3 hidden text-right lg:block">
+                <div className="mb-2 hidden text-right lg:block">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
                     Đang nổi bật
                   </p>
@@ -392,12 +384,12 @@ export default function HeroSection({ movies }: HeroSectionProps) {
                       onClick={() => setActiveIndex(idx)}
                       title={movie.name}
                       aria-label={`Chọn ${movie.name}`}
-                      className={`relative h-16 w-28 flex-shrink-0 overflow-hidden rounded-xl border transition-all duration-300 ${idx === activeIndex ? "border-white/70 opacity-100 shadow-[0_12px_30px_rgba(0,0,0,0.35)]" : "border-white/10 opacity-45 hover:border-white/25 hover:opacity-85"}`}
+                      className={`relative h-1.5 w-8 flex-shrink-0 overflow-hidden rounded-full border transition-all duration-300 md:h-16 md:w-28 md:rounded-xl ${idx === activeIndex ? "border-white/70 opacity-100 shadow-[0_12px_30px_rgba(0,0,0,0.35)]" : "border-white/10 opacity-45 hover:border-white/25 hover:opacity-85"}`}
                     >
                       <img
                         src={imageUrl(movie.thumb_url || movie.poster_url)}
                         alt=""
-                        className="h-full w-full object-cover"
+                        className="hidden h-full w-full object-cover md:block"
                       />
                       <span className="absolute inset-0 bg-black/15" />
                       <span
@@ -411,8 +403,8 @@ export default function HeroSection({ movies }: HeroSectionProps) {
             </div>
 
             <div
-              className="pointer-events-none absolute inset-x-6 bottom-5 z-30 hidden items-center justify-between text-[10px] font-medium uppercase tracking-[0.16em] text-zinc-500 md:flex"
-              style={{ transform: "translateZ(34px)" }}
+              className="pointer-events-none absolute inset-x-6 bottom-4 z-30 hidden items-center justify-between text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500 lg:flex"
+              style={{ transform: "translateZ(24px)" }}
             >
               <span>PHIMANH / FEATURED</span>
               <span>

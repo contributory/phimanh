@@ -48,14 +48,14 @@ export default async function CountryPage({ params, searchParams }: CountryPageP
     const country = countries.find((c: any) => c.slug === slug);
 
     return (
-        <main className="mx-auto max-w-screen-2xl px-4 material-surface min-h-screen bg-black">
+        <main className="content-page">
             <Header
                 categories={categories}
                 countries={countries}
                 topics={topics}
             />
-            <div className="py-8">
-                <h1 className="text-2xl md:text-4xl font-black text-foreground uppercase tracking-tighter mb-8">
+            <div className="content-page-inner">
+                <h1 className="content-page-title">
                     Phim {country?.name || "Quốc gia"}
                 </h1>
                 <MovieListClient

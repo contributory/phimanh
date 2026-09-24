@@ -24,6 +24,7 @@ export default function ForYouSection({ limit = 20, initialVisible = 6 }: ForYou
         title="Dành Cho Bạn"
         movies={(movies || []).slice(0, cappedLimit)}
         viewAllLink="/foryou"
+        buttonColor="violet"
         emptyMessage="Chưa đủ dữ liệu để gợi ý - hãy xem vài phim trước nhé!"
         initialVisible={Math.min(initialVisible, cappedLimit)}
         maxVisible={cappedLimit}

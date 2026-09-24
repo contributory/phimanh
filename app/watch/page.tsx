@@ -4,13 +4,13 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { MovieStructuredData, BreadcrumbStructuredData } from "@/components/seo/structured-data";
 import Breadcrumb, { useBreadcrumb } from "@/components/seo/breadcrumb";
-import { decodeHtmlEntities } from "@/lib/utils";
+import { stripHtml } from "@/lib/utils";
 
 export async function generateMetadata({ searchParams }: any) {
   const { slug } = await searchParams;
   const api = new PhimApi();
   const { movie } = await api.get(slug);
-  const cleanDescription = movie.content ? decodeHtmlEntities(movie.content) : "";
+  const cleanDescription = movie.content ? stripHtml(movie.content) : "";
   const displayName = movie.origin_name && movie.origin_name !== movie.name 
     ? `${movie.name} (${movie.origin_name})` 
     : movie.name;
@@ -85,14 +85,14 @@ export default async function WatchPage({ searchParams }: any) {
       />
       <BreadcrumbStructuredData items={structuredBreadcrumbItems} />
       
-      <main className="min-h-screen relative bg-background">
+      <main className="content-page relative">
         <div className="relative z-10 mx-auto w-full">
           <Header
             categories={categories}
             countries={countries}
           />
           
-          <div className="max-w-[1600px] mx-auto">
+          <div className="mx-auto w-full max-w-[1500px]">
             <Description movie={movie} serverData={server} slug={slug} thumb_url={movie.thumb_url} />
           </div>
           <Footer />

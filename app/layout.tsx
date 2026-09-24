@@ -104,7 +104,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" suppressHydrationWarning>
+    <html lang="vi" className="dark" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="canonical" href="https://phimanh.netlify.app" />
@@ -171,50 +171,12 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  // Initialize theme consistently for SSR/CSR
-                  var savedTheme = null;
-                  var systemTheme = 'light';
-                  var finalTheme = 'light'; // Default fallback
-                  
-                  // Safely access localStorage
-                  if (typeof Storage !== 'undefined' && typeof localStorage !== 'undefined') {
-                    try {
-                      savedTheme = localStorage.getItem('theme');
-                    } catch (e) {
-                      // localStorage blocked or not available
-                      console.debug('localStorage not accessible:', e);
-                    }
-                  }
-                  
-                  // Safely check system preference
-                  if (typeof window !== 'undefined' && window.matchMedia) {
-                    try {
-                      systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                    } catch (e) {
-                      // matchMedia not available
-                      console.debug('matchMedia not accessible:', e);
-                    }
-                  }
-                  
-                  // Determine final theme with priority: saved > system > light
-                  finalTheme = savedTheme || systemTheme || 'light';
-                  
-                  // Apply dark class only if theme is explicitly dark
-                  if (finalTheme === 'dark') {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                  
-                  // Store the theme decision for React to pick up
-                  window.__INITIAL_THEME__ = finalTheme;
-                  
-                  // Progressive hydration visibility
+                  document.documentElement.classList.add('dark');
+
                   function showContent() {
                     document.body.classList.add('hydrated');
                   }
-                  
-                  // Show content after DOM is ready
+
                   if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', function() {
                       setTimeout(showContent, 50);
@@ -222,20 +184,16 @@ export default function RootLayout({
                   } else {
                     setTimeout(showContent, 50);
                   }
-                  
-                  // Emergency fallback to prevent invisible page
+
                   setTimeout(function() {
                     if (!document.body.classList.contains('hydrated')) {
                       document.body.classList.add('fallback-show');
                       console.warn('Fallback content display activated');
                     }
                   }, 1500);
-                  
                 } catch (e) {
-                  // Emergency fallback
-                  console.error('Theme initialization error:', e);
+                  console.error('Display initialization error:', e);
                   document.body.classList.add('fallback-show');
-                  window.__INITIAL_THEME__ = 'light';
                 }
               })();
             `,
