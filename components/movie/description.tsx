@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Play, Calendar, Clock, Globe, Film, ChevronRight, ChevronDown, Star, Users, Clapperboard, Tag, Sparkles, Heart } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { cn, stripHtml } from "@/lib/utils";
 
 interface DescriptionProps {
@@ -20,6 +21,7 @@ interface DescriptionProps {
 }
 
 export default function Description({ movie, serverData, slug, thumb_url, relatedMovies = [] }: DescriptionProps) {
+  const router = useRouter();
   const [showTrailer, setShowTrailer] = useState(false);
   const [currentEpisodeUrl, setCurrentEpisodeUrl] = useState("");
   const [currentEpisodeIndex, setCurrentEpisodeIndex] = useState<{
@@ -75,6 +77,13 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
       server: nextEpisode.serverIndex,
       episode: nextEpisode.episodeIndex,
     });
+  };
+
+  const nextRecommendation = !nextEpisode ? recommendations[0] : null;
+
+  const playNextRecommendation = () => {
+    if (!nextRecommendation?.slug) return;
+    router.push(`/watch?slug=${nextRecommendation.slug}`);
   };
 
   // Save movie to recently watched
@@ -195,6 +204,8 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
                 movieSlug={slug}
                 nextEpisodeLabel={nextEpisode?.episode.name}
                 onNextEpisode={nextEpisode ? playNextEpisode : undefined}
+                nextRecommendationLabel={nextRecommendation?.name}
+                onNextRecommendation={nextRecommendation ? playNextRecommendation : undefined}
                 onEnded={playNextEpisode}
               />
             ) : (
