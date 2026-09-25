@@ -55,6 +55,7 @@ interface VideoPlayerProps {
   onNextEpisode?: () => void;
   nextRecommendationLabel?: string;
   onNextRecommendation?: () => void;
+  isFinalEpisode?: boolean;
 }
 
 const formatTime = (seconds: number) => {
@@ -80,6 +81,7 @@ const VideoPlayer = ({
   onNextEpisode,
   nextRecommendationLabel,
   onNextRecommendation,
+  isFinalEpisode = false,
 }: VideoPlayerProps) => {
   const { state: globalState, setVideo, updateState: updateGlobalState, videoRef: globalVideoRef } = useVideoContext();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -117,10 +119,22 @@ const VideoPlayer = ({
 
   // Initialize global state with current video info
   useEffect(() => {
-    if (videoUrl && videoUrl !== globalState.videoUrl) {
-      setVideo(videoUrl, movieTitle, poster, movieSlug);
+    if (videoUrl && (
+      videoUrl !== globalState.videoUrl ||
+      isFinalEpisode !== globalState.isFinalEpisode
+    )) {
+      setVideo(videoUrl, movieTitle, poster, movieSlug, isFinalEpisode);
     }
-  }, [videoUrl, movieTitle, poster, movieSlug, setVideo, globalState.videoUrl]);
+  }, [
+    videoUrl,
+    movieTitle,
+    poster,
+    movieSlug,
+    isFinalEpisode,
+    setVideo,
+    globalState.videoUrl,
+    globalState.isFinalEpisode,
+  ]);
 
   useEffect(() => {
     setIsNextEpisodeDismissed(false);

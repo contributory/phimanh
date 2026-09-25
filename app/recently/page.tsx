@@ -5,6 +5,7 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { MovieCardDefault } from "@/components/movie/movie-card-variants";
 import { ScrollReveal } from "@/components/ui/material-animations";
+import { hasPlaybackProgress } from "@/lib/user-experience";
 
 export default function RecentlyWatchedPage() {
   const [movies, setMovies] = useState<any[]>([]);
@@ -25,10 +26,10 @@ export default function RecentlyWatchedPage() {
     };
     fetchData();
 
-    // Load recently watched from cookies
+    // "Tiếp tục xem" chỉ gồm các phim còn playback progress hợp lệ.
     const Cookies = require('js-cookie');
     const recentlyWatched = JSON.parse(Cookies.get('recentlyWatched') || '[]');
-    setMovies(recentlyWatched);
+    setMovies(recentlyWatched.filter((movie: any) => hasPlaybackProgress(movie.slug)));
   }, []);
 
   return (
@@ -38,14 +39,14 @@ export default function RecentlyWatchedPage() {
         <section>
           <div className="flex items-center justify-between mb-8">
             <h1 className="content-page-title">
-              Phim Đã Xem Gần Đây
+              Tiếp Tục Xem
             </h1>
           </div>
 
           {movies.length === 0 ? (
             <div className="content-grid-panel py-20 text-center">
               <p className="text-lg text-zinc-500 font-bold uppercase tracking-widest">
-                Bạn chưa xem phim nào gần đây
+                Chưa có phim nào để tiếp tục xem
               </p>
             </div>
           ) : (

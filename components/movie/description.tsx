@@ -53,12 +53,20 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
     setCurrentEpisodeIndex({ server: serverIndex, episode: episodeIndex });
   };
 
-  const nextEpisode = (() => {
-    if (!serverData || !currentEpisodeIndex) return null;
+  const currentServer = currentEpisodeIndex
+    ? serverData?.[currentEpisodeIndex.server]
+    : null;
+  const isFinalEpisode = Boolean(
+    currentEpisodeIndex &&
+    currentServer?.server_data?.length &&
+    currentEpisodeIndex.episode >= currentServer.server_data.length - 1
+  );
 
-    const currentServer = serverData[currentEpisodeIndex.server];
+  const nextEpisode = (() => {
+    if (!currentEpisodeIndex || !currentServer || isFinalEpisode) return null;
+
     const nextEpisodeIndex = currentEpisodeIndex.episode + 1;
-    const episode = currentServer?.server_data?.[nextEpisodeIndex];
+    const episode = currentServer.server_data[nextEpisodeIndex];
 
     if (!episode?.link_m3u8) return null;
 
@@ -79,7 +87,7 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
     });
   };
 
-  const nextRecommendation = !nextEpisode ? recommendations[0] : null;
+  const nextRecommendation = isFinalEpisode ? recommendations[0] : null;
 
   const playNextRecommendation = () => {
     if (!nextRecommendation?.slug) return;
@@ -206,6 +214,7 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
                 onNextEpisode={nextEpisode ? playNextEpisode : undefined}
                 nextRecommendationLabel={nextRecommendation?.name}
                 onNextRecommendation={nextRecommendation ? playNextRecommendation : undefined}
+                isFinalEpisode={isFinalEpisode}
                 onEnded={playNextEpisode}
               />
             ) : (

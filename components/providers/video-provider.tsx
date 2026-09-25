@@ -15,11 +15,18 @@ interface VideoState {
   playbackRate: number;
   isMinimized: boolean;
   activeSubtitle: string | null;
+  isFinalEpisode: boolean;
 }
 
 interface VideoContextType {
   state: VideoState;
-  setVideo: (url: string, title?: string, poster?: string, slug?: string) => void;
+  setVideo: (
+    url: string,
+    title?: string,
+    poster?: string,
+    slug?: string,
+    isFinalEpisode?: boolean
+  ) => void;
   updateState: (updates: Partial<VideoState>) => void;
   clearVideo: () => void;
   toggleMinimize: (val?: boolean) => void;
@@ -42,11 +49,18 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
     playbackRate: 1,
     isMinimized: false,
     activeSubtitle: null,
+    isFinalEpisode: false,
   });
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const setVideo = useCallback((url: string, title?: string, poster?: string, slug?: string) => {
+  const setVideo = useCallback((
+    url: string,
+    title?: string,
+    poster?: string,
+    slug?: string,
+    isFinalEpisode = false
+  ) => {
     setState((prev) => ({
       ...prev,
       videoUrl: url,
@@ -55,6 +69,7 @@ export const VideoProvider = ({ children }: { children: React.ReactNode }) => {
       poster: poster || null,
       isPlaying: true,
       isMinimized: false,
+      isFinalEpisode,
     }));
   }, []);
 

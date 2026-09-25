@@ -113,7 +113,7 @@ export default function Sidebar({
     { href: "/", label: "Trang chủ", icon: Home },
     { href: "/foryou", label: "Dành cho bạn", icon: Heart },
     { href: "/new-updates", label: "Mới cập nhật", icon: Sparkles },
-    { href: "/recently", label: "Đã xem", icon: Clock3 },
+    { href: "/recently", label: "Tiếp tục xem", icon: Clock3 },
   ];
 
   const sectionButton = (

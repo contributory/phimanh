@@ -231,7 +231,7 @@ function HeaderContent({
                   : "text-zinc-400 hover:text-white"
               }`}
             >
-              Đã xem
+              Tiếp tục xem
             </Link>
           </div>
         </div>

@@ -61,7 +61,7 @@ const GlobalPlayer = () => {
         if (state.isPlaying) {
           // Resume from saved progress if not already done
           if (!isInitialSeekDone.current && state.movieSlug) {
-            const savedTime = getPlaybackProgress(state.movieSlug);
+            const savedTime = getPlaybackProgress(state.movieSlug, state.videoUrl || undefined);
             if (savedTime > 0) {
               video.currentTime = savedTime;
               updateState({ currentTime: savedTime });
@@ -89,10 +89,10 @@ const GlobalPlayer = () => {
     }
   }, [state.videoUrl, videoRef]);
 
-  // Reset initial seek flag when movie changes
+  // Reset resume handling whenever the actual episode/video changes.
   useEffect(() => {
     isInitialSeekDone.current = false;
-  }, [state.movieSlug]);
+  }, [state.videoUrl]);
 
   // Handle PiP exit event - reinitialize video when exiting PiP
   useEffect(() => {
@@ -180,32 +180,45 @@ const GlobalPlayer = () => {
     const video = videoRef.current;
     if (!video) return;
 
+    const persistProgress = () => {
+      if (!state.movieSlug) return;
+      savePlaybackProgress(state.movieSlug, video.currentTime, video.duration, {
+        isFinalEpisode: state.isFinalEpisode,
+        videoUrl: state.videoUrl || undefined,
+      });
+      lastSaveTimeRef.current = Date.now();
+    };
+
     const onPlay = () => updateState({ isPlaying: true });
-    const onPause = () => updateState({ isPlaying: false });
+    const onPause = () => {
+      updateState({ isPlaying: false });
+      persistProgress();
+    };
     const onTimeUpdate = () => {
       const currentTime = video.currentTime;
       updateState({ currentTime });
-      
-      // Throttled save every 30 seconds
+
+      // Keep progress fresh without writing localStorage on every timeupdate.
       const now = Date.now();
-      if (now - lastSaveTimeRef.current > 30000 && state.movieSlug) {
-        savePlaybackProgress(state.movieSlug, currentTime, video.duration);
-        lastSaveTimeRef.current = now;
+      if (now - lastSaveTimeRef.current > 10000) {
+        persistProgress();
       }
     };
     const onDurationChange = () => updateState({ duration: video.duration });
     const onEnded = () => {
       if (state.movieSlug) {
-        clearPlaybackProgress(state.movieSlug);
+        clearPlaybackProgress(state.movieSlug, state.isFinalEpisode);
       }
       updateState({ isPlaying: false });
     };
+    const onPageHide = () => persistProgress();
 
     video.addEventListener("play", onPlay);
     video.addEventListener("pause", onPause);
     video.addEventListener("timeupdate", onTimeUpdate);
     video.addEventListener("durationchange", onDurationChange);
     video.addEventListener("ended", onEnded);
+    window.addEventListener("pagehide", onPageHide);
 
     return () => {
       video.removeEventListener("play", onPlay);
@@ -213,8 +226,15 @@ const GlobalPlayer = () => {
       video.removeEventListener("timeupdate", onTimeUpdate);
       video.removeEventListener("durationchange", onDurationChange);
       video.removeEventListener("ended", onEnded);
+      window.removeEventListener("pagehide", onPageHide);
     };
-  }, [videoRef, updateState, state.movieSlug]);
+  }, [
+    videoRef,
+    updateState,
+    state.movieSlug,
+    state.videoUrl,
+    state.isFinalEpisode,
+  ]);
 
   // Move video element between containers
   useEffect(() => {
