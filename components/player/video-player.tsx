@@ -53,6 +53,8 @@ interface VideoPlayerProps {
   onEnded?: () => void;
   nextEpisodeLabel?: string;
   onNextEpisode?: () => void;
+  nextRecommendationLabel?: string;
+  onNextRecommendation?: () => void;
 }
 
 const formatTime = (seconds: number) => {
@@ -76,6 +78,8 @@ const VideoPlayer = ({
   onEnded,
   nextEpisodeLabel,
   onNextEpisode,
+  nextRecommendationLabel,
+  onNextRecommendation,
 }: VideoPlayerProps) => {
   const { state: globalState, setVideo, updateState: updateGlobalState, videoRef: globalVideoRef } = useVideoContext();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -617,13 +621,25 @@ const VideoPlayer = ({
   );
 
   const remainingTime = duration > 0 ? Math.max(duration - currentTime, 0) : Infinity;
-  const isNextEpisodeCountdown = remainingTime <= 10;
+  const isNextEpisodeCountdown = Boolean(
+    nextEpisodeLabel &&
+    onNextEpisode &&
+    remainingTime <= 10
+  );
   const showNextEpisodePrompt = Boolean(
     nextEpisodeLabel &&
     onNextEpisode &&
     remainingTime <= 60 &&
     (isNextEpisodeCountdown || !isNextEpisodeDismissed)
   );
+  const showNextRecommendationPrompt = Boolean(
+    !nextEpisodeLabel &&
+    nextRecommendationLabel &&
+    onNextRecommendation &&
+    remainingTime <= 60 &&
+    !isNextEpisodeDismissed
+  );
+  const showNextPrompt = showNextEpisodePrompt || showNextRecommendationPrompt;
   const nextEpisodeCountdown = Math.max(0, Math.ceil(remainingTime));
 
   return (
@@ -707,8 +723,8 @@ const VideoPlayer = ({
         </div>
       )}
 
-      {/* Next Episode Prompt */}
-      {showNextEpisodePrompt && (
+      {/* Next Content Prompt */}
+      {showNextPrompt && (
         <div
           className="absolute bottom-20 right-2 z-[60] w-[min(22rem,calc(100%-1rem))] cursor-auto rounded-xl border border-white/15 bg-black/85 p-3 text-white shadow-2xl backdrop-blur-md sm:bottom-24 sm:right-4 sm:p-4"
           onClick={(event) => event.stopPropagation()}
@@ -718,22 +734,24 @@ const VideoPlayer = ({
           <div className="flex items-start gap-3">
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/55 sm:text-xs">
-                Tập tiếp theo
+                {showNextEpisodePrompt ? "Tập tiếp theo" : "Đề xuất tiếp theo"}
               </p>
               <p className="mt-1 truncate text-sm font-semibold sm:text-base">
-                Tập {nextEpisodeLabel}
+                {showNextEpisodePrompt ? `Tập ${nextEpisodeLabel}` : nextRecommendationLabel}
               </p>
               <p className="mt-1 text-xs text-white/65 sm:text-sm">
-                {isNextEpisodeCountdown
-                  ? `Tự chuyển sau ${nextEpisodeCountdown} giây`
-                  : "Sắp hết tập hiện tại"}
+                {showNextEpisodePrompt
+                  ? (isNextEpisodeCountdown
+                      ? `Tự chuyển sau ${nextEpisodeCountdown} giây`
+                      : "Sắp hết tập hiện tại")
+                  : "Bạn có thể chuyển sang bộ được đề xuất tiếp theo"}
               </p>
             </div>
 
             {!isNextEpisodeCountdown && (
               <button
                 type="button"
-                aria-label="Bỏ qua đề xuất tập tiếp theo"
+                aria-label={showNextEpisodePrompt ? "Bỏ qua đề xuất tập tiếp theo" : "Bỏ qua đề xuất bộ tiếp theo"}
                 onClick={() => setIsNextEpisodeDismissed(true)}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white"
               >
@@ -744,7 +762,13 @@ const VideoPlayer = ({
 
           <button
             type="button"
-            onClick={() => onNextEpisode?.()}
+            onClick={() => {
+              if (showNextEpisodePrompt) {
+                onNextEpisode?.();
+              } else {
+                onNextRecommendation?.();
+              }
+            }}
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-black transition-colors hover:bg-white/90 sm:text-sm"
           >
             <SkipForward className="h-4 w-4" />
