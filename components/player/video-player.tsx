@@ -21,7 +21,8 @@ import {
   Check,
   Subtitles,
   Volume2 as VolumeIcon,
-  Languages
+  Languages,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,8 @@ interface VideoPlayerProps {
   movieSlug?: string;
   onError?: (error: any) => void;
   onEnded?: () => void;
+  nextEpisodeLabel?: string;
+  onNextEpisode?: () => void;
 }
 
 const formatTime = (seconds: number) => {
@@ -71,6 +74,8 @@ const VideoPlayer = ({
   movieSlug,
   onError,
   onEnded,
+  nextEpisodeLabel,
+  onNextEpisode,
 }: VideoPlayerProps) => {
   const { state: globalState, setVideo, updateState: updateGlobalState, videoRef: globalVideoRef } = useVideoContext();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -89,6 +94,7 @@ const VideoPlayer = ({
   const [isClient, setIsClient] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isPiPSupported, setIsPiPSupported] = useState(false);
+  const [isNextEpisodeDismissed, setIsNextEpisodeDismissed] = useState(false);
 
   // Set isClient to true on mount
   useEffect(() => {
@@ -111,6 +117,10 @@ const VideoPlayer = ({
       setVideo(videoUrl, movieTitle, poster, movieSlug);
     }
   }, [videoUrl, movieTitle, poster, movieSlug, setVideo, globalState.videoUrl]);
+
+  useEffect(() => {
+    setIsNextEpisodeDismissed(false);
+  }, [videoUrl]);
 
   // Subtitle & TTS State
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
@@ -606,6 +616,16 @@ const VideoPlayer = ({
     (document as any).msFullscreenElement
   );
 
+  const remainingTime = duration > 0 ? Math.max(duration - currentTime, 0) : Infinity;
+  const isNextEpisodeCountdown = remainingTime <= 10;
+  const showNextEpisodePrompt = Boolean(
+    nextEpisodeLabel &&
+    onNextEpisode &&
+    remainingTime <= 60 &&
+    (isNextEpisodeCountdown || !isNextEpisodeDismissed)
+  );
+  const nextEpisodeCountdown = Math.max(0, Math.ceil(remainingTime));
+
   return (
     <div
       ref={containerRef}
@@ -684,6 +704,52 @@ const VideoPlayer = ({
             <p className="text-red-500 font-bold mb-2">Lỗi</p>
             <p className="text-white text-sm">{error}</p>
           </div>
+        </div>
+      )}
+
+      {/* Next Episode Prompt */}
+      {showNextEpisodePrompt && (
+        <div
+          className="absolute bottom-20 right-2 z-[60] w-[min(22rem,calc(100%-1rem))] cursor-auto rounded-xl border border-white/15 bg-black/85 p-3 text-white shadow-2xl backdrop-blur-md sm:bottom-24 sm:right-4 sm:p-4"
+          onClick={(event) => event.stopPropagation()}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/55 sm:text-xs">
+                Tập tiếp theo
+              </p>
+              <p className="mt-1 truncate text-sm font-semibold sm:text-base">
+                Tập {nextEpisodeLabel}
+              </p>
+              <p className="mt-1 text-xs text-white/65 sm:text-sm">
+                {isNextEpisodeCountdown
+                  ? `Tự chuyển sau ${nextEpisodeCountdown} giây`
+                  : "Sắp hết tập hiện tại"}
+              </p>
+            </div>
+
+            {!isNextEpisodeCountdown && (
+              <button
+                type="button"
+                aria-label="Bỏ qua đề xuất tập tiếp theo"
+                onClick={() => setIsNextEpisodeDismissed(true)}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onNextEpisode?.()}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-black transition-colors hover:bg-white/90 sm:text-sm"
+          >
+            <SkipForward className="h-4 w-4" />
+            Xem ngay
+          </button>
         </div>
       )}
 
