@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import MovieSection from "@/components/movie-section";
+import { hasPlaybackProgress } from "@/lib/user-experience";
 
 interface RecentlyWatchedProps {
   limit?: number;
@@ -17,18 +18,22 @@ export default function RecentlyWatched({ limit = 20 }: RecentlyWatchedProps) {
     const Cookies = require('js-cookie');
     const recentlyWatched = JSON.parse(Cookies.get('recentlyWatched') || '[]');
     const cappedLimit = Math.min(limit, 20);
-    setMovies(recentlyWatched.slice(0, cappedLimit));
+    setMovies(
+      recentlyWatched
+        .filter((movie: any) => hasPlaybackProgress(movie.slug))
+        .slice(0, cappedLimit)
+    );
   }, [limit]);
 
   if (!mounted || movies.length === 0) return null;
 
   return (
     <MovieSection
-      title="Đã Xem Gần Đây"
+      title="Tiếp Tục Xem"
       movies={movies}
       viewAllLink="/recently"
       buttonColor="purple"
-      emptyMessage="Chưa có phim đã xem"
+      emptyMessage="Chưa có phim để tiếp tục xem"
       isClientSide={true}
       initialVisible={6}
       maxVisible={Math.min(limit, 20)}
