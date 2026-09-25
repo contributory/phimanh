@@ -51,6 +51,32 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
     setCurrentEpisodeIndex({ server: serverIndex, episode: episodeIndex });
   };
 
+  const nextEpisode = (() => {
+    if (!serverData || !currentEpisodeIndex) return null;
+
+    const currentServer = serverData[currentEpisodeIndex.server];
+    const nextEpisodeIndex = currentEpisodeIndex.episode + 1;
+    const episode = currentServer?.server_data?.[nextEpisodeIndex];
+
+    if (!episode?.link_m3u8) return null;
+
+    return {
+      serverIndex: currentEpisodeIndex.server,
+      episodeIndex: nextEpisodeIndex,
+      episode,
+    };
+  })();
+
+  const playNextEpisode = () => {
+    if (!nextEpisode) return;
+
+    setCurrentEpisodeUrl(nextEpisode.episode.link_m3u8);
+    setCurrentEpisodeIndex({
+      server: nextEpisode.serverIndex,
+      episode: nextEpisode.episodeIndex,
+    });
+  };
+
   // Save movie to recently watched
   useEffect(() => {
     const Cookies = require('js-cookie');
@@ -167,34 +193,9 @@ export default function Description({ movie, serverData, slug, thumb_url, relate
                 poster={movie.thumb_url || movie.poster_url}
                 movieTitle={movie.name}
                 movieSlug={slug}
-                onEnded={() => {
-                  if (!serverData || !currentEpisodeIndex) return;
-
-                  const { server, episode } = currentEpisodeIndex;
-                  const currentServer = serverData[server];
-                  if (!currentServer) return;
-
-                  let nextEpisodeIndex = episode + 1;
-                  let nextServerIndex = server;
-
-                  if (nextEpisodeIndex >= currentServer.server_data.length) {
-                    nextServerIndex = server + 1;
-                    nextEpisodeIndex = 0;
-                    if (nextServerIndex >= serverData.length) return;
-                  }
-
-                  const nextServer = serverData[nextServerIndex];
-                  if (!nextServer || nextEpisodeIndex >= nextServer.server_data.length) return;
-
-                  const nextEpisode = nextServer.server_data[nextEpisodeIndex];
-                  if (nextEpisode?.link_m3u8) {
-                    setCurrentEpisodeUrl(nextEpisode.link_m3u8);
-                    setCurrentEpisodeIndex({
-                      server: nextServerIndex,
-                      episode: nextEpisodeIndex,
-                    });
-                  }
-                }}
+                nextEpisodeLabel={nextEpisode?.episode.name}
+                onNextEpisode={nextEpisode ? playNextEpisode : undefined}
+                onEnded={playNextEpisode}
               />
             ) : (
               <EmbedPlayer videoUrl={currentEpisodeUrl} />
