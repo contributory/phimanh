@@ -56,19 +56,6 @@ function HeaderContent({
     setSearchQuery(urlQuery);
   }, [urlQuery]);
 
-  const syncQueryToUrl = (value: string) => {
-    const params = new URLSearchParams(window.location.search);
-    const normalized = value.trim();
-
-    if (normalized) params.set("query", value);
-    else params.delete("query");
-
-    if (pathname === "/search") params.delete("index");
-
-    const nextUrl = `${pathname}${params.toString() ? `?${params.toString()}` : ""}`;
-    window.history.replaceState(null, "", nextUrl);
-  };
-
   const closeSearch = () => {
     setShowSearch(false);
     setSuggestions([]);
@@ -77,7 +64,6 @@ function HeaderContent({
 
   const updateSearchQuery = (value: string) => {
     setSearchQuery(value);
-    syncQueryToUrl(value);
   };
 
   const clearSearch = () => {
@@ -102,8 +88,7 @@ function HeaderContent({
     closeSearch();
 
     if (pathname === "/search") {
-      window.history.replaceState(null, "", target);
-      router.refresh();
+      router.replace(target);
       return;
     }
 
