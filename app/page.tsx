@@ -16,51 +16,45 @@ export const metadata = {
     "phim ảnh, phim chất lượng cao, phim, phim hd, phim kinh điển, phim viễn tưởng, phim kinh dị, phim bộ, anime",
 };
 
+export const revalidate = 300; // Revalidate every 5 minutes for better caching
+
 export default async function Home() {
   const api = new PhimApi();
   const topics = api.listTopics();
-  const [categories, countries, newUpdates, extraNewUpdates] = await Promise.all([
+
+  // Parallel fetch: categories, countries, new updates, and topic movies
+  const [categories, countries, newUpdates, movieTopicPool, tvTopicPool] = await Promise.all([
     api.listCategories(),
     api.listCountries(),
     api.newAdding(1),
-    api.newAdding(2).catch((error) => {
-      console.error("Failed to fetch more new updates:", error);
-      return [[], {}];
-    }),
-  ]);
-  const [movieTopicItems, tvTopicItems] = await Promise.all([
-    api.getTopicItems("phim-le", 6),
-    api.getTopicItems("phim-bo", 6),
-  ]);
-  let topicsWithMovies = [];
-  try {
-    topicsWithMovies = await Promise.all(
-      topics.map(async (topicItem: any) => {
-        try {
-          const movies = await api.getTopicItems(topicItem.slug, 20);
-          return {
-            ...topicItem,
-            movies: movies || [],
-          };
-        } catch (error) {
-          console.error(`Failed to fetch items for topic ${topicItem.slug}:`, error);
-          return {
-            ...topicItem,
-            movies: [],
-          };
-        }
-      })
-    );
-  } catch (error) {
-    console.error('Failed to fetch all topics:', error);
-    topicsWithMovies = topics.map((topicItem: any) => ({
-      ...topicItem,
-      movies: [],
-    }));
-  }
+    api.getTopicItems("phim-le", 20),
+    api.getTopicItems("phim-bo", 20),
+  ]).catch((error) => {
+    console.error("Failed to fetch home data:", error);
+    return [[], [], [[], {}], [], []];
+  });
+
+  // Fetch topic items in parallel - only fetch what we need
+  const topicsWithMovies = await Promise.all(
+    topics.map(async (topicItem: any) => {
+      try {
+        // Only fetch 20 items (no need for separate 6-item fetch)
+        const movies = await api.getTopicItems(topicItem.slug, 20);
+        return {
+          ...topicItem,
+          movies: movies || [],
+        };
+      } catch (error) {
+        console.error(`Failed to fetch items for topic ${topicItem.slug}:`, error);
+        return {
+          ...topicItem,
+          movies: [],
+        };
+      }
+    })
+  );
 
   const newUpdatesItems = newUpdates?.[0] || [];
-  const extraNewUpdateItems = extraNewUpdates?.[0] || [];
 
   const shuffle = <T,>(arr: T[]) => {
     const copy = [...arr];
@@ -80,12 +74,6 @@ export default async function Home() {
       return true;
     });
   };
-
-  // Get a larger pool for each rule
-  const [movieTopicPool, tvTopicPool] = await Promise.all([
-    api.getTopicItems("phim-le", 20),
-    api.getTopicItems("phim-bo", 20),
-  ]);
 
   const imdbCandidatesPool = await Promise.all(
     newUpdatesItems.slice(0, 10).map(async (m: any) => {
@@ -134,10 +122,7 @@ export default async function Home() {
   const [extraRandom] = pickRandom(newUpdatesItems, 1, excludeSlugs);
   if (extraRandom?.slug) excludeSlugs.add(extraRandom.slug);
 
-  const newUpdatesPool = uniqueBySlug([
-    ...newUpdatesItems,
-    ...extraNewUpdateItems,
-  ]);
+  const newUpdatesPool = uniqueBySlug([...newUpdatesItems]);
 
   const newUpdatesForSection = newUpdatesPool.slice(0, 20);
 

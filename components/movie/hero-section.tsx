@@ -3,15 +3,17 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Calendar, Play, Star } from "lucide-react";
-import {
-  gsap,
-  ensureGsap,
-  prefersReducedMotion,
-  EASE,
-  useIsoLayoutEffect,
-} from "@/lib/gsap";
+import { prefersReducedMotion } from "@/lib/gsap";
+import Image from "next/image";
 
 const SLIDE_DURATION = 8000;
+const EASE = {
+  out: "power3.out",
+  outSoft: "power2.out",
+  in: "power2.in",
+  pop: "back.out(1.7)",
+  popStrong: "back.out(2.4)",
+} as const;
 
 interface HeroSectionProps {
   movies: any[];
@@ -25,10 +27,25 @@ const imageUrl = (value?: string) => {
 export default function HeroSection({ movies }: HeroSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [gsapReady, setGsapReady] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
-  const progressTweenRef = useRef<gsap.core.Tween | null>(null);
+  const gsapRef = useRef<any>(null);
+
+  const loadGsap = useCallback(async () => {
+    if (gsapReady || gsapRef.current) return;
+    try {
+      const { default: gsap } = await import("gsap");
+      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
+      gsap.registerPlugin(ScrollTrigger);
+      ScrollTrigger.config({ ignoreMobileResize: true });
+      gsapRef.current = gsap;
+      setGsapReady(true);
+    } catch (error) {
+      console.error("Failed to load GSAP:", error);
+    }
+  }, [gsapReady]);
 
   const nextSlide = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % movies.length);
@@ -51,23 +68,23 @@ export default function HeroSection({ movies }: HeroSectionProps) {
   };
 
   const resetCard = useCallback(() => {
-    if (!cardRef.current || prefersReducedMotion()) return;
+    if (!cardRef.current || prefersReducedMotion() || !gsapRef.current) return;
 
-    gsap.to(cardRef.current, {
+    gsapRef.current.to(cardRef.current, {
       x: 0,
       y: 0,
       rotateX: 0,
       rotateY: 0,
       duration: 0.75,
-      ease: "power3.out",
+      ease: EASE.out,
       overwrite: "auto",
     });
 
     if (glowRef.current) {
-      gsap.to(glowRef.current, {
+      gsapRef.current.to(glowRef.current, {
         opacity: 0.18,
         duration: 0.5,
-        ease: "power2.out",
+        ease: EASE.outSoft,
         overwrite: "auto",
       });
     }
@@ -77,344 +94,168 @@ export default function HeroSection({ movies }: HeroSectionProps) {
     if (
       !cardRef.current ||
       prefersReducedMotion() ||
-      !window.matchMedia("(hover: hover) and (pointer: fine)").matches
+      !window.matchMedia("(hover: hover) and (pointer: fine)").matches ||
+      !gsapRef.current
     ) {
       return;
     }
 
-    const rect = event.currentTarget.getBoundingClientRect();
-    const px = (event.clientX - rect.left) / rect.width;
-    const py = (event.clientY - rect.top) / rect.height;
-    const x = (px - 0.5) * 2;
-    const y = (py - 0.5) * 2;
-    const edgeStrength = Math.max(0, (Math.abs(x) - 0.52) / 0.48);
-    const edgeDirection = Math.sign(x);
+    const rect = cardRef.current.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const x = (event.clientX || event.pageX) - rect.left;
+    const y = (event.clientY || event.pageY) - rect.top;
+    const distX = (x - centerX) * 0.1;
+    const distY = (y - centerY) * 0.1;
+    const angle = Math.atan2(distY, distX);
 
-    gsap.to(cardRef.current, {
-      x: x * 22 + edgeDirection * edgeStrength * 52,
-      y: y * 8,
-      rotateX: y * -4.5,
-      rotateY: x * 6.5 + edgeDirection * edgeStrength * 4,
-      duration: 0.42,
-      ease: "power3.out",
+    gsapRef.current.to(cardRef.current, {
+      x: Math.cos(angle) * 8,
+      y: Math.sin(angle) * 8,
+      rotateX: (y - centerY) * 0.05,
+      rotateY: (x - centerX) * -0.05,
+      duration: 0.4,
+      ease: EASE.outSoft,
       overwrite: "auto",
     });
 
     if (glowRef.current) {
-      glowRef.current.style.background = `radial-gradient(circle at ${px * 100}% ${py * 100}%, rgba(255,255,255,0.22), rgba(255,255,255,0.05) 24%, transparent 52%)`;
-      gsap.to(glowRef.current, {
-        opacity: 1,
-        duration: 0.25,
-        ease: "power2.out",
-        overwrite: "auto",
-      });
+      const distance = Math.hypot(x - centerX, y - centerY);
+      const maxDistance = Math.hypot(centerX, centerY);
+      const opacity = 0.18 + (1 - distance / maxDistance) * 0.3;
+
+      gsapRef.current.to(
+        glowRef.current,
+        { opacity, duration: 0.3, ease: EASE.outSoft, overwrite: "auto" },
+        0
+      );
     }
   };
 
-  useIsoLayoutEffect(() => {
-    if (!rootRef.current || prefersReducedMotion()) return;
-    ensureGsap();
-    const root = rootRef.current;
+  const handlePointerEnter = () => {
+    loadGsap();
+    setIsPaused(true);
+  };
 
-    root.querySelectorAll<HTMLElement>("[data-hero-bg]").forEach((bg, idx) => {
-      const active = idx === activeIndex;
-      const img = bg.querySelector("img");
-
-      gsap.to(bg, {
-        autoAlpha: active ? 1 : 0,
-        duration: 1,
-        ease: "power2.inOut",
-        overwrite: "auto",
-      });
-
-      if (active && img) {
-        gsap.fromTo(
-          img,
-          { scale: 1.06 },
-          {
-            scale: 1,
-            duration: SLIDE_DURATION / 1000,
-            ease: "none",
-            overwrite: "auto",
-          },
-        );
-      }
-    });
-
-    root.querySelectorAll<HTMLElement>("[data-hero-text]").forEach((block, idx) => {
-      const active = idx === activeIndex;
-      const parts = block.querySelectorAll("[data-hero-part]");
-
-      if (active) {
-        gsap.set(block, { pointerEvents: "auto" });
-        gsap.fromTo(
-          parts,
-          { y: 20, autoAlpha: 0 },
-          {
-            y: 0,
-            autoAlpha: 1,
-            duration: 0.65,
-            ease: EASE.out,
-            stagger: 0.055,
-            delay: 0.16,
-            overwrite: "auto",
-          },
-        );
-      } else {
-        gsap.set(block, { pointerEvents: "none" });
-        gsap.to(parts, {
-          y: -12,
-          autoAlpha: 0,
-          duration: 0.28,
-          ease: EASE.in,
-          stagger: 0.02,
-          overwrite: "auto",
-        });
-      }
-    });
-  }, [activeIndex]);
-
-  useIsoLayoutEffect(() => {
-    if (!rootRef.current || prefersReducedMotion()) return;
-
-    const bar = rootRef.current.querySelector<HTMLElement>(
-      `[data-hero-progress="${activeIndex}"]`,
-    );
-    if (!bar) return;
-
-    const tween = gsap.fromTo(
-      bar,
-      { scaleX: 0 },
-      {
-        scaleX: 1,
-        duration: SLIDE_DURATION / 1000,
-        ease: "none",
-        paused: isPaused,
-      },
-    );
-
-    progressTweenRef.current = tween;
-    return () => {
-      tween.kill();
-      progressTweenRef.current = null;
-    };
-  }, [activeIndex]);
+  const handlePointerLeave = () => {
+    setIsPaused(false);
+    resetCard();
+  };
 
   useEffect(() => {
-    const tween = progressTweenRef.current;
-    if (!tween) return;
-    if (isPaused) tween.pause();
-    else tween.restart();
-  }, [isPaused]);
+    if (!rootRef.current || prefersReducedMotion()) return;
+    loadGsap();
+  }, [loadGsap]);
 
   if (!featuredMovie) return null;
-
-  const featuredRating = getRating(featuredMovie);
-  const featuredCategories = featuredMovie.category
-    ?.map((category: any) => category.name)
-    .slice(0, 2)
-    .join(" · ");
 
   return (
     <section
       ref={rootRef}
-      className="relative h-[220px] overflow-hidden bg-[#070707] px-3 py-2.5 sm:h-[240px] sm:px-4 sm:py-3 md:h-[260px] md:px-8 md:py-4 lg:h-[280px] lg:px-10"
-      onPointerMove={handlePointerMove}
-      onPointerEnter={() => setIsPaused(true)}
-      onPointerLeave={() => {
-        setIsPaused(false);
-        resetCard();
-      }}
+      className="relative mx-2 mt-2 mb-4 overflow-hidden rounded-2xl md:mx-4 md:mb-6 lg:rounded-3xl"
     >
-      {movies.map((movie, idx) => (
-        <div
-          key={movie.slug}
-          data-hero-bg={idx}
-          className={`absolute inset-0 ${idx === activeIndex ? "opacity-100" : "opacity-0"}`}
-        >
-          <img
-            src={imageUrl(movie.thumb_url || movie.poster_url)}
-            alt=""
-            className="h-full w-full scale-105 object-cover blur-[2px]"
-          />
-          <div className="absolute inset-0 bg-black/72" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_65%_38%,rgba(255,255,255,0.08),transparent_32%),linear-gradient(to_bottom,rgba(7,7,7,0.2),#070707_92%)]" />
-        </div>
-      ))}
-
       <div
-        className="relative z-10 mx-auto flex h-full min-h-0 w-full max-w-[1500px] items-center justify-center"
-        style={{ perspective: "1500px" }}
+        className="relative aspect-video overflow-hidden bg-zinc-900 md:aspect-auto md:h-96 lg:h-[500px]"
+        onPointerMove={handlePointerMove}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
       >
+        <Image
+          src={imageUrl(featuredMovie.poster_url)}
+          alt={featuredMovie.name}
+          fill
+          priority
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 100vw, 100vw"
+        />
+
+        <div
+          ref={glowRef}
+          className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0"
+          style={{ willChange: "opacity" }}
+        />
+
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
         <div
           ref={cardRef}
-          className="relative h-full w-full max-w-[1320px] will-change-transform"
-          style={{ transformStyle: "preserve-3d" }}
+          className="absolute bottom-0 left-0 right-0 flex flex-col justify-end p-4 md:p-8 lg:p-10"
+          style={{ willChange: "transform" }}
         >
-          <div className="absolute -inset-8 -z-10 rounded-[44px] bg-black/50 blur-3xl" />
-
-          <div
-            className="relative h-full min-h-0 overflow-hidden rounded-[20px] border border-white/[0.12] bg-zinc-950 shadow-[0_20px_55px_rgba(0,0,0,0.5)] sm:rounded-[24px]"
-            style={{ transformStyle: "preserve-3d" }}
-          >
-            {movies.map((movie, idx) => (
-              <div
-                key={`card-bg-${movie.slug}`}
-                className={`absolute inset-0 transition-opacity duration-700 ${idx === activeIndex ? "opacity-100" : "opacity-0"}`}
-              >
-                <img
-                  src={imageUrl(movie.thumb_url || movie.poster_url)}
-                  alt={movie.name}
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/72 to-black/22" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/92 via-transparent to-black/20" />
-              </div>
-            ))}
-
-            <div
-              ref={glowRef}
-              className="pointer-events-none absolute inset-0 z-20 opacity-[0.18]"
-            />
-
-            <div
-              className="relative z-30 grid h-full min-h-0 grid-rows-[1fr_auto] gap-2 p-4 sm:p-5 md:grid-cols-[minmax(0,1fr)_280px] md:grid-rows-1 md:items-end md:gap-5 md:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:p-7"
-              style={{ transformStyle: "preserve-3d" }}
-            >
-              <div
-                className="relative h-full min-h-0 max-w-3xl self-end"
-                style={{ transform: "translateZ(72px)" }}
-              >
-                {movies.map((movie, idx) => {
-                  const rating = getRating(movie);
-                  const movieCategories = movie.category
-                    ?.map((category: any) => category.name)
-                    .slice(0, 2)
-                    .join(" · ");
-
-                  return (
-                    <div
-                      key={`text-${movie.slug}`}
-                      data-hero-text={idx}
-                      className={`absolute bottom-0 left-0 w-full ${idx === activeIndex ? "opacity-100" : "pointer-events-none opacity-0"}`}
-                    >
-                      <div
-                        data-hero-part
-                        className="mb-3 hidden flex-wrap items-center gap-2 text-xs text-zinc-400 md:flex md:mb-4"
-                      >
-                        {movie.badgeText && (
-                          <span className="rounded-full border border-white/12 bg-white/10 px-3 py-1 font-medium text-zinc-100 backdrop-blur-md">
-                            {movie.badgeText}
-                          </span>
-                        )}
-                        {rating && (
-                          <span className="flex items-center gap-1.5 rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 font-medium text-amber-200">
-                            <Star className="h-3.5 w-3.5 fill-current" />
-                            {rating}
-                          </span>
-                        )}
-                        {movie.quality && (
-                          <span className="rounded-full border border-white/10 bg-black/35 px-3 py-1 font-medium text-zinc-300 backdrop-blur-md">
-                            {movie.quality}
-                          </span>
-                        )}
-                      </div>
-
-                      <h1
-                        data-hero-part
-                        className="line-clamp-2 max-w-3xl text-[clamp(1.65rem,7vw,2.25rem)] font-semibold leading-[0.98] tracking-[-0.04em] text-white sm:text-4xl md:text-[2.6rem] lg:text-5xl"
-                      >
-                        {movie.name}
-                      </h1>
-
-                      {movie.origin_name && (
-                        <p
-                          data-hero-part
-                          className="mt-3 hidden line-clamp-1 text-base font-medium text-zinc-400 md:block"
-                        >
-                          {movie.origin_name}
-                        </p>
-                      )}
-
-                      <div
-                        data-hero-part
-                        className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium text-zinc-400 sm:mt-3 sm:text-xs md:mt-4 md:gap-x-4 md:gap-y-2 md:text-sm"
-                      >
-                        {movie.year && (
-                          <span className="flex items-center gap-1.5">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {movie.year}
-                          </span>
-                        )}
-                        {movieCategories && <span className="hidden sm:inline">{movieCategories}</span>}
-                        {movie.episode_current && <span className="hidden sm:inline">{movie.episode_current}</span>}
-                      </div>
-
-                      <div data-hero-part className="mt-2.5 sm:mt-3 md:mt-4">
-                        <Link
-                          href={`/watch?slug=${movie.slug}`}
-                          className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-black transition hover:bg-zinc-200 sm:px-5 sm:py-2.5 sm:text-sm"
-                        >
-                          <Play className="h-4 w-4 fill-current" />
-                          Xem ngay
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div
-                className="self-end md:justify-self-end"
-                style={{ transform: "translateZ(60px)" }}
-              >
-                <div className="mb-2 hidden text-right lg:block">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">
-                    Đang nổi bật
-                  </p>
-                  <p className="mt-1 max-w-[320px] truncate text-sm font-medium text-zinc-300">
-                    {featuredMovie.name}
-                  </p>
-                </div>
-
-                <div className="scrollbar-hide flex max-w-full gap-2 overflow-x-auto pb-1 lg:max-w-[360px]">
-                  {movies.map((movie, idx) => (
-                    <button
-                      key={movie.slug}
-                      onClick={() => setActiveIndex(idx)}
-                      title={movie.name}
-                      aria-label={`Chọn ${movie.name}`}
-                      className={`relative h-1.5 w-8 flex-shrink-0 overflow-hidden rounded-full border transition-all duration-300 md:h-16 md:w-28 md:rounded-xl ${idx === activeIndex ? "border-white/70 opacity-100 shadow-[0_12px_30px_rgba(0,0,0,0.35)]" : "border-white/10 opacity-45 hover:border-white/25 hover:opacity-85"}`}
-                    >
-                      <img
-                        src={imageUrl(movie.thumb_url || movie.poster_url)}
-                        alt=""
-                        className="hidden h-full w-full object-cover md:block"
-                      />
-                      <span className="absolute inset-0 bg-black/15" />
-                      <span
-                        data-hero-progress={idx}
-                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left scale-x-0 bg-white"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div
-              className="pointer-events-none absolute inset-x-6 bottom-4 z-30 hidden items-center justify-between text-[9px] font-medium uppercase tracking-[0.14em] text-zinc-500 lg:flex"
-              style={{ transform: "translateZ(24px)" }}
-            >
-              <span>PHIMANH / FEATURED</span>
-              <span>
-                {featuredRating ? `★ ${featuredRating}` : featuredMovie.quality || "HD"}
-                {featuredCategories ? ` · ${featuredCategories}` : ""}
+          <div className="mb-4 space-y-2 md:mb-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-md bg-red-600 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white md:text-sm">
+                Phim Nổi Bật
               </span>
+              {getRating(featuredMovie) && (
+                <div className="flex items-center gap-1 rounded-md bg-black/50 px-2 py-1 text-xs md:text-sm">
+                  <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                  <span className="text-yellow-400">{getRating(featuredMovie)}</span>
+                </div>
+              )}
             </div>
+            <h1 className="line-clamp-2 text-2xl font-bold text-white md:text-4xl lg:text-5xl">
+              {featuredMovie.name}
+            </h1>
+            {featuredMovie.origin_name && (
+              <p className="line-clamp-1 text-sm text-zinc-300 md:text-base lg:text-lg">
+                {featuredMovie.origin_name}
+              </p>
+            )}
+          </div>
+
+          <div className="mb-4 flex flex-wrap items-center gap-3 text-xs text-zinc-300 md:mb-6 md:gap-4 md:text-sm">
+            {featuredMovie.year && (
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3.5 w-3.5" />
+                <span>{featuredMovie.year}</span>
+              </div>
+            )}
+            {featuredMovie.country?.[0]?.name && (
+              <span>{featuredMovie.country[0].name}</span>
+            )}
+            {featuredMovie.episode_current && (
+              <span>{featuredMovie.episode_current}</span>
+            )}
+          </div>
+
+          <p className="mb-6 line-clamp-2 text-xs text-zinc-300 md:mb-8 md:text-sm md:line-clamp-3">
+            {featuredMovie.content || "Không có mô tả"}
+          </p>
+
+          <div className="flex flex-wrap gap-3 md:gap-4">
+            <Link
+              href={`/watch?slug=${featuredMovie.slug}`}
+              className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-700 md:px-6 md:py-3"
+            >
+              <Play className="h-4 w-4 fill-current md:h-5 md:w-5" />
+              <span className="text-sm md:text-base">Xem Ngay</span>
+            </Link>
+            <Link
+              href={`/phim/${featuredMovie.slug}`}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/30 px-4 py-2 font-semibold text-white transition hover:border-white/60 hover:bg-white/10 md:px-6 md:py-3"
+            >
+              <span className="text-sm md:text-base">Chi Tiết</span>
+            </Link>
           </div>
         </div>
       </div>
+
+      {movies.length > 1 && (
+        <div className="absolute bottom-4 right-4 z-20 flex gap-2 md:bottom-6 md:right-6">
+          {movies.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setActiveIndex(index)}
+              className={`h-1.5 rounded-full transition-all md:h-2 ${
+                index === activeIndex ? "w-6 bg-red-600 md:w-8" : "w-1.5 bg-white/40 hover:bg-white/60 md:w-2"
+              }`}
+              aria-label={`Chuyển đến slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

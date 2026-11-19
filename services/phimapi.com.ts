@@ -4,6 +4,10 @@ export default class PhimApi {
   private MAX_RETRIES = 3;
   private RETRY_DELAY = 1000; // 1 second
   private REQUEST_TIMEOUT = 10000; // 10 seconds
+  private requestCache = new Map<string, Promise<any>>();
+  private pendingRequests = new Map<string, Promise<any>>();
+  private batchTimer: NodeJS.Timeout | null = null;
+  private requestBatch: Set<string> = new Set();
 
   constructor() {
     this.apiUrl = "https://phimapi.com";
@@ -31,6 +35,23 @@ export default class PhimApi {
   }
 
   private async fetchWithCache(url: string, options: RequestInit = {}, retryCount: number = 0): Promise<any> {
+    // Deduplicate concurrent requests
+    if (this.requestCache.has(url)) {
+      return this.requestCache.get(url)!;
+    }
+
+    const promise = this._executeFetch(url, options, retryCount);
+    this.requestCache.set(url, promise);
+
+    // Clean up cache after request completes
+    promise.finally(() => {
+      setTimeout(() => this.requestCache.delete(url), 100);
+    });
+
+    return promise;
+  }
+
+  private async _executeFetch(url: string, options: RequestInit = {}, retryCount: number = 0): Promise<any> {
     try {
       console.log(`Fetching (attempt ${retryCount + 1}):`, url);
       
@@ -58,7 +79,7 @@ export default class PhimApi {
         if (response.status >= 500 && response.status < 600 && retryCount < this.MAX_RETRIES) {
           console.log(`Retrying after ${this.RETRY_DELAY}ms... (${retryCount + 1}/${this.MAX_RETRIES})`);
           await this.sleep(this.RETRY_DELAY * (retryCount + 1));
-          return this.fetchWithCache(url, options, retryCount + 1);
+          return this._executeFetch(url, options, retryCount + 1);
         }
         
         throw new Error(`API error: ${response.status} - ${errorText}`);
@@ -76,7 +97,7 @@ export default class PhimApi {
           retryCount < this.MAX_RETRIES) {
         console.log(`Retrying after network error (${retryCount + 1}/${this.MAX_RETRIES})`);
         await this.sleep(this.RETRY_DELAY * (retryCount + 1));
-        return this.fetchWithCache(url, options, retryCount + 1);
+        return this._executeFetch(url, options, retryCount + 1);
       }
       
       throw error;
@@ -110,12 +131,9 @@ export default class PhimApi {
     };
   }
 
-  // Public method to get fallback movies (used by foryou-recommendations)
   public getFallbackMoviesPublic(limit: number = 10): any[] {
     return this.getFallbackMovies(limit);
   }
-
-  // Loại bỏ backgroundFetch vì Next.js đã xử lý revalidate
 
   async get(slug: string): Promise<{ movie: any; server: any[] }> {
     try {
@@ -127,7 +145,6 @@ export default class PhimApi {
       };
     } catch (error) {
       console.error(`Failed to get movie ${slug}:`, error);
-      // Return fallback movie data
       return {
         movie: this.getFallbackMovies(1)[0],
         server: []
@@ -146,7 +163,7 @@ export default class PhimApi {
         slug: "phim-le",
       },
       {
-        name: "Phim Hoạt Hình",
+        name: "Phim Hoạt Hình",
         slug: "hoat-hinh",
       },
     ];
@@ -159,7 +176,6 @@ export default class PhimApi {
       return response?.data?.items || [];
     } catch (error) {
       console.error('Failed to fetch categories:', error);
-      // Return fallback categories
       return [
         { name: "Hành Động", slug: "hanh-dong" },
         { name: "Tình Cảm", slug: "tinh-cam" },
@@ -177,7 +193,6 @@ export default class PhimApi {
       return response?.data?.items || [];
     } catch (error) {
       console.error('Failed to fetch countries:', error);
-      // Return fallback countries
       return [
         { name: "Việt Nam", slug: "viet-nam" },
         { name: "Hàn Quốc", slug: "han-quoc" },
@@ -216,7 +231,6 @@ export default class PhimApi {
 
   async search(query: string, index: number = 1): Promise<any> {
     try {
-      // Validate input
       if (!query || query.trim() === '') {
         console.warn('Search query is empty');
         return [[], { currentPage: 1, totalPages: 1, totalItems: 0 }];
@@ -226,10 +240,9 @@ export default class PhimApi {
       console.log('Search URL:', url);
       
       const data = await this.fetchWithCache(url, {
-        next: { revalidate: 0 } // Disable cache for search
+        next: { revalidate: 0 }
       });
       
-      // Validate response structure
       if (!data || !data.data) {
         console.error('Invalid search response structure:', data);
         return [[], { currentPage: 1, totalPages: 1, totalItems: 0 }];
@@ -242,7 +255,6 @@ export default class PhimApi {
       return [items, pagination];
     } catch (error) {
       console.error('Search API error:', error);
-      // Return empty results instead of throwing
       return [[], { currentPage: 1, totalPages: 1, totalItems: 0 }];
     }
   }
@@ -272,9 +284,14 @@ export default class PhimApi {
   }
 
   async getTopicItems(slug: string, limit: number = 6): Promise<any[]> {
-    const url = `${this.apiUrl}/v1/api/danh-sach/${slug}?page=1&limit=${limit}`;
-    const data = await this.fetchWithCache(url);
-    return data.data.items.slice(0, limit);
+    try {
+      const url = `${this.apiUrl}/v1/api/danh-sach/${slug}?page=1&limit=${limit}`;
+      const data = await this.fetchWithCache(url);
+      return data.data.items.slice(0, limit);
+    } catch (error) {
+      console.error(`Failed to fetch topic items for ${slug}:`, error);
+      return this.getFallbackMovies(limit);
+    }
   }
 
   async getFilteredList(params: {
@@ -321,22 +338,18 @@ export default class PhimApi {
     try {
       const requests = [];
 
-      // 1. Same category (primary)
       if (movie.category?.[0]?.slug) {
         requests.push(this.byCategory(movie.category[0].slug, 1));
       }
 
-      // 2. Same country
       if (movie.country?.[0]?.slug) {
         requests.push(this.getFilteredList({ country: movie.country[0].slug, limit: 10 }));
       }
 
-      // 3. Same year
       if (movie.year) {
         requests.push(this.getFilteredList({ year: movie.year, limit: 10 }));
       }
 
-      // 4. Same topic/type (phim-bo, phim-le, hoat-hinh)
       if (movie.type) {
         requests.push(this.byTopic(movie.type, 1));
       }
@@ -351,12 +364,10 @@ export default class PhimApi {
         }
       });
 
-      // Remove duplicates and the current movie
       const uniqueMovies = Array.from(
         new Map(allMovies.map((m) => [m.slug, m])).values()
       ).filter((m) => m.slug !== movie.slug);
 
-      // Shuffle results for variety
       return uniqueMovies.sort(() => Math.random() - 0.5);
     } catch (error) {
       console.error("Failed to fetch recommendations:", error);

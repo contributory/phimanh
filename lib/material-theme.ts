@@ -1,11 +1,4 @@
 import { createTheme, ThemeOptions } from '@mui/material/styles';
-import { Roboto } from 'next/font/google';
-
-const roboto = Roboto({
-  weight: ['300', '400', '500', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-});
 
 // Base colors matching current design system - Dark red and black theme
 const baseColors = {
@@ -64,7 +57,7 @@ const themeOptions: ThemeOptions = {
     divider: 'rgba(255,255,255,0.10)',
   },
   typography: {
-    fontFamily: roboto.style.fontFamily,
+    fontFamily: '"Roboto Variable", Arial, sans-serif',
     h1: {
       fontSize: '2.5rem',
       fontWeight: 700,

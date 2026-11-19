@@ -30,6 +30,7 @@ export default function MovieSection({
 }: MovieSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLElement>(null);
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -81,7 +82,14 @@ export default function MovieSection({
     if (currentLeft + clientWidth >= scrollWidth - 240) {
       setVisibleCount((prev) => Math.min(prev + loadStep, maxItems));
     }
-  }, [loadStep, maxVisible, movies]);
+  }, [loadStep, maxVisible, movies.length]);
+
+  const handleScroll = useCallback(() => {
+    if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
+    scrollTimerRef.current = setTimeout(() => {
+      maybeLoadMore();
+    }, 100);
+  }, [maybeLoadMore]);
 
   const displayedMovies = movies.slice(0, visibleCount || 0);
   const accent =
@@ -194,7 +202,7 @@ export default function MovieSection({
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
             onMouseMove={handleMouseMove}
-            onScroll={maybeLoadMore}
+            onScroll={handleScroll}
             className={`scrollbar-hide flex gap-3.5 overflow-x-auto pb-5 pt-1 snap-x md:gap-4 ${
               isDragging ? "cursor-grabbing" : "cursor-grab"
             }`}

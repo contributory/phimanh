@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/roboto";
 import "./globals.css";
 import GTM from "@/components/ui/GTM";
 import PageTransition from "@/components/ui/page-transition";
@@ -13,12 +14,6 @@ import { VideoProvider } from "@/components/providers/video-provider";
 import GlobalPlayer from "@/components/player/global-player";
 import ReactQueryProvider from "@/components/providers/query-provider";
 import { Suspense } from "react";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -201,7 +196,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} font-sans antialiased`}
+        className="font-sans antialiased"
         suppressHydrationWarning
       >
         <GTM />

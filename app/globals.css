@@ -6,6 +6,7 @@
   :root {
     /* Single cinematic dark palette shared by every route. */
     color-scheme: dark;
+    --font-inter: "Inter Variable";
     --background: 0 0% 3%;
     --foreground: 0 0% 98%;
     --card: 0 0% 6%;

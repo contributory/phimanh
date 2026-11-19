@@ -17,7 +17,6 @@ import {
   SkipBack,
   ChevronsRight,
   ChevronsLeft,
-  PictureInPicture2,
   Check,
   Subtitles,
   Volume2 as VolumeIcon,
@@ -99,13 +98,13 @@ const VideoPlayer = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [isPiPSupported, setIsPiPSupported] = useState(false);
+
   const [isNextEpisodeDismissed, setIsNextEpisodeDismissed] = useState(false);
 
   // Set isClient to true on mount
   useEffect(() => {
     setIsClient(true);
-    setIsPiPSupported(typeof document !== "undefined" && !!document.pictureInPictureEnabled);
+
   }, []);
 
   const [error, setError] = useState<string | null>(null);
@@ -255,13 +254,7 @@ const VideoPlayer = ({
 
   const handleBack = async () => {
     showLoading();
-    if (videoRef.current && isPlaying && document.pictureInPictureEnabled) {
-      try {
-        await videoRef.current.requestPictureInPicture();
-      } catch (err) {
-        console.error("Auto PiP failed:", err);
-      }
-    }
+
 
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
@@ -468,11 +461,6 @@ const VideoPlayer = ({
       );
 
       if (!isCurrentlyFullscreen) {
-        // Exit PiP if entering fullscreen
-        if (document.pictureInPictureElement) {
-          await document.exitPictureInPicture();
-        }
-
         const el = containerRef.current;
         if (el.requestFullscreen) {
           await el.requestFullscreen();
@@ -521,19 +509,7 @@ const VideoPlayer = ({
     }
   };
 
-  const togglePiP = async () => {
-    if (!videoRef.current) return;
 
-    try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-      } else if (document.pictureInPictureEnabled) {
-        await videoRef.current.requestPictureInPicture();
-      }
-    } catch (err) {
-      console.error("PiP toggle failed:", err);
-    }
-  };
 
   const toggleMute = () => {
     if (videoRef.current) {
@@ -1042,11 +1018,7 @@ const VideoPlayer = ({
                 </DropdownMenuContent>
             </DropdownMenu>
 
-            {isPiPSupported && (
-              <Button variant="ghost" size="icon" aria-label="Thu nhỏ (PiP)" onClick={togglePiP} className="hidden sm:inline-flex text-white hover:bg-white/20 w-9 h-9 sm:w-10 sm:h-10">
-                <PictureInPicture2 className="w-5 h-5" />
-              </Button>
-            )}
+
 
             <Button variant="ghost" size="icon" aria-label={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"} onClick={toggleFullscreen} className="text-white hover:bg-white/20 w-9 h-9 sm:w-10 sm:h-10">
               {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}

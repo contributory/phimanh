@@ -23,18 +23,57 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 
   // Hydration optimization
-  reactStrictMode: false, // Disable strict mode to prevent double hydration issues
+  reactStrictMode: false,
 
   // Bundle optimization
   experimental: {
-    optimizePackageImports: ['@mui/material', '@mui/icons-material', 'lucide-react'],
+    optimizePackageImports: ['@mui/material', '@mui/icons-material', 'lucide-react', 'gsap', 'video.js'],
   },
 
+  // Optimize bundle analysis
+  productionBrowserSourceMaps: false,
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
 
+  // Cache optimization
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
+  },
 
-  // Security headers for better SEO
+  // Headers for optimal caching and security
   async headers() {
     return [
+      {
+        source: '/api/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=60, s-maxage=300',
+          },
+        ],
+      },
+      {
+        source: '/_next/image(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/public/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [

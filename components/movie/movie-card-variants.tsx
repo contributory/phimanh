@@ -4,10 +4,13 @@ import { Card } from "@/components/ui/card";
 import { useLoading } from "@/components/ui/loading-context";
 import { useRouter } from "next/navigation";
 import { Play } from "lucide-react";
+import Image from "next/image";
+import { memo, useState } from "react";
 
-export function MovieCardDefault({ movie }: { movie: any }) {
+const MovieCardDefault = memo(function MovieCardDefault({ movie }: { movie: any }) {
   const router = useRouter();
   const { showLoading } = useLoading();
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   const handleClick = () => {
     showLoading();
@@ -21,10 +24,6 @@ export function MovieCardDefault({ movie }: { movie: any }) {
       ? `https://phimimg.com/${thumbUrl}`
       : "/placeholder-movie.png";
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.src = "/placeholder-movie.png";
-  };
-
   const secondaryMeta = [movie.year, movie.episode_current]
     .filter(Boolean)
     .join(" · ");
@@ -35,13 +34,21 @@ export function MovieCardDefault({ movie }: { movie: any }) {
       className="group block w-full text-left focus-visible:outline-none"
       aria-label={`Xem ${movie.name}`}
     >
-      <Card className="relative aspect-video overflow-hidden rounded-lg border border-white/[0.06] bg-zinc-900 shadow-none transition-all duration-300 group-hover:-translate-y-1 group-hover:border-white/15 group-hover:shadow-[0_16px_40px_rgba(0,0,0,0.35)] group-focus-visible:ring-2 group-focus-visible:ring-red-500">
-        <img
+      <Card className="relative aspect-video overflow-hidden rounded-lg border border-white/[0.06] bg-zinc-900 shadow-none transition-all duration-300 group-hover:-translate-y-1 group-hover:border-white/15 group-hover:shadow-[0_16px_40px_rgba(0,0,0,0.35)] group-focus-visible:ring-2 group-focus-visible:ring-red-500 will-change-transform">
+        <Image
           src={imageUrl}
           alt={movie.name}
+          fill
           loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
-          onError={handleImageError}
+          className={`h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] ${
+            isImageLoading ? "blur-sm" : "blur-0"
+          }`}
+          onLoad={() => setIsImageLoading(false)}
+          onError={(e) => {
+            e.currentTarget.src = "/placeholder-movie.png";
+            setIsImageLoading(false);
+          }}
+          sizes="(max-width: 640px) 220px, (max-width: 768px) 250px, (max-width: 1024px) 270px, 285px"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/5 to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-100" />
 
@@ -73,16 +80,11 @@ export function MovieCardDefault({ movie }: { movie: any }) {
       </div>
     </button>
   );
-}
+});
 
-export function MovieCardLarge({ movie }: { movie: any }) {
-  return <MovieCardDefault movie={movie} />;
-}
+MovieCardDefault.displayName = "MovieCardDefault";
 
-export function MovieCardWide({ movie }: { movie: any }) {
-  return <MovieCardDefault movie={movie} />;
-}
-
-export function MovieCardCompact({ movie }: { movie: any }) {
-  return <MovieCardDefault movie={movie} />;
-}
+export { MovieCardDefault };
+export const MovieCardLarge = MovieCardDefault;
+export const MovieCardWide = MovieCardDefault;
+export const MovieCardCompact = MovieCardDefault;

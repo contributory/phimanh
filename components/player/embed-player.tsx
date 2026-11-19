@@ -49,7 +49,7 @@ const EmbedPlayer = ({
             <iframe
                 src={videoUrl}
                 className="w-full h-auto rounded-lg"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"
                 allowFullScreen
                 title="Video"
                 style={{ aspectRatio: '16/9' }}
