@@ -20,6 +20,22 @@ export function addWatchedMovie(movie: Movie): void {
   }
 }
 
+// Xóa phim khỏi danh sách "Tiếp tục xem": xóa cookie recentlyWatched và tiến trình xem.
+export function removeFromRecentlyWatched(slug: string): void {
+  if (typeof window === "undefined" || !slug) return;
+
+  clearPlaybackProgress(slug, true);
+
+  try {
+    const Cookies = require("js-cookie");
+    const list: Movie[] = JSON.parse(Cookies.get("recentlyWatched") || "[]");
+    const updated = list.filter((m: Movie) => m?.slug !== slug);
+    Cookies.set("recentlyWatched", JSON.stringify(updated), { expires: 30 });
+  } catch {
+    // Bỏ qua nếu cookie không hợp lệ.
+  }
+}
+
 export function getFavoriteMovies(): Movie[] {
   if (typeof window === "undefined") return [];
   return JSON.parse(localStorage.getItem("favoriteMovies") || "[]");

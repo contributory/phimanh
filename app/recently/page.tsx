@@ -1,16 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { MovieCardDefault } from "@/components/movie/movie-card-variants";
 import { ScrollReveal } from "@/components/ui/material-animations";
-import { hasPlaybackProgress } from "@/lib/user-experience";
+import {
+  hasPlaybackProgress,
+  removeFromRecentlyWatched,
+} from "@/lib/user-experience";
 
 export default function RecentlyWatchedPage() {
   const [movies, setMovies] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
+
+  const handleRemove = useCallback((movie: any) => {
+    if (!movie?.slug) return;
+    removeFromRecentlyWatched(movie.slug);
+    setMovies((prev) => prev.filter((m) => m.slug !== movie.slug));
+  }, []);
 
   useEffect(() => {
     // Fetch categories and countries for header
@@ -58,7 +67,7 @@ export default function RecentlyWatchedPage() {
                     className="material-transition"
                     style={{ animationDelay: `${index * 0.05}s` }}
                   >
-                    <MovieCardDefault movie={movie} />
+                    <MovieCardDefault movie={movie} onRemove={handleRemove} />
                   </div>
                 ))}
               </div>

@@ -16,6 +16,7 @@ interface MovieSectionProps {
   loadStep?: number;
   buttonColor?: string;
   isClientSide?: boolean;
+  onRemoveMovie?: (movie: any) => void;
 }
 
 export default function MovieSection({
@@ -27,6 +28,7 @@ export default function MovieSection({
   maxVisible = 20,
   loadStep = 4,
   buttonColor = "violet",
+  onRemoveMovie,
 }: MovieSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLElement>(null);
@@ -214,7 +216,7 @@ export default function MovieSection({
                 className="w-[220px] flex-shrink-0 snap-start sm:w-[250px] md:w-[270px] xl:w-[285px]"
               >
                 <div className={moved ? "pointer-events-none" : "pointer-events-auto"}>
-                  <MovieCardDefault movie={movie} />
+                  <MovieCardDefault movie={movie} onRemove={onRemoveMovie} />
                 </div>
               </div>
             ))}

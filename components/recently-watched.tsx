@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import MovieSection from "@/components/movie-section";
-import { hasPlaybackProgress } from "@/lib/user-experience";
+import {
+  hasPlaybackProgress,
+  removeFromRecentlyWatched,
+} from "@/lib/user-experience";
 
 interface RecentlyWatchedProps {
   limit?: number;
@@ -12,6 +15,12 @@ export default function RecentlyWatched({ limit = 20 }: RecentlyWatchedProps) {
   const [movies, setMovies] = useState<any[]>([]);
 
   const [mounted, setMounted] = useState(false);
+
+  const handleRemove = useCallback((movie: any) => {
+    if (!movie?.slug) return;
+    removeFromRecentlyWatched(movie.slug);
+    setMovies((prev) => prev.filter((m) => m.slug !== movie.slug));
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -37,6 +46,7 @@ export default function RecentlyWatched({ limit = 20 }: RecentlyWatchedProps) {
       isClientSide={true}
       initialVisible={6}
       maxVisible={Math.min(limit, 20)}
+      onRemoveMovie={handleRemove}
     />
   );
 }
