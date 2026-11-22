@@ -141,7 +141,7 @@ function HeaderContent({
         aria-hidden="true"
         className="h-[var(--app-header-safe-height)] w-full shrink-0"
       />
-      <nav className={`fixed inset-x-0 top-0 z-[100] w-full pt-[var(--app-safe-top)] transition-all duration-300 ${scrolled ? 'border-b border-white/[0.06] bg-[#070707]/88 backdrop-blur-xl' : 'bg-gradient-to-b from-black/75 via-black/35 to-transparent'}`}>
+      <nav className={`fixed inset-x-0 top-0 z-[100] w-full pt-[var(--app-safe-top)] transition-all duration-300 ${scrolled ? 'border-b border-white/[0.06] bg-[#070707]/[0.88] backdrop-blur-xl' : 'bg-gradient-to-b from-black/75 via-black/35 to-transparent'}`}>
         <div className="mx-auto flex h-[var(--app-header-height)] w-full max-w-[1500px] items-center justify-between px-4 md:px-8 lg:px-10">
         <div className="flex items-center gap-10">
           <div
